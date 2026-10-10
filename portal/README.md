@@ -1,14 +1,15 @@
 # ERP Generator Portal
 
-The customer and administrator web application for ErpGenerator. It preserves the existing account, ERP-discovery, interview, demo-booking, feedback, and environment-management UX while keeping all business state and decisions in `ErpGenerator.Api`.
+The guest-first customer web application for ERP Generator. Visitors enter their
+workspace automatically and can open a prepared Dandelion Chocolate demo or
+create a separate ERP using a description, guided interview, and optional Notion
+context. Business state and decisions remain in `ErpGenerator.Api`.
 
-Portal has no database and no Payload CMS dependency. Browser requests go through a deny-by-default Next.js BFF route. Every allowlisted route belongs to exactly one of the customer, administrator, or public realms; an administrator cookie is never forwarded to a customer route, and a customer cookie is never forwarded to an administrator route. Internal Runtime endpoints are never exposed.
-
-Customer sign-in lives at `/{locale}/login` and administrator sign-in at
-`/{locale}/admin/login`. They use distinct host-only HttpOnly access and refresh
-cookies, independent refresh endpoints, and independent password-reset flows.
-Holding an administrator session does not grant or redirect into customer
-account pages.
+Portal has no database. Browser requests go through a deny-by-default Next.js BFF
+allowlist with customer and public routes. Internal Runtime and operator endpoints
+are never exposed. Customer access and refresh tokens use host-only HttpOnly
+cookies. Existing browser sessions resume their workspace; Runtime receives its
+own tenant-local session through the ownership-checked handoff.
 
 ## Local setup
 

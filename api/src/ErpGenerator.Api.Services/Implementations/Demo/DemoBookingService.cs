@@ -4,8 +4,7 @@ using ErpGenerator.Api.Shared.Demo;
 namespace ErpGenerator.Api.Services.Implementations.Demo;
 
 public sealed class DemoBookingService(
-    ErpGeneratorDbContext dbContext,
-    Microsoft.Extensions.Options.IOptions<DemoNotificationOptions> notificationOptions) : IDemoBookingService
+    ErpGeneratorDbContext dbContext) : IDemoBookingService
 {
     public async Task<DemoBookingAvailabilityViewModel> AvailabilityAsync(CancellationToken cancellationToken)
     {
@@ -57,17 +56,6 @@ public sealed class DemoBookingService(
             Subject = "Your ErpGenerator demo is reserved",
             Body = $"Hello {booking.RepresentativeName},\n\nYour ErpGenerator demo is reserved from {booking.StartDate:yyyy-MM-dd} through {booking.EndDate:yyyy-MM-dd}. We will contact you with the next details."
         });
-        if (!string.IsNullOrWhiteSpace(notificationOptions.Value.AdminRecipient))
-        {
-            booking.NotificationDeliveries.Add(new NotificationDelivery
-            {
-                DemoBooking = booking,
-                Kind = "demo_admin_alert",
-                Recipient = notificationOptions.Value.AdminRecipient.Trim(),
-                Subject = $"New ErpGenerator demo booking: {booking.CompanyName}",
-                Body = $"{booking.RepresentativeName} ({booking.Email}) reserved {booking.StartDate:yyyy-MM-dd} through {booking.EndDate:yyyy-MM-dd}."
-            });
-        }
         await dbContext.SaveChangesAsync(cancellationToken);
         return Map(booking);
     }

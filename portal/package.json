@@ -1,7 +1,7 @@
 {
   "name": "erpgenerator-portal",
   "version": "1.0.0",
-  "description": "ErpGenerator customer and administrator portal",
+  "description": "ERP Generator guest-first customer portal",
   "license": "MIT",
   "private": true,
   "type": "module",

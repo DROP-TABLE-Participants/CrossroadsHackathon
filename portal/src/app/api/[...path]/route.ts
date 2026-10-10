@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getPortalApiRouteRealm, type PortalApiRealm } from '@/lib/api-bff/allowlist'
+import { getPortalApiRouteRealm } from '@/lib/api-bff/allowlist'
 import {
-  adminAccessCookieName,
-  adminRefreshCookieName,
   customerAccessCookieName,
   customerRefreshCookieName,
 } from '@/lib/auth/portal-entry'
@@ -16,18 +14,13 @@ const sessionCreationRoutes = new Set([
   'customers/login',
   'customers/register',
   'customers/refresh',
-  'admin-auth/login',
-  'admin-auth/refresh',
 ])
 const unauthenticatedRoutes = new Set([
   ...sessionCreationRoutes,
   'customers/forgot-password',
   'customers/reset-password',
-  'admin-auth/forgot-password',
-  'admin-auth/reset-password',
 ])
 
-type AuthenticatedRealm = Exclude<PortalApiRealm, 'public'>
 type RouteContext = { params: Promise<{ path: string[] }> }
 type AuthenticationPayload = {
   user?: unknown
@@ -98,28 +91,20 @@ async function callApi(
   })
 }
 
-function cookieNames(realm: AuthenticatedRealm) {
-  return realm === 'administrator'
-    ? { access: adminAccessCookieName, refresh: adminRefreshCookieName }
-    : { access: customerAccessCookieName, refresh: customerRefreshCookieName }
-}
-
-function refreshRoute(realm: AuthenticatedRealm) {
-  return realm === 'administrator' ? 'admin-auth/refresh' : 'customers/refresh'
-}
+const sessionCookieNames = { access: customerAccessCookieName, refresh: customerRefreshCookieName }
+const refreshRoute = 'customers/refresh'
 
 async function refreshSession(
   request: NextRequest,
   apiBaseUrl: string,
   portalSecret: string,
-  realm: AuthenticatedRealm,
   refreshToken: string,
 ) {
   const headers = apiHeaders(request, portalSecret)
   headers.set('content-type', 'application/json')
   const upstream = await callApi(
     apiBaseUrl,
-    refreshRoute(realm),
+    refreshRoute,
     '',
     'POST',
     headers,
@@ -155,11 +140,10 @@ function cookieSecure(request: NextRequest) {
 function setSessionCookies(
   response: NextResponse,
   request: NextRequest,
-  realm: AuthenticatedRealm,
   payload: AuthenticationPayload,
 ) {
   const now = Math.floor(Date.now() / 1000)
-  const names = cookieNames(realm)
+  const names = sessionCookieNames
   response.cookies.set(names.access, payload.accessToken!, {
     httpOnly: true,
     secure: cookieSecure(request),
@@ -176,8 +160,8 @@ function setSessionCookies(
   })
 }
 
-function clearSessionCookies(response: NextResponse, request: NextRequest, realm: AuthenticatedRealm) {
-  const names = cookieNames(realm)
+function clearSessionCookies(response: NextResponse, request: NextRequest) {
+  const names = sessionCookieNames
   for (const name of [names.access, names.refresh]) {
     response.cookies.set(name, '', {
       httpOnly: true,
@@ -241,7 +225,7 @@ async function forward(request: NextRequest, context: RouteContext) {
   }
 
   const authenticatedRealm = realm === 'public' ? null : realm
-  const names = authenticatedRealm ? cookieNames(authenticatedRealm) : null
+  const names = authenticatedRealm ? sessionCookieNames : null
   const refreshToken = names ? request.cookies.get(names.refresh)?.value : undefined
   let accessToken = names ? request.cookies.get(names.access)?.value : undefined
 
@@ -259,7 +243,7 @@ async function forward(request: NextRequest, context: RouteContext) {
       return safeResponse(upstream)
     }
 
-    if (authenticatedRealm && (route === 'customers/logout' || route === 'admin-auth/logout')) {
+    if (authenticatedRealm && route === 'customers/logout') {
       const headers = apiHeaders(request, portalSecret, accessToken)
       headers.set('content-type', 'application/json')
       const upstream = await callApi(
@@ -272,27 +256,27 @@ async function forward(request: NextRequest, context: RouteContext) {
         request.signal,
       )
       const response = await safeResponse(upstream)
-      clearSessionCookies(response, request, authenticatedRealm)
+      clearSessionCookies(response, request)
       return response
     }
 
     if (authenticatedRealm && sessionCreationRoutes.has(route)) {
       if (route === 'customers/guest-session' && (accessToken || refreshToken)) {
         let resumed: AuthenticationPayload | null = null
-        if (!accessToken && refreshToken) resumed = await refreshSession(request, apiBaseUrl, portalSecret, 'customer', refreshToken)
+        if (!accessToken && refreshToken) resumed = await refreshSession(request, apiBaseUrl, portalSecret, refreshToken)
         let profile = await callApi(apiBaseUrl, 'customers/me', '', 'GET', apiHeaders(request, portalSecret, resumed?.accessToken || accessToken), undefined, request.signal)
         if (profile.status === 401 && refreshToken && !resumed) {
-          resumed = await refreshSession(request, apiBaseUrl, portalSecret, 'customer', refreshToken)
+          resumed = await refreshSession(request, apiBaseUrl, portalSecret, refreshToken)
           if (resumed) profile = await callApi(apiBaseUrl, 'customers/me', '', 'GET', apiHeaders(request, portalSecret, resumed.accessToken), undefined, request.signal)
         }
         if (profile.ok) {
           const response = await safeResponse(profile)
-          if (resumed) setSessionCookies(response, request, 'customer', resumed)
+          if (resumed) setSessionCookies(response, request, resumed)
           return response
         }
         if (profile.status !== 401) return safeResponse(profile)
       }
-      if (route === refreshRoute(authenticatedRealm) && refreshToken) {
+      if (route === refreshRoute && refreshToken) {
         body = new TextEncoder().encode(JSON.stringify({ refreshToken })).buffer
       }
       const upstream = await callApi(
@@ -306,8 +290,8 @@ async function forward(request: NextRequest, context: RouteContext) {
       )
       if (!upstream.ok) {
         const response = await safeResponse(upstream)
-        if (route === refreshRoute(authenticatedRealm)) {
-          clearSessionCookies(response, request, authenticatedRealm)
+        if (route === refreshRoute) {
+          clearSessionCookies(response, request)
         }
         return response
       }
@@ -317,7 +301,7 @@ async function forward(request: NextRequest, context: RouteContext) {
       }
       const response = NextResponse.json({ user: payload.user }, { status: upstream.status })
       response.headers.set('cache-control', 'no-store')
-      setSessionCookies(response, request, authenticatedRealm, payload)
+      setSessionCookies(response, request, payload)
       return response
     }
 
@@ -335,9 +319,9 @@ async function forward(request: NextRequest, context: RouteContext) {
       if (
         upstream.ok &&
         authenticatedRealm &&
-        (route === 'customers/reset-password' || route === 'admin-auth/reset-password')
+        route === 'customers/reset-password'
       ) {
-        clearSessionCookies(response, request, authenticatedRealm)
+        clearSessionCookies(response, request)
       }
       return response
     }
@@ -348,7 +332,6 @@ async function forward(request: NextRequest, context: RouteContext) {
         request,
         apiBaseUrl,
         portalSecret,
-        authenticatedRealm,
         refreshToken,
       )
       accessToken = rotatedSession?.accessToken
@@ -368,7 +351,6 @@ async function forward(request: NextRequest, context: RouteContext) {
         request,
         apiBaseUrl,
         portalSecret,
-        authenticatedRealm,
         refreshToken,
       )
       if (rotatedSession) {
@@ -397,10 +379,10 @@ async function forward(request: NextRequest, context: RouteContext) {
       response = new NextResponse('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to your workspace</title><body><p>This ERP could not be opened from your workspace. Return and try again when it is ready.</p><p>Това ERP не може да бъде отворено. Върнете се в работното си пространство и опитайте отново.</p><a href="/en/account">My ERPs / Моите ERP системи</a></body></html>', { status: upstream.status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'" } })
     } else response = await safeResponse(upstream)
     if (rotatedSession && authenticatedRealm) {
-      setSessionCookies(response, request, authenticatedRealm, rotatedSession)
+      setSessionCookies(response, request, rotatedSession)
     }
     if (upstream.status === 401 && authenticatedRealm) {
-      clearSessionCookies(response, request, authenticatedRealm)
+      clearSessionCookies(response, request)
     }
     return response
   } catch {

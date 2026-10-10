@@ -8,6 +8,5 @@ public static class SupervisorDecisionTypes
     public const string RouteToPreviousStage = "route_to_previous_stage";
     public const string RequestEvidence = "request_evidence";
     public const string RequestInterview = "request_interview";
-    public const string EscalateAdmin = "escalate_admin";
     public const string Fail = "fail";
 }

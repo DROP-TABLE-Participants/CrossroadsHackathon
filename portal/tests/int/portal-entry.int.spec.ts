@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  adminAccessCookieName,
   customerAccessCookieName,
   customerRefreshCookieName,
   getPortalEntryPath,
-  hasAdminSession,
   hasPortalSession,
 } from '@/lib/auth/portal-entry'
 
@@ -27,7 +25,5 @@ describe('Portal locale entry routing', () => {
     expect(hasPortalSession(cookieStore([]))).toBe(false)
     expect(hasPortalSession(cookieStore([customerAccessCookieName]))).toBe(true)
     expect(hasPortalSession(cookieStore([customerRefreshCookieName]))).toBe(true)
-    expect(hasPortalSession(cookieStore([adminAccessCookieName]))).toBe(false)
-    expect(hasAdminSession(cookieStore([adminAccessCookieName]))).toBe(true)
   })
 })

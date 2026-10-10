@@ -45,7 +45,7 @@ internal static class GenerationFailureClassifier
             return new GenerationFailure(
                 GenerationFailureDispositions.Configuration,
                 "generation_configuration_required",
-                "Generation is temporarily unavailable while an administrator updates its configuration.",
+                "Generation is temporarily unavailable until its server configuration is updated.",
                 "The Claude generation configuration is missing or invalid.");
         }
 

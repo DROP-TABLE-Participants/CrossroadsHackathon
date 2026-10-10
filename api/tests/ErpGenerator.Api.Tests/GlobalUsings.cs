@@ -1,6 +1,5 @@
 global using ErpGenerator.Api.Data.Context;
 global using ErpGenerator.Api.Data.Entities.Demo;
-global using ErpGenerator.Api.Data.Entities.AdminIdentity;
 global using ErpGenerator.Api.Data.Entities.Generation;
 global using ErpGenerator.Api.Data.Entities.Identity;
 global using ErpGenerator.Api.Data.Entities.Tenants;
@@ -16,5 +15,4 @@ global using ErpGenerator.Api.Services.Implementations.Tenants;
 global using ErpGenerator.Api.Services.Options.Generation;
 global using ErpGenerator.Api.Services.Options.Identity;
 global using ErpGenerator.Api.Services.Options.Tenants;
-global using ErpGenerator.Api.Shared.Admin;
 global using ErpGenerator.Api.Shared.Identity;

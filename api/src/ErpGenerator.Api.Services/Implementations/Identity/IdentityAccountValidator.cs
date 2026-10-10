@@ -4,8 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ErpGenerator.Api.Services.Implementations.Identity;
 
 public sealed class IdentityAccountValidator(
-    ErpGeneratorDbContext controlPlane,
-    AdminIdentityDbContext adminIdentity) : IIdentityAccountValidator
+    ErpGeneratorDbContext controlPlane) : IIdentityAccountValidator
 {
     public Task<bool> IsActiveCustomerAsync(ClaimsPrincipal principal, CancellationToken cancellationToken) =>
         IsActiveAsync(
@@ -16,20 +15,6 @@ public sealed class IdentityAccountValidator(
                          value.IsActive &&
                          value.SecurityStamp == securityStamp,
                 cancellationToken));
-
-    public Task<bool> IsActiveAdministratorAsync(ClaimsPrincipal principal, CancellationToken cancellationToken) =>
-        IsActiveAsync(
-            principal,
-            IdentityClaimNames.AdministratorRealm,
-            (id, securityStamp) =>
-                (from account in adminIdentity.AdminAccounts
-                 join userRole in adminIdentity.UserRoles on account.Id equals userRole.UserId
-                 join role in adminIdentity.Roles on userRole.RoleId equals role.Id
-                 where account.Id == id &&
-                       account.IsActive &&
-                       account.SecurityStamp == securityStamp &&
-                       role.NormalizedName == "PLATFORMADMINISTRATOR"
-                 select account.Id).AnyAsync(cancellationToken));
 
     private static Task<bool> IsActiveAsync(
         ClaimsPrincipal principal,

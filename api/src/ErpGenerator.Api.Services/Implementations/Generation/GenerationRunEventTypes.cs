@@ -13,10 +13,7 @@ internal static class GenerationRunEventTypes
     public const string RetryScheduled = "retry_scheduled";
     public const string Completed = "completed";
     public const string Failed = "failed";
-    public const string AdminRetryRequested = "admin_retry_requested";
-    public const string AdminCancellationRequested = "admin_cancellation_requested";
     public const string Cancelled = "cancelled";
-    public const string AdminResumeRequested = "admin_resume_requested";
     public const string AgentWorkItemStarted = "agent_work_item_started";
     public const string AgentWorkItemCompleted = "agent_work_item_completed";
     public const string AgentWorkItemFailed = "agent_work_item_failed";

@@ -18,9 +18,6 @@ public static class DependencyInjection
         }
 
         services.AddDbContext<ErpGeneratorDbContext>(options => options.UseNpgsql(connectionString));
-        services.AddDbContext<AdminIdentityDbContext>(options => options.UseNpgsql(
-            connectionString,
-            npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "admin_identity")));
         return services;
     }
 }

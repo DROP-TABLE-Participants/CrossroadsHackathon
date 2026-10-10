@@ -49,8 +49,8 @@ export function DemoBookingProvider({ children }: { children: React.ReactNode; c
     finally { setResolved(true) }
   }, [])
   useEffect(() => {
-    if (!pathname?.includes('/admin')) void refreshCustomer()
-  }, [refreshCustomer, pathname?.includes('/admin')])
+    void refreshCustomer()
+  }, [refreshCustomer])
   const value = useMemo<GuestContext>(() => ({
     customer, sessionResolved, sessionError, activeBooking: null, refreshCustomer,
     openLogin: () => { void refreshCustomer() },

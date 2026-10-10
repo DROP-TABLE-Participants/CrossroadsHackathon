@@ -150,107 +150,20 @@ describe('Portal HttpOnly BFF session', () => {
     expect(response.headers.getSetCookie().join(';')).toContain('rotated-refresh')
   })
 
-  it('uses only administrator cookies for administrator routes', async () => {
-    vi.stubEnv('ERP_GENERATOR_API_INTERNAL_URL', 'http://erpgenerator-api')
-    vi.stubEnv('ERP_GENERATOR_PORTAL_INTERNAL_SECRET', 'portal-secret')
-    const upstreamFetch = vi.fn(async (_url: string, init?: RequestInit) => {
-      expect(new Headers(init?.headers).get('authorization')).toBe('Bearer administrator-access')
-      return Response.json({ id: 'admin-1', role: 'PlatformAdministrator' })
-    })
+  it.each([
+    ['GET', ['admin-auth', 'me']],
+    ['POST', ['admin-auth', 'login']],
+    ['POST', ['admin', 'administrators']],
+  ])('rejects removed administration routes without calling the API (%s)', async (method, path) => {
+    const upstreamFetch = vi.fn()
     vi.stubGlobal('fetch', upstreamFetch)
-
-    const request = new NextRequest(`${portalOrigin}/api/admin-auth/me`, {
-      headers: {
-        cookie:
-          'erpgenerator-customer-access=customer-access; erpgenerator-admin-access=administrator-access',
-      },
+    const request = new NextRequest(`${portalOrigin}/api/${path.join('/')}`, {
+      method: method as string,
+      headers: { cookie: 'erpgenerator-admin-access=obsolete-access' },
     })
-    const response = await GET(request, routeContext(['admin-auth', 'me']))
-
-    expect(response.status).toBe(200)
-    expect(upstreamFetch).toHaveBeenCalledOnce()
-  })
-
-  it('never forwards an administrator cookie to a customer route', async () => {
-    vi.stubEnv('ERP_GENERATOR_API_INTERNAL_URL', 'http://erpgenerator-api')
-    vi.stubEnv('ERP_GENERATOR_PORTAL_INTERNAL_SECRET', 'portal-secret')
-    const upstreamFetch = vi.fn(async (_url: string, init?: RequestInit) => {
-      expect(new Headers(init?.headers).get('authorization')).toBeNull()
-      return new Response(null, { status: 401 })
-    })
-    vi.stubGlobal('fetch', upstreamFetch)
-
-    const request = new NextRequest(`${portalOrigin}/api/customers/me`, {
-      headers: { cookie: 'erpgenerator-admin-access=administrator-access' },
-    })
-    const response = await GET(request, routeContext(['customers', 'me']))
-
-    expect(response.status).toBe(401)
-    expect(upstreamFetch).toHaveBeenCalledOnce()
-  })
-
-  it('uses only the administrator cookie for administrator management actions', async () => {
-    vi.stubEnv('ERP_GENERATOR_API_INTERNAL_URL', 'http://erpgenerator-api')
-    vi.stubEnv('ERP_GENERATOR_PORTAL_INTERNAL_SECRET', 'portal-secret')
-    vi.stubEnv('FRONTEND_URL', portalOrigin)
-    const upstreamFetch = vi.fn(async (url: string, init?: RequestInit) => {
-      expect(url).toBe('http://erpgenerator-api/api/admin/administrators')
-      const headers = new Headers(init?.headers)
-      expect(headers.get('authorization')).toBe('Bearer administrator-access')
-      expect(headers.get('x-erpgenerator-portal-secret')).toBe('portal-secret')
-      return Response.json({ id: 'admin-2', email: 'new-admin@example.test' }, { status: 201 })
-    })
-    vi.stubGlobal('fetch', upstreamFetch)
-
-    const request = new NextRequest(`${portalOrigin}/api/admin/administrators`, {
-      method: 'POST',
-      headers: {
-        origin: portalOrigin,
-        'content-type': 'application/json',
-        cookie:
-          'erpgenerator-customer-access=customer-access; erpgenerator-admin-access=administrator-access',
-      },
-      body: JSON.stringify({ name: 'New administrator', email: 'new-admin@example.test', locale: 'en' }),
-    })
-    const response = await POST(request, routeContext(['admin', 'administrators']))
-
-    expect(response.status).toBe(201)
-    expect(upstreamFetch).toHaveBeenCalledOnce()
-  })
-
-  it('clears only administrator cookies after an administrator password reset', async () => {
-    vi.stubEnv('ERP_GENERATOR_API_INTERNAL_URL', 'http://erpgenerator-api')
-    vi.stubEnv('ERP_GENERATOR_PORTAL_INTERNAL_SECRET', 'portal-secret')
-    vi.stubEnv('FRONTEND_URL', portalOrigin)
-    const upstreamFetch = vi.fn(async (_url: string, init?: RequestInit) => {
-      expect(new Headers(init?.headers).get('authorization')).toBeNull()
-      return new Response(null, { status: 204 })
-    })
-    vi.stubGlobal('fetch', upstreamFetch)
-
-    const request = new NextRequest(`${portalOrigin}/api/admin-auth/reset-password`, {
-      method: 'POST',
-      headers: {
-        origin: portalOrigin,
-        'content-type': 'application/json',
-        cookie:
-          'erpgenerator-customer-access=customer-access; erpgenerator-customer-refresh=customer-refresh; erpgenerator-admin-access=administrator-access; erpgenerator-admin-refresh=administrator-refresh',
-      },
-      body: JSON.stringify({
-        email: 'admin@example.test',
-        token: 'reset-token',
-        newPassword: 'New-Administrator-Password-1234',
-      }),
-    })
-    const response = await POST(request, routeContext(['admin-auth', 'reset-password']))
-    const cookies = response.headers.getSetCookie().join(';')
-
-    expect(response.status).toBe(204)
-    expect(cookies).toContain('erpgenerator-admin-access=')
-    expect(cookies).toContain('erpgenerator-admin-refresh=')
-    expect(cookies).toContain('Max-Age=0')
-    expect(cookies).not.toContain('erpgenerator-customer-access=')
-    expect(cookies).not.toContain('erpgenerator-customer-refresh=')
+    const response = await (method === 'GET' ? GET : POST)(request, routeContext(path as string[]))
+    expect(response.status).toBe(404)
+    expect(upstreamFetch).not.toHaveBeenCalled()
   })
 
   it('forwards a signed Nango webhook byte-for-byte without requiring a browser origin', async () => {

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using ErpGenerator.Api.Services.Implementations.Admin;
 using ErpGenerator.Api.Shared.Generation;
 
 namespace ErpGenerator.Api.Tests;
@@ -197,7 +196,7 @@ public sealed class GenerationProjectServiceTests
     }
 
     [Fact]
-    public async Task Customer_and_administrator_read_the_same_canonical_run_status()
+    public async Task Customer_reads_the_canonical_run_status()
     {
         var statuses = new[]
         {
@@ -244,27 +243,21 @@ public sealed class GenerationProjectServiceTests
                 dbContext,
                 new FakeInputSources(),
                 new FakeEvidence());
-            var adminService = new AdminOrchestrationService(dbContext);
 
             var customerView = await customerService.GetAsync(
                 customer.Id,
                 project.Id,
                 CancellationToken.None);
-            var adminView = await adminService.GetAsync(
-                run.Id,
-                CancellationToken.None);
 
             Assert.NotNull(customerView);
-            Assert.NotNull(adminView);
             Assert.Equal(
                 status,
                 Assert.Single(customerView.GenerationRuns).Status);
-            Assert.Equal(status, adminView.Status);
         }
     }
 
     [Fact]
-    public async Task Customer_and_administrator_share_resume_recovery_status()
+    public async Task Customer_sees_resume_recovery_status()
     {
         await using var dbContext = CreateContext();
         var customer = Customer();
@@ -297,18 +290,13 @@ public sealed class GenerationProjectServiceTests
             dbContext,
             new FakeInputSources(),
             new FakeEvidence());
-        var adminService = new AdminOrchestrationService(dbContext);
 
         var customerView = await customerService.GetAsync(
             customer.Id,
             project.Id,
             CancellationToken.None);
-        var adminView = await adminService.GetAsync(
-            run.Id,
-            CancellationToken.None);
 
         Assert.NotNull(customerView);
-        Assert.NotNull(adminView);
         Assert.Equal("failed", customerView.Status);
         var customerRun = Assert.Single(
             customerView.GenerationRuns);
@@ -316,13 +304,6 @@ public sealed class GenerationProjectServiceTests
         Assert.Equal(
             run.ResumeFailureMessage,
             customerRun.LastError);
-        Assert.Equal("resume_failed", adminView.Status);
-        Assert.Equal(
-            "generation_resume_failed",
-            adminView.FailureCode);
-        Assert.Equal(
-            run.ResumeFailureMessage,
-            adminView.FailureMessage);
     }
 
     [Fact]

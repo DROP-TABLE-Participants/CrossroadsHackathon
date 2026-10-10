@@ -22,10 +22,6 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
         {
             await WriteAsync(context, StatusCodes.Status401Unauthorized, exception.Message);
         }
-        catch (AdminAuthenticationException exception)
-        {
-            await WriteAsync(context, StatusCodes.Status401Unauthorized, exception.Message);
-        }
         catch (UnauthorizedAccessException exception)
         {
             await WriteAsync(context, StatusCodes.Status401Unauthorized, exception.Message);

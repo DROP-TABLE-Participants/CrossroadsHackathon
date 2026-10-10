@@ -17,9 +17,6 @@ logger.LogInformation("Applying ErpGenerator control-plane migrations and initia
 try
 {
     await scope.ServiceProvider
-        .GetRequiredService<IAdminIdentityInitializer>()
-        .InitializeAsync();
-    await scope.ServiceProvider
         .GetRequiredService<IControlPlaneInitializer>()
         .InitializeAsync();
     logger.LogInformation("ErpGenerator control-plane migrations and initialization completed.");

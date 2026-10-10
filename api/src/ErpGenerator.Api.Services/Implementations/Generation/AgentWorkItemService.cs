@@ -213,12 +213,12 @@ internal sealed class AgentWorkItemService(
             execution.Attempt.Status = AgentAttemptStatuses.Failed;
             execution.Attempt.FailureDisposition = failure.Disposition;
             execution.Attempt.FailureCode = failure.Code;
-            execution.Attempt.FailureMessage = Bounded(failure.AdminMessage);
+            execution.Attempt.FailureMessage = Bounded(failure.DiagnosticMessage);
             execution.Attempt.CompletedAt = now;
             execution.WorkItem.Status = AgentWorkItemStatuses.Failed;
             execution.WorkItem.FailureDisposition = failure.Disposition;
             execution.WorkItem.FailureCode = failure.Code;
-            execution.WorkItem.FailureMessage = Bounded(failure.AdminMessage);
+            execution.WorkItem.FailureMessage = Bounded(failure.DiagnosticMessage);
             execution.WorkItem.CompletedAt = now;
             Release(execution.WorkItem, now);
 
@@ -256,9 +256,7 @@ internal sealed class AgentWorkItemService(
             else
             {
                 decision = new SupervisorDecision(
-                    failure.Disposition == GenerationFailureDispositions.Configuration
-                        ? SupervisorDecisionTypes.EscalateAdmin
-                        : SupervisorDecisionTypes.Fail,
+                    SupervisorDecisionTypes.Fail,
                     canRepair
                         ? "The supervisor rejected the output."
                         : "The bounded repair or routing budget is exhausted.");
@@ -688,7 +686,6 @@ internal sealed class AgentWorkItemService(
             SupervisorDecisionTypes.RouteToPreviousStage,
             SupervisorDecisionTypes.RequestEvidence,
             SupervisorDecisionTypes.RequestInterview,
-            SupervisorDecisionTypes.EscalateAdmin,
             SupervisorDecisionTypes.Fail
         };
         if (!supervisor.IsSupervisor || !allowedDecisions.Contains(decision.Decision))

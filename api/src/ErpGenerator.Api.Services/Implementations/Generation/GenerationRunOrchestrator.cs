@@ -340,7 +340,7 @@ internal sealed class GenerationRunOrchestrator(
         {
             stage.Status = GenerationStageStatuses.Failed;
             stage.FailureCode = failure.Code;
-            stage.FailureMessage = failure.AdminMessage;
+            stage.FailureMessage = failure.DiagnosticMessage;
             stage.CompletedAt = timeProvider.GetUtcNow();
         }
 
@@ -391,7 +391,7 @@ internal sealed class GenerationRunOrchestrator(
                 run,
                 GenerationRunEventTypes.Failed,
                 failure.Disposition == GenerationFailureDispositions.Configuration
-                    ? "Generation stopped because administrator configuration is required."
+                    ? "Generation stopped because server configuration is required."
                     : "Generation stopped after exhausting safe recovery.",
                 stage?.StageKey,
                 stage?.AttemptCount,

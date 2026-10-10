@@ -18,16 +18,7 @@ if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey) || Encoding.UTF8.GetByteCou
 {
     throw new InvalidOperationException("Jwt__SigningKey must contain at least 32 bytes.");
 }
-var adminJwtSection = builder.Configuration.GetSection(AdminJwtOptions.SectionName);
-var adminJwtOptions = adminJwtSection.Get<AdminJwtOptions>() ?? new AdminJwtOptions();
-if (string.IsNullOrWhiteSpace(adminJwtOptions.SigningKey) ||
-    Encoding.UTF8.GetByteCount(adminJwtOptions.SigningKey) < 32)
-{
-    throw new InvalidOperationException("AdminJwt__SigningKey must contain at least 32 bytes.");
-}
-
 builder.Services.Configure<JwtOptions>(jwtSection);
-builder.Services.Configure<AdminJwtOptions>(adminJwtSection);
 builder.Services.Configure<PortalGatewayOptions>(builder.Configuration.GetSection(PortalGatewayOptions.SectionName));
 builder.Services.AddSingleton<IProjectRealtimeEventSink, SignalRProjectRealtimeEventSink>();
 builder.Services.AddErpGeneratorServices(builder.Configuration);
@@ -116,14 +107,6 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0,
             Window = TimeSpan.FromMinutes(10)
         }));
-    options.AddPolicy("admin", context =>
-        RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
-        {
-            AutoReplenishment = true,
-            PermitLimit = 120,
-            QueueLimit = 0,
-            Window = TimeSpan.FromMinutes(1)
-        }));
 });
 builder.Services.AddAuthentication(options =>
     {
@@ -168,45 +151,6 @@ builder.Services.AddAuthentication(options =>
                 }
             }
         };
-    })
-    .AddJwtBearer(AuthenticationSchemes.AdminBearer, options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = adminJwtOptions.Issuer,
-            ValidateAudience = true,
-            ValidAudience = adminJwtOptions.Audience,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(adminJwtOptions.SigningKey)),
-            ClockSkew = TimeSpan.FromSeconds(30)
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                if (context.HttpContext.Request.Path.StartsWithSegments(
-                        "/realtime/hubs/admin",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    context.Token = context.Request.Cookies["erpgenerator-admin-access"];
-                }
-
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = async context =>
-            {
-                var validator = context.HttpContext.RequestServices.GetRequiredService<IIdentityAccountValidator>();
-                if (context.Principal is null ||
-                    !await validator.IsActiveAdministratorAsync(
-                        context.Principal,
-                        context.HttpContext.RequestAborted))
-                {
-                    context.Fail("Administrator account is not active.");
-                }
-            }
-        };
     });
 builder.Services.AddAuthorization(options =>
 {
@@ -214,13 +158,6 @@ builder.Services.AddAuthorization(options =>
     {
         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomerBearer);
         policy.RequireClaim(IdentityClaimNames.AccountRealm, IdentityClaimNames.CustomerRealm);
-        policy.RequireAuthenticatedUser();
-    });
-    options.AddPolicy(AuthorizationPolicies.PlatformAdministrator, policy =>
-    {
-        policy.AddAuthenticationSchemes(AuthenticationSchemes.AdminBearer);
-        policy.RequireClaim(IdentityClaimNames.AccountRealm, IdentityClaimNames.AdministratorRealm);
-        policy.RequireRole(IdentityRoleNames.PlatformAdministrator);
         policy.RequireAuthenticatedUser();
     });
 });
@@ -243,9 +180,6 @@ if (app.Environment.IsDevelopment()) app.MapOpenApi();
 app.MapControllers();
 app.MapHub<CustomerRealtimeHub>(
     "/realtime/hubs/customer",
-    options => options.CloseOnAuthenticationExpiration = true);
-app.MapHub<AdminRealtimeHub>(
-    "/realtime/hubs/admin",
     options => options.CloseOnAuthenticationExpiration = true);
 
 app.Run();

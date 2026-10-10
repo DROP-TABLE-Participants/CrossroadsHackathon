@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ErpGenerator.Api.Data.Entities.Common;
-using ErpGenerator.Api.Data.Entities.Admin;
 using ErpGenerator.Api.Data.Entities.Demo;
 using ErpGenerator.Api.Data.Entities.Generation;
 using ErpGenerator.Api.Data.Entities.Identity;
@@ -51,16 +50,13 @@ public sealed class ErpGeneratorDbContext(
     public DbSet<DemoBooking> DemoBookings => Set<DemoBooking>();
     public DbSet<DemoInstance> DemoInstances => Set<DemoInstance>();
     public DbSet<NotificationDelivery> NotificationDeliveries => Set<NotificationDelivery>();
-    public DbSet<AdminAuditRecord> AdminAuditRecords => Set<AdminAuditRecord>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("control_plane");
-        modelBuilder.ApplyConfigurationsFromAssembly(
-            typeof(ErpGeneratorDbContext).Assembly,
-            type => type.Namespace?.Contains(".Configurations.AdminIdentity", StringComparison.Ordinal) != true);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ErpGeneratorDbContext).Assembly);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

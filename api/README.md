@@ -4,7 +4,7 @@ Private control-plane API and compact ERP generation service for ErpGenerator.
 
 ## Boundary
 
-- **ErpGenerator.Portal** is the public customer/admin web application and the only gateway to customer API routes.
+- **ErpGenerator.Portal** is the public guest-first customer web application and the only gateway to customer API routes.
 - **ErpGenerator.Api** owns customer accounts, tenants, discovery, interviews, durable generation, bundle lineage, deployment orchestration, feedback, and usage metadata.
 - **ErpGenerator.Runtime** owns compilation, isolated tenant databases, tenant-local identity, and generated ERP execution.
 - **ErpGenerator.Landing** owns marketing content only. This API never reads or writes the Landing database.
@@ -16,25 +16,22 @@ All `/api/*` routes require the Portal gateway secret except `/api/internal/*`, 
 - `ErpGenerator.Api.Data`: EF Core entities, `ErpGeneratorDbContext`, mappings, and migrations.
 - `ErpGenerator.Api.Services`: business services and durable workers. Services use the DbContext directly; there is no repository layer.
 - `ErpGenerator.Api.WebHost`: controllers, authentication, middleware, and hosting.
-- `ErpGenerator.Api.MigrationService`: one-shot EF migration, Identity-role initialization, and optional development-admin bootstrap.
+- `ErpGenerator.Api.MigrationService`: one-shot EF migration and customer Identity-role initialization.
 - `ErpGenerator.Api.Shared`: input/view models and cross-process contracts; EF entities are never exposed.
 
 Dependency direction is `WebHost/MigrationService -> Services -> Data`, with `Shared` used for contracts.
 
-## Identity realms
+## Customer identity
 
-Customer and platform-administrator identities are independent security realms:
+Visitors receive a synthetic guest account and a customer session automatically.
+Customer accounts, roles, refresh sessions, and JWTs use `ErpGeneratorDbContext`
+and the `CustomerPortalUser` policy. Account status and security stamps are
+validated on every accepted access token. Portal stores tokens only in host-only
+HttpOnly cookies; Runtime establishes its own tenant-local identity through the
+private, ownership-checked handoff broker.
 
-- customer accounts, roles, refresh sessions, and JWTs use `ErpGeneratorDbContext`, the customer issuer/audience/key, and the `CustomerPortalUser` policy;
-- administrator accounts, roles, refresh sessions, and JWTs use `AdminIdentityDbContext`, the `admin_identity` schema, a separate issuer/audience/key, and the `PlatformAdministrator` policy;
-- the same email address may exist in both stores without linking the accounts, passwords, roles, reset tokens, or sessions;
-- account status and security-stamp validation run on every accepted access token, so deactivation or password reset invalidates existing access and refresh sessions.
-
-The migration service initializes the administrator store first and refuses the
-cutover unless at least one active administrator exists. For the first run,
-enable `AdminBootstrap` with an explicit email and strong password, verify the
-new administrator login, then disable bootstrap. It subsequently removes the
-legacy `Admin` role from the customer store and revokes those legacy sessions.
+MigrationService initializes the customer schema and Customer role. There is no
+platform administration login or bootstrap requirement.
 
 ## Generation behavior
 
@@ -59,12 +56,12 @@ dotnet run --project src/ErpGenerator.Api.WebHost
 
 WebHost never applies migrations. Use the EF Core CLI to create migration source files, and use MigrationService to apply them.
 
-Each DbContext now has one initial migration: `InitialControlPlane` and
-`InitialAdminIdentity`. MigrationService creates both schemas for a new database.
-For an existing database that matches the current model, back up and verify its
-schema before replacing the corresponding history entries in
-`public.__EFMigrationsHistory` and `admin_identity.__EFMigrationsHistory` with the
-new initial migration IDs. This preserves its application tables and records.
+The control plane has one CLI-generated `InitialControlPlane` migration and one
+model snapshot. MigrationService creates the current schema for a fresh database.
+Before rebaselining an existing database, back it up and verify the retained
+schema, then replace its `public.__EFMigrationsHistory` entry with the current
+initial migration ID. Retired identity/audit tables are not used by the application;
+rebaselining must preserve existing customer, project, demo, and tenant records.
 
 Portal should use `http://localhost:3001`, while API defaults to `http://localhost:8080`. Configure the same `PortalGateway__Secret` in API and `ERP_GENERATOR_PORTAL_INTERNAL_SECRET` in Portal.
 

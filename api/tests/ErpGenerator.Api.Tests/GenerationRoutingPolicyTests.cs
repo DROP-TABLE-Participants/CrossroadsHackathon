@@ -32,7 +32,7 @@ public sealed class GenerationRoutingPolicyTests
             disposition,
             "test_failure",
             "Safe customer message.",
-            "Safe administrator message.");
+            "Safe diagnostic message.");
 
         Assert.Equal(
             (GenerationRoute)expected,
@@ -64,10 +64,10 @@ public sealed class GenerationRoutingPolicyTests
 
         Assert.Equal(GenerationFailureDispositions.Retryable, timeout.Disposition);
         Assert.Equal("generation_dependency_unavailable", timeout.Code);
-        Assert.DoesNotContain("private evidence", timeout.AdminMessage);
+        Assert.DoesNotContain("private evidence", timeout.DiagnosticMessage);
         Assert.Equal(GenerationFailureDispositions.Terminal, malformed.Disposition);
         Assert.Equal("generation_state_invalid", malformed.Code);
-        Assert.DoesNotContain("customer-secret-payload", malformed.AdminMessage);
+        Assert.DoesNotContain("customer-secret-payload", malformed.DiagnosticMessage);
         Assert.DoesNotContain("customer-secret-payload", malformed.CustomerMessage);
     }
 }

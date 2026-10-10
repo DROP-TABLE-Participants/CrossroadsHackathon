@@ -8,13 +8,10 @@ namespace ErpGenerator.Api.Tests;
 public sealed class SignalRProjectRealtimeEventSinkTests
 {
     [Fact]
-    public async Task One_canonical_change_notifies_customer_and_administrator_clients()
+    public async Task One_canonical_change_notifies_the_owning_customer_group()
     {
         var customer = new RecordingHubContext<CustomerRealtimeHub>();
-        var administrator = new RecordingHubContext<AdminRealtimeHub>();
-        var sink = new SignalRProjectRealtimeEventSink(
-            customer,
-            administrator);
+        var sink = new SignalRProjectRealtimeEventSink(customer);
         var projectId = Guid.NewGuid();
         var customerId = Guid.NewGuid();
 
@@ -34,12 +31,6 @@ public sealed class SignalRProjectRealtimeEventSinkTests
         Assert.Equal(
             $"customer:{customerId:D}",
             Assert.Single(customer.Clients.RequestedGroups));
-
-        var adminMessage = Assert.Single(administrator.Proxy.Messages);
-        Assert.Equal("orchestrationChanged", adminMessage.Method);
-        Assert.Contains(
-            projectId.ToString(),
-            JsonSerializer.Serialize(adminMessage.Arguments));
     }
 
     private sealed class RecordingHubContext<THub> : IHubContext<THub>

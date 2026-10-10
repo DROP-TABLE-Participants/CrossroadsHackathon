@@ -23,9 +23,7 @@ public sealed class MigrationDependencyInjectionTests
         services.AddErpGeneratorMigrationServices(configuration);
 
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IControlPlaneInitializer));
-        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IAdminIdentityInitializer));
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(ErpGeneratorDbContext));
-        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(AdminIdentityDbContext));
         Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IHostedService));
     }
 }

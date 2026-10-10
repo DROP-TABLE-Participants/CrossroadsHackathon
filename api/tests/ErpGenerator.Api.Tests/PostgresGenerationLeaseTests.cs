@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ErpGenerator.Api.Services.Implementations.Admin;
 
 namespace ErpGenerator.Api.Tests;
 
@@ -187,13 +186,11 @@ public sealed class PostgresGenerationLeaseTests
         {
             var context = scope.ServiceProvider
                 .GetRequiredService<ErpGeneratorDbContext>();
-            var administration = new AdminOrchestrationService(context);
-            await administration.CancelAsync(
-                Guid.NewGuid(),
-                "orchestration-admin@example.test",
-                runId,
-                "Prove cancellation finalization is safe across replicas.",
-                CancellationToken.None);
+            var requestedRun = await context.GenerationRuns.SingleAsync(value => value.Id == runId);
+            requestedRun.Status = GenerationRunStatuses.CancellationRequested;
+            requestedRun.CancellationRequestedAt = DateTimeOffset.UtcNow;
+            requestedRun.LeaseExpiresAt = DateTimeOffset.UtcNow.AddSeconds(-1);
+            await context.SaveChangesAsync();
         }
 
         var now = DateTimeOffset.UtcNow;

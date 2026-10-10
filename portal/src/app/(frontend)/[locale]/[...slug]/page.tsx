@@ -9,6 +9,6 @@ export default async function LandingContentRedirect({
   params: Promise<{ locale: string; slug: string[] }>
 }) {
   const { locale, slug } = await params
-  if (!locales.includes(locale as Locale) || !slug.length) notFound()
+  if (!locales.includes(locale as Locale) || !slug.length || slug[0] === 'admin') notFound()
   redirect(`${getLandingUrl()}/${locale}/${slug.map(encodeURIComponent).join('/')}`)
 }

@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ErpGenerator.Api.Services.Implementations.Admin;
 using ErpGenerator.Api.WebHost;
 
 namespace ErpGenerator.Api.Tests;
@@ -85,107 +84,6 @@ public sealed class PostgresProcessRestartTests
         var authoringKeys = provider.AuthoringRequestIds.ToArray();
         Assert.Equal(2, authoringKeys.Length);
         Assert.Single(authoringKeys.Distinct(StringComparer.Ordinal));
-    }
-
-    [PostgresFact]
-    public async Task Cancellation_fences_active_process_and_resume_reuses_durable_work()
-    {
-        await using var database =
-            await PostgresOrchestrationDatabase.CreateAsync();
-        var runId = await database.SeedQueuedRunAsync();
-        await using var provider = await FakeClaudeProvider.StartAsync();
-        await using var firstProcess = ChildApiProcess.Start(
-            database.ConnectionString,
-            provider.Endpoint);
-
-        await provider.AuthoringStarted.Task.WaitAsync(TimeSpan.FromSeconds(45));
-        await using (var scope = database.Services.CreateAsyncScope())
-        {
-            var context = scope.ServiceProvider
-                .GetRequiredService<ErpGeneratorDbContext>();
-            var administration = new AdminOrchestrationService(context);
-            var result = await administration.CancelAsync(
-                Guid.NewGuid(),
-                "orchestration-admin@example.test",
-                runId,
-                "Stop the active run to prove durable cancellation fencing.",
-                CancellationToken.None);
-            Assert.Equal(
-                GenerationRunStatuses.CancellationRequested,
-                result.Status);
-        }
-
-        provider.ReleaseAuthoring.TrySetResult();
-        await WaitForStatusAsync(
-            database.Services,
-            runId,
-            firstProcess,
-            GenerationRunStatuses.Cancelled,
-            TimeSpan.FromSeconds(30));
-        await firstProcess.KillAsync();
-
-        await using (var scope = database.Services.CreateAsyncScope())
-        {
-            var context = scope.ServiceProvider
-                .GetRequiredService<ErpGeneratorDbContext>();
-            var administration = new AdminOrchestrationService(context);
-            var result = await administration.ResumeAsync(
-                Guid.NewGuid(),
-                "orchestration-admin@example.test",
-                runId,
-                "Resume the same durable run after verifying cancellation.",
-                CancellationToken.None);
-            Assert.Equal(GenerationRunStatuses.Queued, result.Status);
-        }
-
-        await using var secondProcess = ChildApiProcess.Start(
-            database.ConnectionString,
-            provider.Endpoint);
-        await WaitForStatusAsync(
-            database.Services,
-            runId,
-            secondProcess,
-            GenerationRunStatuses.Completed,
-            TimeSpan.FromSeconds(60));
-
-        await using var verification = database.Services.CreateAsyncScope();
-        var dbContext = verification.ServiceProvider
-            .GetRequiredService<ErpGeneratorDbContext>();
-        var run = await dbContext.GenerationRuns
-            .AsSplitQuery()
-            .Include(value => value.Stages)
-            .Include(value => value.Events)
-            .Include(value => value.BundleVersions)
-            .SingleAsync(value => value.Id == runId);
-        Assert.Equal(GenerationRunStatuses.Completed, run.Status);
-        Assert.Equal(2, run.ClaimCount);
-        Assert.Single(run.BundleVersions);
-        Assert.Equal(
-            1,
-            run.Stages.Single(value =>
-                value.StageKey == "company_understanding").AttemptCount);
-        Assert.Equal(
-            2,
-            run.Stages.Single(value =>
-                value.StageKey == "erp_design").AttemptCount);
-        Assert.Contains(
-            run.Events,
-            value =>
-                value.EventType ==
-                GenerationRunEventTypes.AdminCancellationRequested);
-        Assert.Contains(
-            run.Events,
-            value => value.EventType == GenerationRunEventTypes.Cancelled);
-        Assert.Contains(
-            run.Events,
-            value =>
-                value.EventType ==
-                GenerationRunEventTypes.AdminResumeRequested);
-        Assert.Contains(
-            run.Events,
-            value =>
-                value.EventType == GenerationRunEventTypes.StageReused &&
-                value.StageKey == "company_understanding");
     }
 
     private static async Task WaitForCompletionAsync(
@@ -273,8 +171,6 @@ public sealed class PostgresProcessRestartTests
             start.Environment["ConnectionStrings__ControlPlane"] = connectionString;
             start.Environment["Jwt__SigningKey"] =
                 "customer-test-signing-key-with-at-least-32-bytes";
-            start.Environment["AdminJwt__SigningKey"] =
-                "administrator-test-signing-key-with-at-least-32-bytes";
             start.Environment["PortalGateway__Secret"] =
                 "portal-test-gateway-secret-with-at-least-32-bytes";
             start.Environment["Claude__Provider"] = "Claude";

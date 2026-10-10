@@ -76,9 +76,7 @@ public sealed class ArchitectureTests
 
         Assert.NotEmpty(authorizeAttributes);
         Assert.All(authorizeAttributes, attribute =>
-            Assert.Contains(
-                attribute.Policy,
-                new[] { "CustomerPortalUser", "PlatformAdministrator" }));
+            Assert.Equal("CustomerPortalUser", attribute.Policy));
     }
 
     private static IEnumerable<(string Source, string Target)> ProjectAssemblies()

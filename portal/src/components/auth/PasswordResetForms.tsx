@@ -11,34 +11,24 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import type { Locale } from '@/i18n/config'
 
-type PasswordResetRealm = 'customer' | 'administrator'
-
-function routes(locale: Locale, realm: PasswordResetRealm) {
-  return realm === 'administrator'
-    ? {
-        forgotEndpoint: '/api/admin-auth/forgot-password',
-        resetEndpoint: '/api/admin-auth/reset-password',
-        login: `/${locale}/admin/login`,
-      }
-    : {
-        forgotEndpoint: '/api/customers/forgot-password',
-        resetEndpoint: '/api/customers/reset-password',
-        login: `/${locale}/login`,
-      }
+function routes(locale: Locale) {
+  return {
+    forgotEndpoint: '/api/customers/forgot-password',
+    resetEndpoint: '/api/customers/reset-password',
+    login: `/${locale}/login`,
+  }
 }
 
 export function ForgotPasswordForm({
   locale,
-  realm,
 }: {
   locale: Locale
-  realm: PasswordResetRealm
 }) {
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
-  const realmRoutes = routes(locale, realm)
+  const resetRoutes = routes(locale)
 
   return (
     <form
@@ -47,7 +37,7 @@ export function ForgotPasswordForm({
         setSubmitting(true)
         setError('')
         try {
-          const response = await fetch(realmRoutes.forgotEndpoint, {
+          const response = await fetch(resetRoutes.forgotEndpoint, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ email, locale }),
@@ -73,9 +63,9 @@ export function ForgotPasswordForm({
         ) : null}
         {error ? <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert> : null}
         <Field>
-          <FieldLabel htmlFor={`${realm}-reset-email`}>{locale === 'bg' ? 'Имейл' : 'Email'}</FieldLabel>
+          <FieldLabel htmlFor="customer-reset-email">{locale === 'bg' ? 'Имейл' : 'Email'}</FieldLabel>
           <Input
-            id={`${realm}-reset-email`}
+            id="customer-reset-email"
             type="email"
             autoComplete="email"
             value={email}
@@ -87,7 +77,7 @@ export function ForgotPasswordForm({
           {submitting ? <Spinner data-icon="inline-start" /> : null}
           {locale === 'bg' ? 'Изпрати линк' : 'Send reset link'}
         </Button>
-        <Link className="text-center text-sm text-muted-foreground hover:text-foreground" href={realmRoutes.login}>
+        <Link className="text-center text-sm text-muted-foreground hover:text-foreground" href={resetRoutes.login}>
           {locale === 'bg' ? 'Обратно към вход' : 'Back to sign in'}
         </Link>
       </FieldGroup>
@@ -97,16 +87,14 @@ export function ForgotPasswordForm({
 
 export function ResetPasswordForm({
   locale,
-  realm,
 }: {
   locale: Locale
-  realm: PasswordResetRealm
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email') || ''
   const token = searchParams.get('token') || ''
-  const realmRoutes = routes(locale, realm)
+  const resetRoutes = routes(locale)
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -123,7 +111,7 @@ export function ResetPasswordForm({
         setSubmitting(true)
         setError('')
         try {
-          const response = await fetch(realmRoutes.resetEndpoint, {
+          const response = await fetch(resetRoutes.resetEndpoint, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ email, token, newPassword: password }),
@@ -138,7 +126,7 @@ export function ResetPasswordForm({
             )
             return
           }
-          router.replace(`${realmRoutes.login}?reset=complete`)
+          router.replace(`${resetRoutes.login}?reset=complete`)
         } catch {
           setError(locale === 'bg' ? 'Паролата не може да бъде сменена в момента.' : 'The password could not be reset right now.')
         } finally {
@@ -156,23 +144,23 @@ export function ResetPasswordForm({
           </Alert>
         ) : null}
         <Field>
-          <FieldLabel htmlFor={`${realm}-new-password`}>{locale === 'bg' ? 'Нова парола' : 'New password'}</FieldLabel>
+          <FieldLabel htmlFor="customer-new-password">{locale === 'bg' ? 'Нова парола' : 'New password'}</FieldLabel>
           <Input
-            id={`${realm}-new-password`}
+            id="customer-new-password"
             type="password"
             autoComplete="new-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            minLength={realm === 'administrator' ? 12 : 10}
+            minLength={10}
             required
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${realm}-confirm-password`}>
+          <FieldLabel htmlFor="customer-confirm-password">
             {locale === 'bg' ? 'Потвърдете паролата' : 'Confirm password'}
           </FieldLabel>
           <Input
-            id={`${realm}-confirm-password`}
+            id="customer-confirm-password"
             type="password"
             autoComplete="new-password"
             value={confirmation}

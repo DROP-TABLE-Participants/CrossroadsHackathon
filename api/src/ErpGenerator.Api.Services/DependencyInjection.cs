@@ -19,11 +19,9 @@ public static class DependencyInjection
             .PersistKeysToDbContext<ErpGeneratorDbContext>()
             .SetApplicationName("ErpGenerator.Api");
         AddControlPlaneIdentity(services, addDefaultTokenProviders: true);
-        AddAdminIdentity(services, addDefaultTokenProviders: true);
         services.AddSingleton<IControlPlaneRealtimePublisher, PostgresControlPlaneRealtimePublisher>();
         services.AddHostedService<PostgresRealtimeListener>();
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-        services.Configure<AdminJwtOptions>(configuration.GetSection(AdminJwtOptions.SectionName));
         services.Configure<PortalOptions>(configuration.GetSection(PortalOptions.SectionName));
         services.Configure<ClaudeGenerationOptions>(configuration.GetSection(ClaudeGenerationOptions.SectionName));
         services.Configure<GenerationOrchestrationOptions>(
@@ -35,17 +33,11 @@ public static class DependencyInjection
         services.Configure<InterviewEmailOptions>(configuration.GetSection(InterviewEmailOptions.SectionName));
         services.Configure<NangoOptions>(configuration.GetSection(NangoOptions.SectionName));
         services.Configure<CustomerSessionOptions>(configuration.GetSection(CustomerSessionOptions.SectionName));
-        services.Configure<AdminSessionOptions>(configuration.GetSection(AdminSessionOptions.SectionName));
-        services.Configure<DemoNotificationOptions>(configuration.GetSection(DemoNotificationOptions.SectionName));
         services.AddScoped<ICustomerSessionService, CustomerSessionService>();
         services.AddScoped<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddScoped<ICustomerService, CustomerService>();
-        services.AddScoped<IAdminSessionService, AdminSessionService>();
-        services.AddScoped<IAdminAccessTokenIssuer, AdminJwtAccessTokenIssuer>();
-        services.AddScoped<IAdminAuthenticationService, AdminAuthenticationService>();
         services.AddScoped<IIdentityAccountValidator, IdentityAccountValidator>();
         services.AddScoped<ICustomerPasswordResetService, CustomerPasswordResetService>();
-        services.AddScoped<IAdminPasswordResetService, AdminPasswordResetService>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = TimeSpan.FromMinutes(30));
         services.AddScoped<ITenantService, TenantService>();
@@ -82,13 +74,6 @@ public static class DependencyInjection
         services.AddScoped<IDemoWorkspaceService, DemoWorkspaceService>();
         services.AddScoped<IEmailDeliveryService, SmtpEmailDeliveryService>();
         services.AddScoped<INotificationDeliveryProcessor, NotificationDeliveryProcessor>();
-        services.AddScoped<IAdminOverviewService, AdminOverviewService>();
-        services.AddScoped<IAdminCustomerService, AdminCustomerService>();
-        services.AddScoped<IAdminGenerationProjectService, AdminGenerationProjectService>();
-        services.AddScoped<IAdminOrchestrationService, AdminOrchestrationService>();
-        services.AddScoped<IAdminAccountManagementService, AdminAccountManagementService>();
-        services.AddScoped<IAdminDemoBookingService, AdminDemoBookingService>();
-        services.AddScoped<IAdminAuditService, AdminAuditService>();
         return services;
     }
 
@@ -98,10 +83,7 @@ public static class DependencyInjection
     {
         services.AddErpGeneratorData(configuration);
         AddControlPlaneIdentity(services, addDefaultTokenProviders: false);
-        AddAdminIdentity(services, addDefaultTokenProviders: false);
-        services.Configure<AdminBootstrapOptions>(configuration.GetSection(AdminBootstrapOptions.SectionName));
         services.AddScoped<IControlPlaneInitializer, ControlPlaneInitializer>();
-        services.AddScoped<IAdminIdentityInitializer, AdminIdentityInitializer>();
         return services;
     }
 
@@ -123,23 +105,6 @@ public static class DependencyInjection
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ErpGeneratorDbContext>();
-
-        if (!addDefaultTokenProviders)
-        {
-            return;
-        }
-
-        identity.AddDefaultTokenProviders();
-    }
-
-    private static void AddAdminIdentity(
-        IServiceCollection services,
-        bool addDefaultTokenProviders)
-    {
-        var identity = services.AddIdentityCore<AdminAccount>()
-            .AddRoles<AdminRole>()
-            .AddEntityFrameworkStores<AdminIdentityDbContext>();
-        services.AddScoped<IPasswordValidator<AdminAccount>, AdminPasswordPolicyValidator>();
 
         if (!addDefaultTokenProviders)
         {

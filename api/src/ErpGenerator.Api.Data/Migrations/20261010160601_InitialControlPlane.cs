@@ -16,26 +16,6 @@ namespace ErpGenerator.Api.Data.Migrations
                 name: "control_plane");
 
             migrationBuilder.CreateTable(
-                name: "admin_audit_records",
-                schema: "control_plane",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ActorAdminAccountId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ActorEmailSnapshot = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
-                    Action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ResourceType = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
-                    ResourceId = table.Column<string>(type: "character varying(160)", maxLength: 160, nullable: false),
-                    SafeDetailsJson = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_admin_audit_records", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "customer_accounts",
                 schema: "control_plane",
                 columns: table => new
@@ -1358,12 +1338,6 @@ namespace ErpGenerator.Api.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_admin_audit_records_ActorAdminAccountId_CreatedAt",
-                schema: "control_plane",
-                table: "admin_audit_records",
-                columns: new[] { "ActorAdminAccountId", "CreatedAt" });
-
-            migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 schema: "control_plane",
                 table: "customer_accounts",
@@ -1874,10 +1848,6 @@ namespace ErpGenerator.Api.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "admin_audit_records",
-                schema: "control_plane");
-
             migrationBuilder.DropTable(
                 name: "data_protection_keys",
                 schema: "control_plane");

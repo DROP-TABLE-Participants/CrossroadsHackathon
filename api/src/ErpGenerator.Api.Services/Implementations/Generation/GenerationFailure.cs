@@ -4,4 +4,4 @@ internal sealed record GenerationFailure(
     string Disposition,
     string Code,
     string CustomerMessage,
-    string AdminMessage);
+    string DiagnosticMessage);

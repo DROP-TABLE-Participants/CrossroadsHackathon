@@ -1,0 +1,86 @@
+{
+  "module": "production",
+  "entity": {
+    "id": "material_issue",
+    "name": "material_issues",
+    "displayName": "Manual material issues",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Issue",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "batch",
+        "name": "batch",
+        "displayName": "Production batch",
+        "type": "relation",
+        "required": true,
+        "references": "production_batch"
+      },
+      {
+        "id": "lot",
+        "name": "lot",
+        "displayName": "Select ingredient / packaging lot",
+        "type": "relation",
+        "required": true,
+        "references": "stock_lot"
+      },
+      {
+        "id": "kind",
+        "name": "kind",
+        "displayName": "Material kind",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "cocoa",
+          "sugar",
+          "wrapper"
+        ]
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Manual quantity (lot unit)",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "negative_quantity",
+        "name": "negative_quantity",
+        "displayName": "Ledger issue quantity",
+        "type": "number",
+        "required": false,
+        "computed": {
+          "op": "multiply",
+          "left": {
+            "field": "quantity"
+          },
+          "right": {
+            "value": -1
+          }
+        }
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "displayName": "Status",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "draft",
+          "posted"
+        ],
+        "lifecycle": {
+          "initial": "draft",
+          "transitions": "named_action"
+        }
+      }
+    ]
+  }
+}

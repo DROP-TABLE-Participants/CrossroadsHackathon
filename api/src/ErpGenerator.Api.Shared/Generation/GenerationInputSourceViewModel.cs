@@ -1,0 +1,27 @@
+namespace ErpGenerator.Api.Shared.Generation;
+
+public sealed record GenerationInputSourceViewModel(
+    Guid Id,
+    string Provider,
+    string DisplayName,
+    string Status,
+    DateTimeOffset? LastSyncedAt = null,
+    int? LastRecordCount = null,
+    string? LastError = null,
+    DateTimeOffset? LastCheckedAt = null,
+    int? LastTextRecordCount = null,
+    string? LastWarning = null,
+    DateTimeOffset? LastSyncRequestedAt = null,
+    int SelectedResourceCount = 0,
+    bool RequiresSelection = false,
+    DateTimeOffset? RetainContentUntil = null,
+    string ScopeMode = "unconfigured",
+    int ExcludedResourceCount = 0,
+    bool IncludeDescendants = true,
+    bool IncludeNewContent = true,
+    int? SyncDiscoveredCount = null,
+    int SyncProcessedCount = 0,
+    int SyncFailedCount = 0,
+    IReadOnlyList<string>? IncludedRootIds = null,
+    IReadOnlyList<string>? ExcludedIds = null,
+    string? GenerationBlockReason = null);

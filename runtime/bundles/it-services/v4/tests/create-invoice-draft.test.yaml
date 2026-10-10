@@ -1,0 +1,34 @@
+test:
+  key: create_invoice_draft
+  label: Create invoice draft from approved timesheets
+setup:
+  seed: demo
+steps:
+  - id: run_action
+    type: run_action
+    entity: project
+    record:
+      ref: project_redesign
+    action: create_invoice_draft
+    as_role: finance
+assertions:
+  - type: record_exists
+    entity: invoice
+    where:
+      field: status
+      op: eq
+      value: draft
+  - type: record_exists
+    entity: invoice_line
+    where:
+      field: project
+      op: eq
+      value_ref: project_redesign
+  - type: record_field_equals
+    entity: timesheet
+    record:
+      ref: timesheet_invoice
+    field: invoiced
+    value: true
+  - type: audit_event_exists
+    event: action.completed

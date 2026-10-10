@@ -1,0 +1,20 @@
+report:
+  key: resource_allocations
+  label: Resource allocations
+  description: Allocation load grouped by employee.
+  source: resource_allocation
+  group_by:
+  - field: employee
+    label: Employee
+  metrics:
+  - key: allocation_count
+    label: Allocations
+    op: count
+  - key: average_allocation
+    label: Average allocation percent
+    op: avg
+    field: allocation_percent
+  - key: total_allocation
+    label: Total allocation percent
+    op: sum
+    field: allocation_percent

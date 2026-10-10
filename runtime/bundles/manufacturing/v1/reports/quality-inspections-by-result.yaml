@@ -1,0 +1,12 @@
+report:
+  key: quality_inspections_by_result
+  label: Quality inspections by result
+  description: Quality inspection count grouped by result.
+  source: quality_inspection
+  group_by:
+    - field: result
+      label: Result
+  metrics:
+    - key: inspection_count
+      label: Inspections
+      op: count

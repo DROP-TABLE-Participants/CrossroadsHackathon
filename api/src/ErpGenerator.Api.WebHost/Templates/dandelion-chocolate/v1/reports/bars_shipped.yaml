@@ -1,0 +1,15 @@
+{
+  "report": {
+    "key": "bars_shipped",
+    "label": "Bars shipped",
+    "source": "sales_order",
+    "metrics": [
+      {
+        "key": "quantity",
+        "label": "Bars shipped",
+        "op": "sum",
+        "field": "shipped_quantity"
+      }
+    ]
+  }
+}

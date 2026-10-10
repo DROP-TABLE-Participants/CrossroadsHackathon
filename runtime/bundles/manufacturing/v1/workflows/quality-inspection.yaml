@@ -1,0 +1,41 @@
+module: quality
+workflow:
+  id: quality_inspection
+  name: Quality Inspection
+  entity: quality_inspection
+  trigger:
+    action: submit_inspection
+  steps:
+    - id: mark_pending
+      type: update_record
+      set:
+        result: pending
+    - id: audit_submitted
+      type: audit_event
+      event: quality_inspection.submitted
+      message: Quality inspection submitted for review.
+    - id: quality_review
+      type: approval
+      label: Quality Review
+      assignedTo:
+        type: role
+        role: quality
+      approveLabel: Pass inspection
+      rejectLabel: Fail inspection
+    - id: mark_passed
+      type: update_record
+      set:
+        result: passed
+    - id: audit_passed
+      type: audit_event
+      event: quality_inspection.passed
+      message: Quality inspection passed.
+  onRejected:
+    - id: mark_failed
+      type: update_record
+      set:
+        result: failed
+    - id: audit_failed
+      type: audit_event
+      event: quality_inspection.failed
+      message: Quality inspection failed.

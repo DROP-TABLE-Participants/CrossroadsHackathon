@@ -1,0 +1,79 @@
+module: delivery
+entity:
+  id: time_entry
+  name: time_entries
+  displayName: Time Entries
+  display:
+    primary: entry_date
+    secondary: status
+  fields:
+  - id: contract
+    name: contract_id
+    displayName: Contract
+    type: relation
+    required: false
+    references: contract
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: false
+    references: offer
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: entry_date
+    name: entry_date
+    displayName: Entry date
+    type: date
+    required: true
+  - id: hours
+    name: hours
+    displayName: Hours
+    type: number
+    required: true
+  - id: billable
+    name: billable
+    displayName: Billable
+    type: boolean
+    required: false
+  - id: rate
+    name: rate
+    displayName: Rate
+    type: money
+    required: false
+  - id: amount
+    name: amount
+    displayName: Amount
+    type: money
+    required: false
+    computed:
+      op: multiply
+      left:
+        field: hours
+      right:
+        field: rate
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - draft
+    - submitted
+    - approved
+    - rejected
+  - id: invoiced
+    name: invoiced
+    displayName: Invoiced
+    type: boolean
+    required: false
+  - id: description
+    name: description
+    displayName: Description
+    type: text
+    required: false
+

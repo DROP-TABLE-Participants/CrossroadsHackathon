@@ -1,0 +1,17 @@
+report:
+  key: overdue_invoices
+  label: Overdue invoices
+  description: Overdue invoice count and exposure.
+  source: invoice
+  filters:
+  - field: status
+    op: eq
+    value: overdue
+  metrics:
+  - key: overdue_count
+    label: Overdue invoices
+    op: count
+  - key: overdue_amount
+    label: Overdue amount
+    op: sum
+    field: amount

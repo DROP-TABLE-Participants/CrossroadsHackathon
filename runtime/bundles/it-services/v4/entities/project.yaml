@@ -1,0 +1,61 @@
+module: operations
+entity:
+  id: project
+  name: projects
+  displayName: Projects
+  display:
+    primary: title
+    secondary: customer_id
+  fields:
+  - id: customer
+    name: customer_id
+    displayName: Customer
+    type: relation
+    required: true
+    references: customer
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: budget
+    name: budget
+    displayName: Budget
+    type: money
+    required: false
+  - id: starts_on
+    name: starts_on
+    displayName: Starts on
+    type: date
+    required: false
+  - id: ends_on
+    name: ends_on
+    displayName: Ends on
+    type: date
+    required: false
+  - id: project_manager
+    name: project_manager_id
+    displayName: Project manager
+    type: relation
+    required: false
+    references: employee
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: false
+    options:
+    - planned
+    - active
+    - paused
+    - completed
+    - cancelled
+  - id: priority
+    name: priority
+    displayName: Priority
+    type: enum
+    required: false
+    options:
+    - low
+    - normal
+    - high

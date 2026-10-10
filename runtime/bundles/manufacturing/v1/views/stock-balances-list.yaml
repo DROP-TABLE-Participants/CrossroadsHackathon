@@ -1,0 +1,12 @@
+module: inventory
+view:
+  id: stock_balances_list
+  name: Stock balances
+  entity: stock_balance
+  fields:
+    - item_id
+    - product_id
+    - location_id
+    - quantity_on_hand
+    - quantity_reserved
+    - reorder_point

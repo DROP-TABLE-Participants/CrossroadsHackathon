@@ -1,0 +1,18 @@
+report:
+  key: active_contracts
+  label: Active contracts
+  description: Active contract count and value.
+  source: contract
+  filters:
+  - field: status
+    op: eq
+    value: active
+  metrics:
+  - key: active_contract_count
+    label: Active contracts
+    op: count
+  - key: total_contract_value
+    label: Total contract value
+    op: sum
+    field: total_value
+

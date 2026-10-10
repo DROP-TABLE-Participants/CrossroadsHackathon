@@ -1,0 +1,46 @@
+module: contracts
+entity:
+  id: contract_milestone
+  name: contract_milestones
+  displayName: Contract Milestones
+  display:
+    primary: name
+    secondary: status
+  fields:
+  - id: contract
+    name: contract_id
+    displayName: Contract
+    type: relation
+    required: true
+    references: contract
+  - id: offer_milestone
+    name: offer_milestone_id
+    displayName: Source offer milestone
+    type: relation
+    required: false
+    references: offer_milestone
+  - id: name
+    name: name
+    displayName: Name
+    type: string
+    required: true
+  - id: due_date
+    name: due_date
+    displayName: Due date
+    type: date
+    required: false
+  - id: amount
+    name: amount
+    displayName: Amount
+    type: money
+    required: false
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: false
+    options:
+    - planned
+    - completed
+    - cancelled
+

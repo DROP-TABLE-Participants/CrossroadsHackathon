@@ -1,0 +1,63 @@
+{
+  "action": {
+    "key": "close_order",
+    "label": "Complete wholesale order",
+    "entity": "sales_order",
+    "type": "record_action",
+    "description": "Complete wholesale order · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "sales_order",
+          "action": "read"
+        },
+        {
+          "entity": "sales_order",
+          "action": "effect_update"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "complete_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "field": "remaining_quantity"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Ship the full order before completing it."
+      },
+      {
+        "id": "shipped",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "shipped"
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "order.shipped",
+        "message": "order.shipped"
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "open"
+        }
+      }
+    ]
+  }
+}

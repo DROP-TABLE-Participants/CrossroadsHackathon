@@ -1,0 +1,15 @@
+{
+  "report": {
+    "key": "bars_ordered",
+    "label": "Bars ordered",
+    "source": "sales_order",
+    "metrics": [
+      {
+        "key": "quantity",
+        "label": "Bars ordered",
+        "op": "sum",
+        "field": "quantity"
+      }
+    ]
+  }
+}

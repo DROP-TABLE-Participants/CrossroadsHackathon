@@ -1,0 +1,21 @@
+[
+  {
+    "id": "sharepoint-quality-checklist",
+    "name": "Quality Checklist.docx",
+    "webUrl": "https://contoso.sharepoint.com/sites/ops/Shared%20Documents/Quality%20Checklist.docx",
+    "lastModifiedDateTime": "2026-06-20T14:30:00Z",
+    "createdBy": {
+      "user": {
+        "displayName": "Quality Manager",
+        "email": "quality@example.test"
+      }
+    },
+    "file": {
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    "size": 4096,
+    "eTag": "\"{12345},1\"",
+    "downloadUrl": "https://contoso.sharepoint.com/download?token=sharepoint-secret",
+    "preview": "Quality holds are reviewed by the quality manager before inventory is released."
+  }
+]

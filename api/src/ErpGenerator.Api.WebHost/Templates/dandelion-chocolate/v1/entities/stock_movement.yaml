@@ -1,0 +1,80 @@
+{
+  "module": "inventory",
+  "entity": {
+    "id": "stock_movement",
+    "name": "stock_movements",
+    "displayName": "Committed stock ledger",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Movement",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "lot",
+        "name": "lot",
+        "displayName": "Lot",
+        "type": "relation",
+        "required": true,
+        "references": "stock_lot"
+      },
+      {
+        "id": "kind",
+        "name": "kind",
+        "displayName": "Movement kind",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "opening",
+          "material_issue",
+          "production_receipt",
+          "shipment"
+        ]
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Signed quantity (lot unit)",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "batch",
+        "name": "batch",
+        "displayName": "Production batch",
+        "type": "relation",
+        "required": false,
+        "references": "production_batch"
+      },
+      {
+        "id": "issue",
+        "name": "issue",
+        "displayName": "Material issue",
+        "type": "relation",
+        "required": false,
+        "references": "material_issue"
+      },
+      {
+        "id": "receipt",
+        "name": "receipt",
+        "displayName": "Production receipt",
+        "type": "relation",
+        "required": false,
+        "references": "production_receipt"
+      },
+      {
+        "id": "shipment",
+        "name": "shipment",
+        "displayName": "Shipment",
+        "type": "relation",
+        "required": false,
+        "references": "shipment"
+      }
+    ]
+  }
+}

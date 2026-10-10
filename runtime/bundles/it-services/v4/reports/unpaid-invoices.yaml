@@ -1,0 +1,19 @@
+report:
+  key: unpaid_invoices
+  label: Unpaid invoices
+  description: Sent and overdue invoice exposure.
+  source: invoice
+  filters:
+  - field: status
+    op: in
+    values:
+    - sent
+    - overdue
+  metrics:
+  - key: unpaid_count
+    label: Unpaid invoices
+    op: count
+  - key: unpaid_amount
+    label: Unpaid amount
+    op: sum
+    field: amount

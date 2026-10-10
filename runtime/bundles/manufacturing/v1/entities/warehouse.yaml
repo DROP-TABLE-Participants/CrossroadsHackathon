@@ -1,0 +1,24 @@
+module: inventory
+entity:
+  id: warehouse
+  name: warehouses
+  displayName: Warehouses
+  display:
+    primary: name
+    secondary: address
+  fields:
+    - id: name
+      name: name
+      displayName: Name
+      type: string
+      required: true
+    - id: address
+      name: address
+      displayName: Address
+      type: text
+      required: false
+    - id: active
+      name: active
+      displayName: Active
+      type: boolean
+      required: false

@@ -1,0 +1,25 @@
+test:
+  key: reports
+  label: Reports and dashboard metrics have demo data
+setup:
+  seed: demo
+steps:
+  - id: active_contracts
+    type: call_report
+    report: active_contracts
+    as_role: owner
+  - id: billable_hours
+    type: call_report
+    report: billable_hours_by_contract
+    as_role: owner
+assertions:
+  - type: report_has_rows
+    report: active_contracts
+  - type: report_has_rows
+    report: billable_hours_by_contract
+  - type: report_metric_equals
+    report: billable_hours_by_contract
+    metric: billable_hours
+    value: 15
+  - type: report_has_rows
+    report: tasks_by_status

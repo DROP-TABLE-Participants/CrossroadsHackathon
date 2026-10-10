@@ -1,0 +1,41 @@
+module: operations
+entity:
+  id: resource_allocation
+  name: resource_allocations
+  displayName: Resource allocations
+  display:
+    primary: role_on_project
+    secondary: employee_id
+  fields:
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: project
+    name: project_id
+    displayName: Project
+    type: relation
+    required: true
+    references: project
+  - id: start_date
+    name: start_date
+    displayName: Start date
+    type: date
+    required: true
+  - id: end_date
+    name: end_date
+    displayName: End date
+    type: date
+    required: false
+  - id: allocation_percent
+    name: allocation_percent
+    displayName: Allocation percent
+    type: number
+    required: true
+  - id: role_on_project
+    name: role_on_project
+    displayName: Role on project
+    type: string
+    required: false

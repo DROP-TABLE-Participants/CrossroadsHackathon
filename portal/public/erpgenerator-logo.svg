@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="64" viewBox="0 0 280 64" role="img" aria-label="ERP Generator">
+  <rect x="2" y="10" width="44" height="44" rx="10" fill="#0f766e"/>
+  <path d="M14 23h20M14 32h15M14 41h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <text x="58" y="41" fill="#111827" font-family="Arial, sans-serif" font-size="27" font-weight="700">ERP Generator</text>
+</svg>

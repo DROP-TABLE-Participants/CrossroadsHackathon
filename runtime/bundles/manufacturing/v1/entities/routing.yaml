@@ -1,0 +1,29 @@
+module: production
+entity:
+  id: routing
+  name: routings
+  displayName: Routings
+  display:
+    primary: product_id
+    secondary: version
+  fields:
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: true
+      references: product
+    - id: version
+      name: version
+      displayName: Version
+      type: string
+      required: true
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - draft
+        - active
+        - archived

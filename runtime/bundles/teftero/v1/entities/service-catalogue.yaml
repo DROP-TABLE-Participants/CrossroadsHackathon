@@ -1,0 +1,36 @@
+module: foundations
+entity:
+  id: service_catalogue
+  name: service_catalogues
+  displayName: Service Catalogue
+  display:
+    primary: service_name
+    secondary: default_unit_price
+  fields:
+  - id: business_category
+    name: business_category_id
+    displayName: Business category
+    type: relation
+    required: false
+    references: business_category
+  - id: service_name
+    name: service_name
+    displayName: Service name
+    type: string
+    required: true
+  - id: description
+    name: description
+    displayName: Description
+    type: text
+    required: false
+  - id: default_unit_price
+    name: default_unit_price
+    displayName: Default unit price
+    type: money
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+

@@ -1,0 +1,11 @@
+module: products
+view:
+  id: products_list
+  name: Products
+  entity: product
+  fields:
+    - sku
+    - name
+    - unit_of_measure
+    - standard_price
+    - active

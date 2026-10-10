@@ -1,0 +1,22 @@
+{
+  "report": {
+    "key": "bars_available",
+    "label": "Bars available",
+    "source": "stock_lot",
+    "metrics": [
+      {
+        "key": "quantity",
+        "label": "Bars available",
+        "op": "sum",
+        "field": "quantity"
+      }
+    ],
+    "filters": [
+      {
+        "field": "kind",
+        "op": "eq",
+        "value": "finished"
+      }
+    ]
+  }
+}

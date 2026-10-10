@@ -1,0 +1,42 @@
+module: sales_orders
+entity:
+  id: sales_order_line
+  name: sales_order_lines
+  displayName: Sales order lines
+  display:
+    primary: sales_order_id
+    secondary: product_id
+  fields:
+    - id: sales_order
+      name: sales_order_id
+      displayName: Sales order
+      type: relation
+      required: true
+      references: sales_order
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: true
+      references: product
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: unit_price
+      name: unit_price
+      displayName: Unit price
+      type: money
+      required: true
+    - id: line_total
+      name: line_total
+      displayName: Line total
+      type: money
+      required: false
+      computed:
+        op: multiply
+        left:
+          field: quantity
+        right:
+          field: unit_price

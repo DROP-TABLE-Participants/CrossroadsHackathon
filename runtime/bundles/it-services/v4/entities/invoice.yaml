@@ -1,0 +1,60 @@
+module: operations
+entity:
+  id: invoice
+  name: invoices
+  displayName: Invoices
+  display:
+    primary: invoice_number
+    secondary: amount
+  fields:
+  - id: customer
+    name: customer_id
+    displayName: Customer
+    type: relation
+    required: true
+    references: customer
+  - id: project
+    name: project_id
+    displayName: Project
+    type: relation
+    required: false
+    references: project
+  - id: invoice_number
+    name: invoice_number
+    displayName: Invoice number
+    type: string
+    required: true
+    unique: true
+  - id: issued_on
+    name: issued_on
+    displayName: Issued on
+    type: date
+    required: true
+  - id: amount
+    name: amount
+    displayName: Amount
+    type: money
+    required: true
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - draft
+    - submitted
+    - approved
+    - sent
+    - paid
+    - overdue
+    - cancelled
+  - id: due_date
+    name: due_date
+    displayName: Due date
+    type: date
+    required: false
+  - id: notes
+    name: notes
+    displayName: Notes
+    type: text
+    required: false

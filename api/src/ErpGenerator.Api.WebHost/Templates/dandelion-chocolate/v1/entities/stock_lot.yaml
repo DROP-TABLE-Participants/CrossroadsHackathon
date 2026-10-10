@@ -1,0 +1,97 @@
+{
+  "module": "inventory",
+  "entity": {
+    "id": "stock_lot",
+    "name": "stock_lots",
+    "displayName": "Stock lots",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Lot",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "kind",
+        "name": "kind",
+        "displayName": "Kind",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "cocoa",
+          "sugar",
+          "wrapper",
+          "finished"
+        ]
+      },
+      {
+        "id": "material",
+        "name": "material",
+        "displayName": "Material",
+        "type": "relation",
+        "required": false,
+        "references": "material"
+      },
+      {
+        "id": "product",
+        "name": "product",
+        "displayName": "Chocolate",
+        "type": "relation",
+        "required": false,
+        "references": "product"
+      },
+      {
+        "id": "batch",
+        "name": "batch",
+        "displayName": "Production batch",
+        "type": "relation",
+        "required": false,
+        "references": "production_batch"
+      },
+      {
+        "id": "origin",
+        "name": "origin",
+        "displayName": "Cocoa origin",
+        "type": "string",
+        "required": false
+      },
+      {
+        "id": "harvest_year",
+        "name": "harvest_year",
+        "displayName": "Harvest year",
+        "type": "integer",
+        "required": false
+      },
+      {
+        "id": "unit",
+        "name": "unit",
+        "displayName": "Unit",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "kg",
+          "units",
+          "bars"
+        ]
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Ledger-backed available quantity",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "released",
+        "name": "released",
+        "displayName": "Quality released",
+        "type": "boolean",
+        "required": true
+      }
+    ]
+  }
+}

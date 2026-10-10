@@ -1,0 +1,43 @@
+{
+  "module": "production",
+  "entity": {
+    "id": "production_receipt",
+    "name": "production_receipts",
+    "displayName": "Production receipts",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Receipt",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "batch",
+        "name": "batch",
+        "displayName": "Production batch",
+        "type": "relation",
+        "required": true,
+        "references": "production_batch"
+      },
+      {
+        "id": "lot",
+        "name": "lot",
+        "displayName": "Finished lot",
+        "type": "relation",
+        "required": true,
+        "references": "stock_lot"
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Bars received",
+        "type": "integer",
+        "required": true
+      }
+    ]
+  }
+}

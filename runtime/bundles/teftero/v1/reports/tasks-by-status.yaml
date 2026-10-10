@@ -1,0 +1,13 @@
+report:
+  key: tasks_by_status
+  label: Tasks by status
+  description: Task count grouped by delivery status.
+  source: task
+  group_by:
+  - field: status
+    label: Status
+  metrics:
+  - key: task_count
+    label: Tasks
+    op: count
+

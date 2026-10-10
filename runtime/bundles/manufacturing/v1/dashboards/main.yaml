@@ -1,0 +1,37 @@
+dashboard:
+  widgets:
+    - key: open_sales_orders
+      label: Sales orders
+      type: metric
+      report: sales_orders_by_status
+      metric: order_count
+    - key: open_work_orders
+      label: Open work orders
+      type: metric
+      report: open_work_orders
+      metric: work_order_count
+    - key: items_below_reorder_point
+      label: Items below reorder point
+      type: metric
+      report: items_at_or_below_reorder_point
+      metric: low_stock_count
+    - key: purchase_orders_pending
+      label: Purchase orders
+      type: metric
+      report: purchase_orders_by_status
+      metric: po_count
+    - key: production_receipts
+      label: Production receipts
+      type: metric
+      report: production_receipts
+      metric: receipt_count
+    - key: quality_failures
+      label: Quality inspections
+      type: metric
+      report: quality_inspections_by_result
+      metric: inspection_count
+    - key: stock_on_hand
+      label: Stock on hand
+      type: metric
+      report: stock_on_hand
+      metric: quantity_on_hand

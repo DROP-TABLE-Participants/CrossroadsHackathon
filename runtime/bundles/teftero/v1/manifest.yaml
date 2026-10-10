@@ -1,0 +1,19 @@
+bundle:
+  id: teftero_erp
+  name: Teftero ERP
+  version: 0.1.0
+  description: A ErpGenerator folder bundle skeleton for the Teftero sales, contract,
+    time, and task flows using only current runtime primitives.
+runtime:
+  min_version: 0.1.0
+industry: professional_services
+modules:
+- id: foundations
+  name: Foundations
+- id: sales
+  name: Sales
+- id: contracts
+  name: Contracts
+- id: delivery
+  name: Delivery
+

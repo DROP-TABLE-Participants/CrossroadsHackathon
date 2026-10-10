@@ -1,0 +1,25 @@
+test:
+  key: reports
+  label: Reports and dashboard return demo data
+setup:
+  seed: demo
+steps:
+  - id: project_profitability
+    type: call_report
+    report: project_profitability
+    as_role: owner
+assertions:
+  - type: report_has_rows
+    report: project_profitability
+  - type: report_metric_equals
+    report: project_profitability
+    metric: invoice_amount
+    value: 2940
+  - type: report_has_rows
+    report: employee_utilization
+  - type: record_exists
+    entity: resource_allocation
+    where:
+      field: project
+      op: eq
+      value_ref: project_redesign

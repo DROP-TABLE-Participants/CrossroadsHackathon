@@ -1,0 +1,13 @@
+module: inventory
+view:
+  id: items_list
+  name: Items
+  entity: item
+  fields:
+    - sku
+    - name
+    - item_type
+    - unit_of_measure
+    - standard_cost
+    - preferred_vendor_id
+    - active

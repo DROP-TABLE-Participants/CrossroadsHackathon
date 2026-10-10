@@ -1,0 +1,366 @@
+{
+  "action": {
+    "key": "receive_production",
+    "label": "Receive production",
+    "entity": "production_batch",
+    "type": "record_action",
+    "description": "Receive production · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "production_batch",
+          "action": "read"
+        },
+        {
+          "entity": "material_issue",
+          "action": "read"
+        },
+        {
+          "entity": "production_receipt",
+          "action": "effect_create"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "effect_create"
+        },
+        {
+          "entity": "production_batch",
+          "action": "effect_update"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "production_receipt",
+          "action": "read"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "read"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "positive",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "field": "quantity"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Produce a positive number of bars."
+      },
+      {
+        "id": "issues_cocoa",
+        "type": "query_records",
+        "entity": "material_issue",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "cocoa"
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "posted"
+          }
+        ]
+      },
+      {
+        "id": "requires_cocoa",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "result_count": "issues_cocoa"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Post manual cocoa issues before receiving production."
+      },
+      {
+        "id": "issues_sugar",
+        "type": "query_records",
+        "entity": "material_issue",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "sugar"
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "posted"
+          }
+        ]
+      },
+      {
+        "id": "requires_sugar",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "result_count": "issues_sugar"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Post manual sugar issues before receiving production."
+      },
+      {
+        "id": "issues_wrapper",
+        "type": "query_records",
+        "entity": "material_issue",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "wrapper"
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "posted"
+          }
+        ]
+      },
+      {
+        "id": "requires_wrapper",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "result_count": "issues_wrapper"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Post manual wrapper issues before receiving production."
+      },
+      {
+        "id": "finished_lot",
+        "type": "query_records",
+        "entity": "stock_lot",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "finished"
+          },
+          {
+            "field": "quantity",
+            "op": "eq",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "id": "lot_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "finished_lot"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Select the prepared empty finished lot for this batch."
+      },
+      {
+        "id": "receipt",
+        "type": "create_records_for_each",
+        "entity": "production_receipt",
+        "foreach": {
+          "result": "finished_lot"
+        },
+        "values": {
+          "name": {
+            "template": "RECEIPT-{{record.id}}"
+          },
+          "batch": {
+            "value_from": {
+              "record": "id"
+            }
+          },
+          "lot": {
+            "value_from": {
+              "item": "id"
+            }
+          },
+          "quantity": {
+            "value_from": {
+              "record": "quantity"
+            }
+          }
+        }
+      },
+      {
+        "id": "receipts",
+        "type": "query_records",
+        "entity": "production_receipt",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          }
+        ]
+      },
+      {
+        "id": "movement",
+        "type": "create_records_for_each",
+        "entity": "stock_movement",
+        "foreach": {
+          "result": "receipts"
+        },
+        "values": {
+          "name": {
+            "template": "PRODUCTION-{{record.id}}"
+          },
+          "lot": {
+            "value_from": {
+              "item": "lot"
+            }
+          },
+          "kind": {
+            "value": "production_receipt"
+          },
+          "quantity": {
+            "value_from": {
+              "item": "quantity"
+            }
+          },
+          "batch": {
+            "value_from": {
+              "record": "id"
+            }
+          },
+          "receipt": {
+            "value_from": {
+              "item": "id"
+            }
+          }
+        }
+      },
+      {
+        "id": "production_ledger",
+        "type": "query_records",
+        "entity": "stock_movement",
+        "where": [
+          {
+            "field": "batch",
+            "op": "eq",
+            "value_from": {
+              "record": "id"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "production_receipt"
+          }
+        ]
+      },
+      {
+        "id": "balance",
+        "type": "update_records",
+        "records_from": {
+          "result": "finished_lot"
+        },
+        "set": {
+          "quantity": {
+            "aggregate": {
+              "result": "production_ledger",
+              "op": "sum",
+              "expression": {
+                "op": "add",
+                "left": {
+                  "value_from": {
+                    "item": "quantity"
+                  }
+                },
+                "right": {
+                  "value": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "completed",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "completed"
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "production.received",
+        "message": "Production receipt and stock ledger committed. Create a quality check before shipping."
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "planned"
+        }
+      }
+    ]
+  }
+}

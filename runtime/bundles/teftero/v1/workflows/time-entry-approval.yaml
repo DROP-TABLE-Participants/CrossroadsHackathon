@@ -1,0 +1,41 @@
+module: delivery
+workflow:
+  id: time_entry_approval
+  name: Time Entry Approval
+  entity: time_entry
+  trigger:
+    action: submit_for_approval
+  steps:
+  - id: mark_submitted
+    type: update_record
+    set:
+      status: submitted
+  - id: audit_submitted
+    type: audit_event
+    event: time_entry.submitted
+    message: Time entry submitted for approval.
+  - id: owner_approval
+    type: approval
+    label: Delivery Approval
+    assignedTo:
+      type: role
+      role: delivery
+    approveLabel: Approve
+    rejectLabel: Reject
+  - id: mark_approved
+    type: update_record
+    set:
+      status: approved
+  - id: audit_approved
+    type: audit_event
+    event: time_entry.approved
+    message: Time entry approved.
+  onRejected:
+  - id: mark_rejected
+    type: update_record
+    set:
+      status: rejected
+  - id: audit_rejected
+    type: audit_event
+    event: time_entry.rejected
+    message: Time entry rejected.

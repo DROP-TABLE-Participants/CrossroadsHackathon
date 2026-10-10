@@ -1,0 +1,12 @@
+module: foundations
+view:
+  id: contacts_list
+  name: Contacts
+  entity: contact
+  fields:
+  - full_name
+  - company_id
+  - email
+  - phone
+  - position
+

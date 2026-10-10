@@ -1,0 +1,22 @@
+report:
+  key: billable_hours
+  label: Billable hours
+  description: Billable and non-billable time totals.
+  source: timesheet
+  metrics:
+  - key: billable_hours
+    label: Billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: true
+  - key: non_billable_hours
+    label: Non-billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: false

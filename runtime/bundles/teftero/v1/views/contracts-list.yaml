@@ -1,0 +1,15 @@
+module: contracts
+view:
+  id: contracts_list
+  name: Contracts
+  entity: contract
+  fields:
+  - title
+  - company_id
+  - offer_id
+  - owner_employee_id
+  - status
+  - start_date
+  - end_date
+  - total_value
+

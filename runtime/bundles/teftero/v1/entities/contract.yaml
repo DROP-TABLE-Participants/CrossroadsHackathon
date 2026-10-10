@@ -1,0 +1,74 @@
+module: contracts
+entity:
+  id: contract
+  name: contracts
+  displayName: Contracts
+  display:
+    primary: title
+    secondary: status
+  fields:
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: false
+    references: offer
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: true
+    references: company
+  - id: contact
+    name: contact_id
+    displayName: Contact
+    type: relation
+    required: false
+    references: contact
+  - id: owner_employee
+    name: owner_employee_id
+    displayName: Owner employee
+    type: relation
+    required: false
+    references: employee
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - draft
+    - active
+    - completed
+    - cancelled
+  - id: start_date
+    name: start_date
+    displayName: Start date
+    type: date
+    required: false
+  - id: end_date
+    name: end_date
+    displayName: End date
+    type: date
+    required: false
+  - id: currency
+    name: currency
+    displayName: Currency
+    type: string
+    required: false
+  - id: total_value
+    name: total_value
+    displayName: Total value
+    type: money
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+

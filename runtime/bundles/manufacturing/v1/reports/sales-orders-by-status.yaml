@@ -1,0 +1,16 @@
+report:
+  key: sales_orders_by_status
+  label: Sales orders by status
+  description: Sales order count and amount grouped by status.
+  source: sales_order
+  group_by:
+    - field: status
+      label: Status
+  metrics:
+    - key: order_count
+      label: Orders
+      op: count
+    - key: order_amount
+      label: Order amount
+      op: sum
+      field: total_amount

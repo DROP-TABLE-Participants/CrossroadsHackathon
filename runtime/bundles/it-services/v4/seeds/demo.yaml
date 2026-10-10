@@ -1,0 +1,120 @@
+seed:
+  key: demo
+  label: Demo IT Services Company
+records:
+  - ref: customer_acme
+    entity: customer
+    values:
+      company_name: Acme Corp
+      contact_email: finance@acme.example
+      status: active
+  - ref: employee_pm
+    entity: employee
+    values:
+      full_name: Priya Manager
+      email: pm@acme.example
+      role: Project Manager
+      title: Delivery Lead
+      active: true
+      hourly_cost: 60
+      weekly_capacity_hours: 40
+  - ref: employee_dev
+    entity: employee
+    values:
+      full_name: Dev Consultant
+      email: dev@acme.example
+      role: Consultant
+      title: Senior Developer
+      active: true
+      hourly_cost: 40
+      weekly_capacity_hours: 40
+  - ref: project_redesign
+    entity: project
+    values:
+      customer:
+        ref: customer_acme
+      project_manager:
+        ref: employee_pm
+      title: Website Redesign
+      budget: 25000
+      starts_on: "2026-07-01"
+      ends_on: "2026-08-31"
+      status: active
+      priority: high
+  - ref: timesheet_invoice
+    entity: timesheet
+    values:
+      employee:
+        ref: employee_dev
+      project:
+        ref: project_redesign
+      logged_on: "2026-07-03"
+      hours: 7
+      billable: true
+      billable_rate: 120
+      approval_status: approved
+      invoiced: false
+  - ref: timesheet_submit
+    entity: timesheet
+    values:
+      employee:
+        ref: employee_dev
+      project:
+        ref: project_redesign
+      logged_on: "2026-07-04"
+      hours: 6
+      billable: true
+      billable_rate: 120
+      approval_status: draft
+      invoiced: false
+  - ref: invoice_draft
+    entity: invoice
+    values:
+      customer:
+        ref: customer_acme
+      project:
+        ref: project_redesign
+      invoice_number: DEMO-DRAFT-001
+      issued_on: "2026-07-05"
+      amount: 900
+      status: draft
+      due_date: "2026-07-20"
+      notes: Demo invoice awaiting approval.
+  - ref: invoice_sent
+    entity: invoice
+    values:
+      customer:
+        ref: customer_acme
+      project:
+        ref: project_redesign
+      invoice_number: DEMO-SENT-001
+      issued_on: "2026-07-01"
+      amount: 1200
+      status: sent
+      due_date: "2026-07-30"
+      notes: Demo sent invoice.
+  - ref: expense_draft
+    entity: expense
+    values:
+      employee:
+        ref: employee_dev
+      project:
+        ref: project_redesign
+      date: "2026-07-02"
+      category: software
+      amount: 450
+      currency: USD
+      description: Demo cloud tooling expense.
+      receipt_url: https://example.test/receipt-demo
+      status: draft
+  - ref: allocation_dev
+    entity: resource_allocation
+    values:
+      employee:
+        ref: employee_dev
+      project:
+        ref: project_redesign
+      start_date: "2026-07-01"
+      end_date: "2026-07-31"
+      allocation_percent: 80
+      role_on_project: Developer

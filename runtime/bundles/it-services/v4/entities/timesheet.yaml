@@ -1,0 +1,73 @@
+module: operations
+entity:
+  id: timesheet
+  name: timesheets
+  displayName: Timesheets
+  display:
+    primary: logged_on
+    secondary: approval_status
+  fields:
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: project
+    name: project_id
+    displayName: Project
+    type: relation
+    required: true
+    references: project
+  - id: invoice
+    name: invoice_id
+    displayName: Invoice
+    type: relation
+    required: false
+    references: invoice
+  - id: logged_on
+    name: logged_on
+    displayName: Logged on
+    type: date
+    required: true
+  - id: hours
+    name: hours
+    displayName: Hours
+    type: number
+    required: true
+  - id: billable
+    name: billable
+    displayName: Billable
+    type: boolean
+    required: false
+  - id: invoiced
+    name: invoiced
+    displayName: Invoiced
+    type: boolean
+    required: false
+  - id: billable_rate
+    name: billable_rate
+    displayName: Billable rate
+    type: money
+    required: false
+  - id: billable_amount
+    name: billable_amount
+    displayName: Billable amount
+    type: money
+    required: false
+    computed:
+      op: multiply
+      left:
+        field: hours
+      right:
+        field: billable_rate
+  - id: approval_status
+    name: approval_status
+    displayName: Approval status
+    type: enum
+    required: false
+    options:
+    - draft
+    - submitted
+    - approved
+    - rejected

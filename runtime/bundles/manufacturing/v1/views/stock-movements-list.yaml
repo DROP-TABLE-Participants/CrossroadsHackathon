@@ -1,0 +1,13 @@
+module: inventory
+view:
+  id: stock_movements_list
+  name: Stock movements
+  entity: stock_movement
+  fields:
+    - movement_type
+    - item_id
+    - product_id
+    - location_id
+    - quantity
+    - reference_type
+    - movement_date

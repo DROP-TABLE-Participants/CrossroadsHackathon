@@ -1,0 +1,67 @@
+module: operations
+entity:
+  id: expense
+  name: expenses
+  displayName: Expenses
+  display:
+    primary: description
+    secondary: status
+  fields:
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: project
+    name: project_id
+    displayName: Project
+    type: relation
+    required: false
+    references: project
+  - id: date
+    name: date
+    displayName: Date
+    type: date
+    required: true
+  - id: category
+    name: category
+    displayName: Category
+    type: enum
+    required: true
+    options:
+    - travel
+    - software
+    - meals
+    - other
+  - id: amount
+    name: amount
+    displayName: Amount
+    type: money
+    required: true
+  - id: currency
+    name: currency
+    displayName: Currency
+    type: string
+    required: true
+  - id: description
+    name: description
+    displayName: Description
+    type: text
+    required: true
+  - id: receipt_url
+    name: receipt_url
+    displayName: Receipt URL
+    type: string
+    required: false
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - draft
+    - submitted
+    - approved
+    - rejected
+    - reimbursed

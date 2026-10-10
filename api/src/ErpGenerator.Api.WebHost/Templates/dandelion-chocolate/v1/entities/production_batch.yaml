@@ -1,0 +1,73 @@
+{
+  "module": "production",
+  "entity": {
+    "id": "production_batch",
+    "name": "production_batchs",
+    "displayName": "Production batches",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Batch",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "order",
+        "name": "order",
+        "displayName": "Wholesale order",
+        "type": "relation",
+        "required": true,
+        "references": "sales_order"
+      },
+      {
+        "id": "product",
+        "name": "product",
+        "displayName": "Chocolate",
+        "type": "relation",
+        "required": true,
+        "references": "product"
+      },
+      {
+        "id": "recipe",
+        "name": "recipe",
+        "displayName": "Recipe",
+        "type": "relation",
+        "required": true,
+        "references": "recipe"
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Bars to produce",
+        "type": "integer",
+        "required": true
+      },
+      {
+        "id": "tasting_notes",
+        "name": "tasting_notes",
+        "displayName": "Tasting notes",
+        "type": "text",
+        "required": false
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "displayName": "Status",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "planned",
+          "completed"
+        ],
+        "lifecycle": {
+          "initial": "planned",
+          "transitions": "named_action"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+module: work_orders
+workflow:
+  id: work_order_release
+  name: Work Order Release
+  entity: work_order
+  trigger:
+    action: release
+  steps:
+    - id: audit_requested
+      type: audit_event
+      event: work_order.release_requested
+      message: Work order release requested.
+    - id: production_manager_approval
+      type: approval
+      label: Production Manager Approval
+      assignedTo:
+        type: role
+        role: production_manager
+      approveLabel: Release work order
+      rejectLabel: Cancel work order
+    - id: mark_released
+      type: update_record
+      set:
+        status: released
+    - id: audit_released
+      type: audit_event
+      event: work_order.released
+      message: Work order released to production.
+  onRejected:
+    - id: mark_cancelled
+      type: update_record
+      set:
+        status: cancelled
+    - id: audit_cancelled
+      type: audit_event
+      event: work_order.cancelled
+      message: Work order cancelled after release rejection.

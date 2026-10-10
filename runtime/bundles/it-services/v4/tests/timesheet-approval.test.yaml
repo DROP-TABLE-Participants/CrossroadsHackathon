@@ -1,0 +1,35 @@
+test:
+  key: timesheet_approval
+  label: Approve submitted timesheet
+setup:
+  seed: demo
+steps:
+  - id: submit_timesheet
+    type: start_workflow_action
+    entity: timesheet
+    record:
+      ref: timesheet_submit
+    action: submit_for_approval
+    as_role: owner
+  - id: approve_timesheet
+    type: approve_task
+    workflow_ref: submit_timesheet
+    entity: timesheet
+    record:
+      ref: timesheet_submit
+    as_role: owner
+assertions:
+  - type: record_field_equals
+    entity: timesheet
+    record:
+      ref: timesheet_submit
+    field: approval_status
+    value: approved
+  - type: workflow_status
+    entity: timesheet
+    record:
+      ref: timesheet_submit
+    workflow: timesheet_approval
+    status: completed
+  - type: audit_event_exists
+    event: timesheet.approved

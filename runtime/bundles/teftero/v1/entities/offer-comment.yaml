@@ -1,0 +1,31 @@
+module: sales
+entity:
+  id: offer_comment
+  name: offer_comments
+  displayName: Offer Comments
+  display:
+    primary: body
+    secondary: commented_at
+  fields:
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: true
+    references: offer
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: false
+    references: employee
+  - id: body
+    name: body
+    displayName: Body
+    type: text
+    required: true
+  - id: commented_at
+    name: commented_at
+    displayName: Commented at
+    type: datetime
+    required: false

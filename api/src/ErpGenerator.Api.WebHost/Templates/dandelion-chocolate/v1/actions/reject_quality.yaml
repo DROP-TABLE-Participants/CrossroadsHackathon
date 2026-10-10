@@ -1,0 +1,116 @@
+{
+  "action": {
+    "key": "reject_quality",
+    "label": "Reject quality",
+    "entity": "quality_check",
+    "type": "record_action",
+    "description": "Reject quality · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "quality_check",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "quality_check",
+          "action": "effect_update"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "result_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "field": "result"
+          },
+          "right": {
+            "value": "fail"
+          }
+        },
+        "error": "A fail quality result is required."
+      },
+      {
+        "id": "finished_lot",
+        "type": "query_records",
+        "entity": "stock_lot",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "finished"
+          }
+        ]
+      },
+      {
+        "id": "lot_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "finished_lot"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Select a finished chocolate lot."
+      },
+      {
+        "id": "quality",
+        "type": "update_records",
+        "records_from": {
+          "result": "finished_lot"
+        },
+        "set": {
+          "released": {
+            "value": false
+          }
+        }
+      },
+      {
+        "id": "decision",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "rejected"
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "quality.rejected",
+        "message": "quality.rejected"
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "pending"
+        }
+      }
+    ]
+  }
+}

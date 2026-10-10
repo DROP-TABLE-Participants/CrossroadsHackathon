@@ -1,0 +1,35 @@
+test:
+  key: quality_inspection
+  label: Pass quality inspection through workflow
+setup:
+  seed: demo
+steps:
+  - id: submit_quality_inspection
+    type: start_workflow_action
+    entity: quality_inspection
+    record:
+      ref: quality_inspection_demo
+    action: submit_inspection
+    as_role: quality
+  - id: approve_quality_inspection
+    type: approve_task
+    workflow_ref: submit_quality_inspection
+    entity: quality_inspection
+    record:
+      ref: quality_inspection_demo
+    as_role: quality
+assertions:
+  - type: record_field_equals
+    entity: quality_inspection
+    record:
+      ref: quality_inspection_demo
+    field: result
+    value: passed
+  - type: workflow_status
+    entity: quality_inspection
+    record:
+      ref: quality_inspection_demo
+    workflow: quality_inspection
+    status: completed
+  - type: audit_event_exists
+    event: quality_inspection.passed

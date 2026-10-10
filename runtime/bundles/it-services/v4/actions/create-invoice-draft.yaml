@@ -1,0 +1,146 @@
+action:
+  key: create_invoice_draft
+  label: Create Invoice Draft
+  entity: project
+  type: record_action
+  description: Creates a draft invoice from approved uninvoiced billable timesheets.
+  visible_when:
+  - op: neq
+    left:
+      field: status
+    right:
+      value: cancelled
+  requires:
+    permissions:
+    - entity: invoice
+      action: create
+    - entity: invoice_line
+      action: create
+    - entity: timesheet
+      action: read
+    - entity: timesheet
+      action: update
+  steps:
+  - id: find_timesheets
+    type: query_records
+    entity: timesheet
+    where:
+    - field: project
+      op: eq
+      value_from:
+        record: id
+    - field: approval_status
+      op: eq
+      value: approved
+    - field: billable
+      op: eq
+      value: true
+    - field: invoiced
+      op: neq
+      value: true
+  - id: ensure_timesheets_exist
+    type: guard
+    condition:
+      op: gt
+      left:
+        result_count: find_timesheets
+      right:
+        value: 0
+    error: No approved billable uninvoiced timesheets found.
+  - id: create_invoice
+    type: create_record
+    entity: invoice
+    values:
+      customer:
+        value_from:
+          record: customer
+      project:
+        value_from:
+          record: id
+      invoice_number:
+        template: DRAFT-{{record.id}}-{{now_timestamp}}
+      issued_on:
+        value_from:
+          now: date
+      amount:
+        aggregate:
+          result: find_timesheets
+          op: sum
+          expression:
+            op: multiply
+            left:
+              value_from:
+                item: hours
+            right:
+              value_from:
+                item: billable_rate
+      status:
+        value: draft
+      notes:
+        template: Draft invoice generated from approved billable time for project
+          {{record.id}}.
+  - id: create_invoice_lines
+    type: create_records_for_each
+    entity: invoice_line
+    foreach:
+      result: find_timesheets
+    values:
+      invoice:
+        value_from:
+          step: create_invoice
+          field: id
+      project:
+        value_from:
+          record: id
+      timesheet:
+        value_from:
+          item: id
+      description:
+        template: Billable hours for {{item.logged_on}}
+      quantity:
+        value_from:
+          item: hours
+      unit_price:
+        value_from:
+          item: billable_rate
+  - id: mark_timesheets_invoiced
+    type: update_records
+    records_from:
+      result: find_timesheets
+    set:
+      invoiced:
+        value: true
+      invoice:
+        value_from:
+          step: create_invoice
+          field: id
+  - id: audit_invoice_created
+    type: audit_event
+    event: invoice.draft_created
+    message: Draft invoice created from approved billable time.
+    metadata:
+      invoice_id:
+        value_from:
+          step: create_invoice
+          field: id
+      project_id:
+        value_from:
+          record: id
+  - id: audit_timesheets_marked
+    type: audit_event
+    event: timesheet.marked_invoiced
+    message: Timesheets marked invoiced by invoice draft action.
+    metadata:
+      invoice_id:
+        value_from:
+          step: create_invoice
+          field: id
+      project_id:
+        value_from:
+          record: id
+  - id: return_invoice
+    type: return_result
+    return:
+      step: create_invoice
+      entity: invoice
+      message: Draft invoice created.

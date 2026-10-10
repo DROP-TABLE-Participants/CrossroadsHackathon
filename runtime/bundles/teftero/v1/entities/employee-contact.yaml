@@ -1,0 +1,43 @@
+module: foundations
+entity:
+  id: employee_contact
+  name: employee_contacts
+  displayName: Employee Contacts
+  display:
+    primary: label
+    secondary: email
+  fields:
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: contact
+    name: contact_id
+    displayName: External contact
+    type: relation
+    required: false
+    references: contact
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: false
+    references: company
+  - id: label
+    name: label
+    displayName: Label
+    type: string
+    required: true
+  - id: email
+    name: email
+    displayName: Email
+    type: string
+    required: false
+  - id: phone
+    name: phone
+    displayName: Phone
+    type: string
+    required: false
+

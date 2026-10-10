@@ -1,0 +1,41 @@
+module: delivery
+entity:
+  id: subtask_time_log
+  name: subtask_time_logs
+  displayName: Subtask Time Logs
+  display:
+    primary: logged_on
+    secondary: hours
+  fields:
+  - id: subtask
+    name: subtask_id
+    displayName: Subtask
+    type: relation
+    required: true
+    references: subtask
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: true
+    references: employee
+  - id: logged_on
+    name: logged_on
+    displayName: Logged on
+    type: date
+    required: true
+  - id: hours
+    name: hours
+    displayName: Hours
+    type: number
+    required: true
+  - id: billable
+    name: billable
+    displayName: Billable
+    type: boolean
+    required: false
+  - id: notes
+    name: notes
+    displayName: Notes
+    type: text
+    required: false

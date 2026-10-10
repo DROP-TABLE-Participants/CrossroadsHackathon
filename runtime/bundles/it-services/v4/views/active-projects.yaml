@@ -1,0 +1,13 @@
+module: operations
+view:
+  id: active_projects
+  name: Active projects
+  entity: project
+  fields:
+  - title
+  - customer_id
+  - project_manager_id
+  - budget
+  - starts_on
+  - ends_on
+  - priority

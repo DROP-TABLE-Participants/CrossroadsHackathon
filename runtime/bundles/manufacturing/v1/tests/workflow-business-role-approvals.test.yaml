@@ -1,0 +1,85 @@
+test:
+  key: workflow_business_role_approvals
+  label: Business roles approve their assigned manufacturing workflows
+setup:
+  seed: demo
+steps:
+  - id: submit_sales_order
+    type: start_workflow_action
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    action: submit_for_approval
+    as_role: sales
+  - id: approve_sales_order
+    type: approve_task
+    workflow_ref: submit_sales_order
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    as_role: sales
+  - id: submit_purchase_order
+    type: start_workflow_action
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    action: submit_for_approval
+    as_role: purchasing
+  - id: approve_purchase_order
+    type: approve_task
+    workflow_ref: submit_purchase_order
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    as_role: purchasing
+  - id: request_work_order_release
+    type: start_workflow_action
+    entity: work_order
+    record:
+      ref: work_order_demo
+    action: release
+    as_role: production_manager
+  - id: approve_work_order_release
+    type: approve_task
+    workflow_ref: request_work_order_release
+    entity: work_order
+    record:
+      ref: work_order_demo
+    as_role: production_manager
+assertions:
+  - type: workflow_status
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    workflow: sales_order_approval
+    status: completed
+  - type: record_field_equals
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    field: status
+    value: approved
+  - type: workflow_status
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    workflow: purchase_order_approval
+    status: completed
+  - type: record_field_equals
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    field: status
+    value: approved
+  - type: workflow_status
+    entity: work_order
+    record:
+      ref: work_order_demo
+    workflow: work_order_release
+    status: completed
+  - type: record_field_equals
+    entity: work_order
+    record:
+      ref: work_order_demo
+    field: status
+    value: released

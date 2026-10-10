@@ -1,0 +1,42 @@
+module: inventory
+entity:
+  id: stock_balance
+  name: stock_balances
+  displayName: Stock balances
+  display:
+    primary: location_id
+    secondary: quantity_on_hand
+  fields:
+    - id: item
+      name: item_id
+      displayName: Item
+      type: relation
+      required: false
+      references: item
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: false
+      references: product
+    - id: location
+      name: location_id
+      displayName: Location
+      type: relation
+      required: true
+      references: inventory_location
+    - id: quantity_on_hand
+      name: quantity_on_hand
+      displayName: Quantity on hand
+      type: number
+      required: true
+    - id: quantity_reserved
+      name: quantity_reserved
+      displayName: Quantity reserved
+      type: number
+      required: false
+    - id: reorder_point
+      name: reorder_point
+      displayName: Reorder point
+      type: number
+      required: false

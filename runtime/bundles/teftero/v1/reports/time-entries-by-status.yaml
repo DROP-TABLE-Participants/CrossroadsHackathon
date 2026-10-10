@@ -1,0 +1,17 @@
+report:
+  key: time_entries_by_status
+  label: Time entries by status
+  description: Logged hours grouped by approval status.
+  source: time_entry
+  group_by:
+  - field: status
+    label: Status
+  metrics:
+  - key: entry_count
+    label: Entries
+    op: count
+  - key: total_hours
+    label: Total hours
+    op: sum
+    field: hours
+

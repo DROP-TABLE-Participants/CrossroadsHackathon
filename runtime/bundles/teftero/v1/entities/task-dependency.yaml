@@ -1,0 +1,30 @@
+module: delivery
+entity:
+  id: task_dependency
+  name: task_dependencies
+  displayName: Task Dependencies
+  display:
+    primary: dependency_type
+    secondary: task_id
+  fields:
+  - id: task
+    name: task_id
+    displayName: Task
+    type: relation
+    required: true
+    references: task
+  - id: depends_on_task
+    name: depends_on_task_id
+    displayName: Depends on task
+    type: relation
+    required: true
+    references: task
+  - id: dependency_type
+    name: dependency_type
+    displayName: Dependency type
+    type: enum
+    required: true
+    options:
+    - blocks
+    - relates_to
+

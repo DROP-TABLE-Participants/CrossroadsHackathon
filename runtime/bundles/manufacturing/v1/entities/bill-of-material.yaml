@@ -1,0 +1,34 @@
+module: products
+entity:
+  id: bill_of_material
+  name: bill_of_materials
+  displayName: Bills of material
+  display:
+    primary: product_id
+    secondary: version
+  fields:
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: true
+      references: product
+    - id: version
+      name: version
+      displayName: Version
+      type: string
+      required: true
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - draft
+        - active
+        - archived
+    - id: effective_date
+      name: effective_date
+      displayName: Effective date
+      type: date
+      required: false

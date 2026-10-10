@@ -1,0 +1,37 @@
+module: production
+entity:
+  id: material_issue
+  name: material_issues
+  displayName: Material issues
+  display:
+    primary: work_order_id
+    secondary: item_id
+  fields:
+    - id: work_order
+      name: work_order_id
+      displayName: Work order
+      type: relation
+      required: true
+      references: work_order
+    - id: item
+      name: item_id
+      displayName: Item
+      type: relation
+      required: true
+      references: item
+    - id: location
+      name: location_id
+      displayName: Location
+      type: relation
+      required: true
+      references: inventory_location
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: issue_date
+      name: issue_date
+      displayName: Issue date
+      type: date
+      required: false

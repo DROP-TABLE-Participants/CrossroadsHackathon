@@ -1,0 +1,18 @@
+report:
+  key: billable_hours_by_offer
+  label: Billable hours by offer
+  description: Billable hours grouped by offer for pre-contract delivery tracking.
+  source: time_entry
+  group_by:
+  - field: offer
+    label: Offer
+  metrics:
+  - key: billable_hours
+    label: Billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: true
+

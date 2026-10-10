@@ -1,0 +1,41 @@
+test:
+  key: offer_to_contract
+  label: Generate a contract from an approved offer
+setup:
+  seed: demo
+steps:
+  - id: generate_contract
+    type: run_action
+    entity: offer
+    record:
+      ref: offer_crm_implementation
+    action: generate_contract_from_offer
+    as_role: finance
+assertions:
+  - type: record_count
+    entity: contract
+    where:
+      field: offer
+      op: eq
+      value_ref: offer_crm_implementation
+    count: 2
+  - type: record_count
+    entity: contract_price_line
+    where:
+      field: contract
+      op: exists
+    count: 3
+  - type: record_field_equals
+    entity: offer
+    record:
+      ref: offer_crm_implementation
+    field: is_generated_contract
+    value: true
+  - type: record_exists
+    entity: contract
+    where:
+      field: title
+      op: eq
+      value: Contract for CRM implementation package
+  - type: audit_event_exists
+    event: contract.generated_from_offer

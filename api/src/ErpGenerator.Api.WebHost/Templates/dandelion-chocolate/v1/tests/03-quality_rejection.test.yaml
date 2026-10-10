@@ -1,0 +1,191 @@
+{
+  "schema": "erpgenerator.bundle-acceptance-test.v3",
+  "test": {
+    "key": "quality_rejection",
+    "label": "Rejected quality cannot ship",
+    "contract_hash": "5bf78e7c2fe780a3456af7a5629404496633af9aaed33f18f42b911d4970a07b",
+    "suite_hash": "8d6fd46a426066c29096464b3b797f699a9fe84b1ccb997464739bfd0ebde663",
+    "suite_index": 2
+  },
+  "setup": {
+    "seed": "demo",
+    "seed_hash": "1363698f512505fe150fc029ba1778880cb5a278b740973cbea5786b70905f54"
+  },
+  "actors": [
+    {
+      "id": "operator",
+      "roles": [
+        "demo_operator"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "post_cocoa",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_cocoa"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_sugar",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_sugar"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_wrapper",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_wrapper"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "produce400",
+      "type": "run_action",
+      "entity": "production_batch",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "batch_demo"
+      },
+      "action": "receive_production"
+    },
+    {
+      "id": "quality",
+      "type": "create_record",
+      "entity": "quality_check",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "values": {
+        "name": "Failed QC",
+        "lot": {
+          "ref": "lot_production"
+        },
+        "result": "fail"
+      }
+    },
+    {
+      "id": "no_release",
+      "type": "run_action",
+      "entity": "quality_check",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "quality"
+      },
+      "action": "release_quality",
+      "expected": {
+        "outcome": "business_rule_rejected",
+        "code": "action.guard",
+        "target": "result_guard"
+      }
+    },
+    {
+      "id": "reject",
+      "type": "run_action",
+      "entity": "quality_check",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "quality"
+      },
+      "action": "reject_quality"
+    },
+    {
+      "id": "shipment400",
+      "type": "create_record",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "values": {
+        "name": "Blocked shipment",
+        "order": {
+          "ref": "order_demo"
+        },
+        "product": {
+          "ref": "product_belize"
+        },
+        "lot": {
+          "ref": "lot_production"
+        },
+        "quantity": 400
+      }
+    },
+    {
+      "id": "blocked",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment400"
+      },
+      "action": "post_shipment",
+      "expected": {
+        "outcome": "business_rule_rejected",
+        "code": "action.guard",
+        "target": "lot_guard"
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "id": "qc_failed",
+      "after_step": "reject",
+      "type": "record_field_equals",
+      "entity": "quality_check",
+      "record": {
+        "ref": "quality"
+      },
+      "field": "status",
+      "value": "rejected"
+    },
+    {
+      "id": "not_released",
+      "after_step": "blocked",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "released",
+      "value": false
+    },
+    {
+      "id": "stock_intact",
+      "after_step": "blocked",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "quantity",
+      "value": 400
+    },
+    {
+      "id": "nothing_shipped",
+      "after_step": "blocked",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "shipped_quantity",
+      "value": 0
+    }
+  ]
+}

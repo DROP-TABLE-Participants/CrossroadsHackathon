@@ -1,0 +1,13 @@
+bundle:
+  id: sample_operations_erp
+  name: IT Services ERP
+  version: 0.4.0
+  description: A declarative IT-services ERP Bundle covering projects, time, invoices,
+    expenses, allocations, approval workflows, reports, dashboard widgets, and safe
+    business actions.
+runtime:
+  min_version: 0.1.0
+industry: it_services
+modules:
+- id: operations
+  name: Operations

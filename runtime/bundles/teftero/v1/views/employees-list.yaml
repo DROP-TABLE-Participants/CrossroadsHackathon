@@ -1,0 +1,13 @@
+module: foundations
+view:
+  id: employees_list
+  name: Employees
+  entity: employee
+  fields:
+  - full_name
+  - email
+  - office_id
+  - position_id
+  - active
+  - hourly_cost
+

@@ -1,0 +1,16 @@
+report:
+  key: invoices_by_status
+  label: Invoices by status
+  description: Invoice counts and amount grouped by status.
+  source: invoice
+  group_by:
+  - field: status
+    label: Status
+  metrics:
+  - key: invoice_count
+    label: Invoices
+    op: count
+  - key: invoice_amount
+    label: Invoice amount
+    op: sum
+    field: amount

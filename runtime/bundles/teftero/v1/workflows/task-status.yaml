@@ -1,0 +1,16 @@
+module: delivery
+workflow:
+  id: task_status
+  name: Task Status
+  entity: task
+  trigger:
+    action: mark_done
+  steps:
+  - id: mark_done
+    type: update_record
+    set:
+      status: done
+  - id: audit_done
+    type: audit_event
+    event: task.done
+    message: Task marked done.

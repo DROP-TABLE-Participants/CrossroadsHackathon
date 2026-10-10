@@ -1,0 +1,283 @@
+seed:
+  key: demo
+  label: Demo Manufacturing Company
+records:
+  - ref: customer_acme_aerospace
+    entity: customer
+    values:
+      name: Acme Aerospace
+      email: purchasing@acme-aero.example
+      phone: "+1-555-0100"
+      billing_address: 100 Flight Park, Dayton, OH
+      shipping_address: 200 Assembly Road, Dayton, OH
+      active: true
+  - ref: vendor_steel_supply
+    entity: vendor
+    values:
+      name: Steel Supply Co
+      email: orders@steelsupply.example
+      phone: "+1-555-0200"
+      address: 40 Foundry Lane, Pittsburgh, PA
+      lead_time_days: 7
+      active: true
+  - ref: employee_owner
+    entity: employee
+    values:
+      name: Olivia Owner
+      email: owner@factory.example
+      role: owner
+      active: true
+  - ref: employee_production_manager
+    entity: employee
+    values:
+      name: Priya Production
+      email: production.manager@factory.example
+      role: production_manager
+      active: true
+  - ref: employee_operator
+    entity: employee
+    values:
+      name: Owen Operator
+      email: operator@factory.example
+      role: operator
+      active: true
+  - ref: employee_quality
+    entity: employee
+    values:
+      name: Quinn Quality
+      email: quality@factory.example
+      role: quality
+      active: true
+  - ref: item_steel_plate
+    entity: item
+    values:
+      sku: RM-STEEL-PLATE
+      name: Steel plate
+      description: 3mm stainless steel plate
+      item_type: raw_material
+      unit_of_measure: sheet
+      standard_cost: 18
+      preferred_vendor:
+        ref: vendor_steel_supply
+      active: true
+  - ref: item_screw
+    entity: item
+    values:
+      sku: PP-SCREW-M6
+      name: M6 screw
+      description: Standard M6 machine screw
+      item_type: purchased_part
+      unit_of_measure: each
+      standard_cost: 0.08
+      preferred_vendor:
+        ref: vendor_steel_supply
+      active: true
+  - ref: item_packaging
+    entity: item
+    values:
+      sku: PKG-BOX-SM
+      name: Small shipping box
+      description: Packaging carton for mounting brackets
+      item_type: packaging
+      unit_of_measure: each
+      standard_cost: 1.2
+      active: true
+  - ref: product_mounting_bracket
+    entity: product
+    values:
+      sku: FG-MOUNT-BRACKET
+      name: Mounting bracket
+      description: Make-to-order mounting bracket
+      unit_of_measure: each
+      standard_price: 75
+      active: true
+  - ref: bom_mounting_bracket
+    entity: bill_of_material
+    values:
+      product:
+        ref: product_mounting_bracket
+      version: A
+      status: active
+      effective_date: "2026-07-01"
+  - ref: bom_line_steel
+    entity: bill_of_material_line
+    values:
+      bill_of_material:
+        ref: bom_mounting_bracket
+      item:
+        ref: item_steel_plate
+      quantity: 1
+      scrap_percent: 5
+  - ref: bom_line_screw
+    entity: bill_of_material_line
+    values:
+      bill_of_material:
+        ref: bom_mounting_bracket
+      item:
+        ref: item_screw
+      quantity: 4
+      scrap_percent: 0
+  - ref: warehouse_main
+    entity: warehouse
+    values:
+      name: Main Warehouse
+      address: 500 Industrial Way, Dayton, OH
+      active: true
+  - ref: location_raw
+    entity: inventory_location
+    values:
+      warehouse:
+        ref: warehouse_main
+      name: Raw Materials
+      location_type: raw_material
+      active: true
+  - ref: location_wip
+    entity: inventory_location
+    values:
+      warehouse:
+        ref: warehouse_main
+      name: WIP
+      location_type: wip
+      active: true
+  - ref: location_finished
+    entity: inventory_location
+    values:
+      warehouse:
+        ref: warehouse_main
+      name: Finished Goods
+      location_type: finished_goods
+      active: true
+  - ref: stock_steel_plate
+    entity: stock_balance
+    values:
+      item:
+        ref: item_steel_plate
+      location:
+        ref: location_raw
+      quantity_on_hand: 100
+      quantity_reserved: 10
+      reorder_point: 50
+  - ref: stock_screw
+    entity: stock_balance
+    values:
+      item:
+        ref: item_screw
+      location:
+        ref: location_raw
+      quantity_on_hand: 500
+      quantity_reserved: 40
+      reorder_point: 200
+  - ref: stock_packaging_low
+    entity: stock_balance
+    values:
+      item:
+        ref: item_packaging
+      location:
+        ref: location_raw
+      quantity_on_hand: 5
+      quantity_reserved: 0
+      reorder_point: 20
+  - ref: sales_order_demo
+    entity: sales_order
+    values:
+      customer:
+        ref: customer_acme_aerospace
+      order_number: SO-1001
+      order_date: "2026-07-04"
+      requested_ship_date: "2026-07-20"
+      status: approved
+      total_amount: 750
+  - ref: sales_order_line_demo
+    entity: sales_order_line
+    values:
+      sales_order:
+        ref: sales_order_demo
+      product:
+        ref: product_mounting_bracket
+      quantity: 10
+      unit_price: 75
+  - ref: purchase_order_demo
+    entity: purchase_order
+    values:
+      vendor:
+        ref: vendor_steel_supply
+      po_number: PO-2001
+      order_date: "2026-07-03"
+      expected_date: "2026-07-10"
+      status: approved
+      total_amount: 900
+  - ref: purchase_order_line_demo
+    entity: purchase_order_line
+    values:
+      purchase_order:
+        ref: purchase_order_demo
+      item:
+        ref: item_steel_plate
+      quantity: 50
+      unit_price: 18
+  - ref: work_center_cutting
+    entity: work_center
+    values:
+      name: Cutting
+      description: Laser cutting station
+      hourly_rate: 80
+      capacity_hours_per_day: 8
+      active: true
+  - ref: work_center_assembly
+    entity: work_center
+    values:
+      name: Assembly
+      description: Bench assembly
+      hourly_rate: 65
+      capacity_hours_per_day: 8
+      active: true
+  - ref: routing_mounting_bracket
+    entity: routing
+    values:
+      product:
+        ref: product_mounting_bracket
+      version: A
+      status: active
+  - ref: routing_operation_cutting
+    entity: routing_operation
+    values:
+      routing:
+        ref: routing_mounting_bracket
+      work_center:
+        ref: work_center_cutting
+      sequence_number: 10
+      operation_name: Cut bracket blanks
+      setup_hours: 0.5
+      run_hours_per_unit: 0.1
+  - ref: routing_operation_assembly
+    entity: routing_operation
+    values:
+      routing:
+        ref: routing_mounting_bracket
+      work_center:
+        ref: work_center_assembly
+      sequence_number: 20
+      operation_name: Assemble and deburr
+      setup_hours: 0.25
+      run_hours_per_unit: 0.15
+  - ref: work_order_demo
+    entity: work_order
+    values:
+      product:
+        ref: product_mounting_bracket
+      quantity: 5
+      status: released
+      planned_start_date: "2026-07-05"
+      planned_end_date: "2026-07-08"
+      assigned_to:
+        ref: employee_operator
+  - ref: quality_inspection_demo
+    entity: quality_inspection
+    values:
+      work_order:
+        ref: work_order_demo
+      inspector:
+        ref: employee_quality
+      inspection_date: "2026-07-08"
+      result: pending
+      notes: First-article inspection for mounting bracket.

@@ -1,0 +1,17 @@
+report:
+  key: prospects_by_status
+  label: Prospects by status
+  description: Prospect count grouped by sales stage.
+  source: prospect
+  group_by:
+  - field: stage
+    label: Stage
+  metrics:
+  - key: prospect_count
+    label: Prospects
+    op: count
+  - key: estimated_value
+    label: Estimated value
+    op: sum
+    field: estimated_value
+

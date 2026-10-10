@@ -1,0 +1,453 @@
+{
+  "seed": {
+    "key": "demo",
+    "label": "Dandelion simulated order-to-shipment"
+  },
+  "records": [
+    {
+      "ref": "supplier_cocoa",
+      "entity": "supplier",
+      "values": {
+        "name": "Pacific Cocoa Partners (simulated)",
+        "kind": "Processed cocoa",
+        "notes": "Fictional operational supplier; not a claim about Dandelion suppliers."
+      }
+    },
+    {
+      "ref": "supplier_sugar",
+      "entity": "supplier",
+      "values": {
+        "name": "Golden Cane Supply (simulated)",
+        "kind": "Cane sugar",
+        "notes": "Fictional supplier."
+      }
+    },
+    {
+      "ref": "supplier_pack",
+      "entity": "supplier",
+      "values": {
+        "name": "Bay Paperworks (simulated)",
+        "kind": "Wrappers",
+        "notes": "Fictional supplier."
+      }
+    },
+    {
+      "ref": "product_belize",
+      "entity": "product",
+      "values": {
+        "name": "Maya Mountain, Belize 70%",
+        "origin": "Belize",
+        "cocoa_percent": 70,
+        "bar_weight_g": 57,
+        "description": "Single-origin dark chocolate inspired by publicly listed Dandelion bars. Operational records are simulated."
+      }
+    },
+    {
+      "ref": "cocoa_belize",
+      "entity": "material",
+      "values": {
+        "name": "Processed cocoa · Belize",
+        "kind": "cocoa",
+        "unit": "kg",
+        "supplier": {
+          "ref": "supplier_cocoa"
+        }
+      }
+    },
+    {
+      "ref": "recipe_belize",
+      "entity": "recipe",
+      "values": {
+        "name": "Maya Mountain, Belize 70% recipe (simulated)",
+        "product": {
+          "ref": "product_belize"
+        },
+        "cocoa_kg_per_bar": 0.0399,
+        "sugar_kg_per_bar": 0.0171,
+        "wrappers_per_bar": 1,
+        "notes": "Manual quantities: 400 Belize bars use 15.96 kg processed cocoa, 6.84 kg sugar, 400 wrappers. Yield assumptions are simulated, not Dandelion production specifications."
+      }
+    },
+    {
+      "ref": "product_tanzania",
+      "entity": "product",
+      "values": {
+        "name": "Kokoa Kamili, Tanzania 70%",
+        "origin": "Tanzania",
+        "cocoa_percent": 70,
+        "bar_weight_g": 57,
+        "description": "Single-origin dark chocolate inspired by publicly listed Dandelion bars. Operational records are simulated."
+      }
+    },
+    {
+      "ref": "cocoa_tanzania",
+      "entity": "material",
+      "values": {
+        "name": "Processed cocoa · Tanzania",
+        "kind": "cocoa",
+        "unit": "kg",
+        "supplier": {
+          "ref": "supplier_cocoa"
+        }
+      }
+    },
+    {
+      "ref": "recipe_tanzania",
+      "entity": "recipe",
+      "values": {
+        "name": "Kokoa Kamili, Tanzania 70% recipe (simulated)",
+        "product": {
+          "ref": "product_tanzania"
+        },
+        "cocoa_kg_per_bar": 0.0399,
+        "sugar_kg_per_bar": 0.0171,
+        "wrappers_per_bar": 1,
+        "notes": "Manual quantities: 400 Belize bars use 15.96 kg processed cocoa, 6.84 kg sugar, 400 wrappers. Yield assumptions are simulated, not Dandelion production specifications."
+      }
+    },
+    {
+      "ref": "product_ecuador",
+      "entity": "product",
+      "values": {
+        "name": "Costa Esmeraldas, Ecuador 85%",
+        "origin": "Ecuador",
+        "cocoa_percent": 85,
+        "bar_weight_g": 57,
+        "description": "Single-origin dark chocolate inspired by publicly listed Dandelion bars. Operational records are simulated."
+      }
+    },
+    {
+      "ref": "cocoa_ecuador",
+      "entity": "material",
+      "values": {
+        "name": "Processed cocoa · Ecuador",
+        "kind": "cocoa",
+        "unit": "kg",
+        "supplier": {
+          "ref": "supplier_cocoa"
+        }
+      }
+    },
+    {
+      "ref": "recipe_ecuador",
+      "entity": "recipe",
+      "values": {
+        "name": "Costa Esmeraldas, Ecuador 85% recipe (simulated)",
+        "product": {
+          "ref": "product_ecuador"
+        },
+        "cocoa_kg_per_bar": 0.04845,
+        "sugar_kg_per_bar": 0.00855,
+        "wrappers_per_bar": 1,
+        "notes": "Manual quantities: 400 Belize bars use 15.96 kg processed cocoa, 6.84 kg sugar, 400 wrappers. Yield assumptions are simulated, not Dandelion production specifications."
+      }
+    },
+    {
+      "ref": "sugar",
+      "entity": "material",
+      "values": {
+        "name": "Cane sugar",
+        "kind": "sugar",
+        "unit": "kg",
+        "supplier": {
+          "ref": "supplier_sugar"
+        }
+      }
+    },
+    {
+      "ref": "wrapper",
+      "entity": "material",
+      "values": {
+        "name": "57 g bar wrapper",
+        "kind": "wrapper",
+        "unit": "units",
+        "supplier": {
+          "ref": "supplier_pack"
+        }
+      }
+    },
+    {
+      "ref": "lot_belize",
+      "entity": "stock_lot",
+      "values": {
+        "name": "COCOA-BELIZE-01",
+        "kind": "cocoa",
+        "material": {
+          "ref": "cocoa_belize"
+        },
+        "origin": "Belize",
+        "harvest_year": 2025,
+        "unit": "kg",
+        "quantity": 100,
+        "released": false
+      }
+    },
+    {
+      "ref": "lot_tanzania",
+      "entity": "stock_lot",
+      "values": {
+        "name": "COCOA-TANZANIA-01",
+        "kind": "cocoa",
+        "material": {
+          "ref": "cocoa_tanzania"
+        },
+        "origin": "Tanzania",
+        "harvest_year": 2025,
+        "unit": "kg",
+        "quantity": 100,
+        "released": false
+      }
+    },
+    {
+      "ref": "lot_ecuador",
+      "entity": "stock_lot",
+      "values": {
+        "name": "COCOA-ECUADOR-01",
+        "kind": "cocoa",
+        "material": {
+          "ref": "cocoa_ecuador"
+        },
+        "origin": "Ecuador",
+        "harvest_year": 2025,
+        "unit": "kg",
+        "quantity": 100,
+        "released": false
+      }
+    },
+    {
+      "ref": "lot_sugar",
+      "entity": "stock_lot",
+      "values": {
+        "name": "SUGAR-01",
+        "kind": "sugar",
+        "material": {
+          "ref": "sugar"
+        },
+        "unit": "kg",
+        "quantity": 100,
+        "released": false
+      }
+    },
+    {
+      "ref": "lot_wrapper",
+      "entity": "stock_lot",
+      "values": {
+        "name": "WRAPPER-01",
+        "kind": "wrapper",
+        "material": {
+          "ref": "wrapper"
+        },
+        "unit": "units",
+        "quantity": 1000,
+        "released": false
+      }
+    },
+    {
+      "ref": "lot_opening",
+      "entity": "stock_lot",
+      "values": {
+        "name": "BELIZE-OPENING-200 (released)",
+        "kind": "finished",
+        "product": {
+          "ref": "product_belize"
+        },
+        "unit": "bars",
+        "quantity": 200,
+        "released": true
+      }
+    },
+    {
+      "ref": "opening_lot_belize",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_belize",
+        "lot": {
+          "ref": "lot_belize"
+        },
+        "kind": "opening",
+        "quantity": 100
+      }
+    },
+    {
+      "ref": "opening_lot_tanzania",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_tanzania",
+        "lot": {
+          "ref": "lot_tanzania"
+        },
+        "kind": "opening",
+        "quantity": 100
+      }
+    },
+    {
+      "ref": "opening_lot_ecuador",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_ecuador",
+        "lot": {
+          "ref": "lot_ecuador"
+        },
+        "kind": "opening",
+        "quantity": 100
+      }
+    },
+    {
+      "ref": "opening_lot_sugar",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_sugar",
+        "lot": {
+          "ref": "lot_sugar"
+        },
+        "kind": "opening",
+        "quantity": 100
+      }
+    },
+    {
+      "ref": "opening_lot_wrapper",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_wrapper",
+        "lot": {
+          "ref": "lot_wrapper"
+        },
+        "kind": "opening",
+        "quantity": 1000
+      }
+    },
+    {
+      "ref": "opening_lot_opening",
+      "entity": "stock_movement",
+      "values": {
+        "name": "Opening lot_opening",
+        "lot": {
+          "ref": "lot_opening"
+        },
+        "kind": "opening",
+        "quantity": 200
+      }
+    },
+    {
+      "ref": "customer_demo",
+      "entity": "customer",
+      "values": {
+        "name": "Bay Cafe Collective (simulated)",
+        "notes": "Fictional wholesale customer."
+      }
+    },
+    {
+      "ref": "order_demo",
+      "entity": "sales_order",
+      "values": {
+        "name": "WHOLESALE-600 · Belize 70%",
+        "customer": {
+          "ref": "customer_demo"
+        },
+        "product": {
+          "ref": "product_belize"
+        },
+        "quantity": 600,
+        "shipped_quantity": 0,
+        "remaining_quantity": 600
+      }
+    },
+    {
+      "ref": "batch_demo",
+      "entity": "production_batch",
+      "values": {
+        "name": "BELIZE-MAKE-400",
+        "order": {
+          "ref": "order_demo"
+        },
+        "product": {
+          "ref": "product_belize"
+        },
+        "recipe": {
+          "ref": "recipe_belize"
+        },
+        "quantity": 400,
+        "tasting_notes": "Enter tasting notes in the quality check. All quantities are simulated."
+      }
+    },
+    {
+      "ref": "lot_production",
+      "entity": "stock_lot",
+      "values": {
+        "name": "FINISHED-BELIZE-MAKE-400",
+        "kind": "finished",
+        "product": {
+          "ref": "product_belize"
+        },
+        "batch": {
+          "ref": "batch_demo"
+        },
+        "unit": "bars",
+        "quantity": 0,
+        "released": false
+      }
+    },
+    {
+      "ref": "issue_cocoa",
+      "entity": "material_issue",
+      "values": {
+        "name": "MANUAL-COCOA",
+        "batch": {
+          "ref": "batch_demo"
+        },
+        "lot": {
+          "ref": "lot_belize"
+        },
+        "kind": "cocoa",
+        "quantity": 15.96
+      }
+    },
+    {
+      "ref": "issue_sugar",
+      "entity": "material_issue",
+      "values": {
+        "name": "MANUAL-SUGAR",
+        "batch": {
+          "ref": "batch_demo"
+        },
+        "lot": {
+          "ref": "lot_sugar"
+        },
+        "kind": "sugar",
+        "quantity": 6.84
+      }
+    },
+    {
+      "ref": "issue_wrapper",
+      "entity": "material_issue",
+      "values": {
+        "name": "MANUAL-WRAPPER",
+        "batch": {
+          "ref": "batch_demo"
+        },
+        "lot": {
+          "ref": "lot_wrapper"
+        },
+        "kind": "wrapper",
+        "quantity": 400
+      }
+    },
+    {
+      "ref": "shipment_opening",
+      "entity": "shipment",
+      "values": {
+        "name": "SHIP-200-OPENING",
+        "order": {
+          "ref": "order_demo"
+        },
+        "product": {
+          "ref": "product_belize"
+        },
+        "lot": {
+          "ref": "lot_opening"
+        },
+        "quantity": 200
+      }
+    }
+  ]
+}

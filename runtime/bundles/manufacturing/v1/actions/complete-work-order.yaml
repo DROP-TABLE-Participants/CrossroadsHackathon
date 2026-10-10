@@ -1,0 +1,68 @@
+action:
+  key: complete_work_order
+  label: Complete Work Order
+  entity: work_order
+  type: record_action
+  description: Creates a production receipt and marks the work order completed.
+  visible_when:
+    - op: neq
+      left:
+        field: status
+      right:
+        value: completed
+    - op: neq
+      left:
+        field: status
+      right:
+        value: cancelled
+  requires:
+    permissions:
+      - entity: production_receipt
+        action: create
+      - entity: work_order
+        action: update
+  steps:
+    - id: create_production_receipt
+      type: create_record
+      entity: production_receipt
+      values:
+        work_order:
+          value_from:
+            record: id
+        product:
+          value_from:
+            record: product
+        quantity_good:
+          value_from:
+            record: quantity
+        quantity_scrap:
+          value: 0
+        receipt_date:
+          value_from:
+            now: date
+    - id: mark_work_order_completed
+      type: update_current_record
+      set:
+        status:
+          value: completed
+        actual_end_date:
+          value_from:
+            now: date
+    - id: audit_work_order_completed
+      type: audit_event
+      event: work_order.completed
+      message: Work order completed and production receipt created.
+      metadata:
+        work_order_id:
+          value_from:
+            record: id
+        production_receipt_id:
+          value_from:
+            step: create_production_receipt
+            field: id
+    - id: return_receipt
+      type: return_result
+      return:
+        step: create_production_receipt
+        entity: production_receipt
+        message: Work order completed.

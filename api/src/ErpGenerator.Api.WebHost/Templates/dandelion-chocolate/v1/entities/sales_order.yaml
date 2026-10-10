@@ -1,0 +1,72 @@
+{
+  "module": "sales",
+  "entity": {
+    "id": "sales_order",
+    "name": "sales_orders",
+    "displayName": "Wholesale orders · simulated",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Order",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "customer",
+        "name": "customer",
+        "displayName": "Customer",
+        "type": "relation",
+        "required": true,
+        "references": "customer"
+      },
+      {
+        "id": "product",
+        "name": "product",
+        "displayName": "Chocolate",
+        "type": "relation",
+        "required": true,
+        "references": "product"
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Bars ordered",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "shipped_quantity",
+        "name": "shipped_quantity",
+        "displayName": "Bars shipped",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "remaining_quantity",
+        "name": "remaining_quantity",
+        "displayName": "Bars remaining",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "displayName": "Status",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "open",
+          "shipped"
+        ],
+        "lifecycle": {
+          "initial": "open",
+          "transitions": "named_action"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+test:
+  key: expense_approval
+  label: Approve submitted expense
+setup:
+  seed: demo
+steps:
+  - id: submit_expense
+    type: start_workflow_action
+    entity: expense
+    record:
+      ref: expense_draft
+    action: submit_for_approval
+    as_role: owner
+  - id: approve_expense
+    type: approve_task
+    workflow_ref: submit_expense
+    entity: expense
+    record:
+      ref: expense_draft
+    as_role: owner
+assertions:
+  - type: record_field_equals
+    entity: expense
+    record:
+      ref: expense_draft
+    field: status
+    value: approved
+  - type: workflow_status
+    entity: expense
+    record:
+      ref: expense_draft
+    workflow: expense_approval
+    status: completed
+  - type: audit_event_exists
+    event: expense.approved

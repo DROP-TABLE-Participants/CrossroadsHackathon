@@ -1,0 +1,31 @@
+name: erpgenerator-hackathon
+services:
+  api-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erpgenerator_demo_api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DEMO_API_DATABASE_PASSWORD:?Run npm run demo:setup}
+    ports: ["127.0.0.1:5441:5432"]
+    volumes: ["api-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d erpgenerator_demo_api"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  runtime-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DEMO_RUNTIME_DATABASE_PASSWORD:?Run npm run demo:setup}
+    ports: ["127.0.0.1:5442:5432"]
+    volumes: ["runtime-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  api-data:
+  runtime-data:

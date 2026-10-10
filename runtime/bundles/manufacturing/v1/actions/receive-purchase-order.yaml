@@ -1,0 +1,77 @@
+action:
+  key: receive_purchase_order
+  label: Receive Purchase Order
+  entity: purchase_order
+  type: record_action
+  description: Creates receipt stock movements from purchase order lines and marks the purchase order received.
+  visible_when:
+    - op: eq
+      left:
+        field: status
+      right:
+        value: approved
+  requires:
+    permissions:
+      - entity: stock_movement
+        action: create
+      - entity: purchase_order
+        action: update
+      - entity: purchase_order_line
+        action: read
+  steps:
+    - id: find_purchase_order_lines
+      type: query_records
+      entity: purchase_order_line
+      where:
+        - field: purchase_order
+          op: eq
+          value_from:
+            record: id
+    - id: ensure_purchase_order_lines_exist
+      type: guard
+      condition:
+        op: gt
+        left:
+          result_count: find_purchase_order_lines
+        right:
+          value: 0
+      error: No purchase order lines found.
+    - id: create_receipt_movements
+      type: create_records_for_each
+      entity: stock_movement
+      foreach:
+        result: find_purchase_order_lines
+      values:
+        movement_type:
+          value: receipt
+        item:
+          value_from:
+            item: item
+        quantity:
+          value_from:
+            item: quantity
+        reference_type:
+          value: purchase_order
+        reference_id:
+          value_from:
+            record: id
+        movement_date:
+          value_from:
+            now: date
+    - id: mark_purchase_order_received
+      type: update_current_record
+      set:
+        status:
+          value: received
+    - id: audit_purchase_order_received
+      type: audit_event
+      event: purchase_order.received
+      message: Purchase order received and receipt movements created.
+      metadata:
+        purchase_order_id:
+          value_from:
+            record: id
+    - id: return_summary
+      type: return_result
+      return:
+        message: Purchase order received.

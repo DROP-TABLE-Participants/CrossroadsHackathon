@@ -1,0 +1,63 @@
+module: inventory
+entity:
+  id: stock_movement
+  name: stock_movements
+  displayName: Stock movements
+  display:
+    primary: movement_type
+    secondary: movement_date
+  fields:
+    - id: movement_type
+      name: movement_type
+      displayName: Movement type
+      type: enum
+      required: true
+      options:
+        - receipt
+        - issue
+        - production_receipt
+        - adjustment
+        - shipment
+    - id: item
+      name: item_id
+      displayName: Item
+      type: relation
+      required: false
+      references: item
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: false
+      references: product
+    - id: location
+      name: location_id
+      displayName: Location
+      type: relation
+      required: false
+      references: inventory_location
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: reference_type
+      name: reference_type
+      displayName: Reference type
+      type: string
+      required: true
+    - id: reference_id
+      name: reference_id
+      displayName: Reference id
+      type: integer
+      required: false
+    - id: movement_date
+      name: movement_date
+      displayName: Movement date
+      type: date
+      required: false
+    - id: notes
+      name: notes
+      displayName: Notes
+      type: text
+      required: false

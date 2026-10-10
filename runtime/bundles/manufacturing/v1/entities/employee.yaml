@@ -1,0 +1,36 @@
+module: production
+entity:
+  id: employee
+  name: employees
+  displayName: Employees
+  display:
+    primary: name
+    secondary: role
+  fields:
+    - id: name
+      name: name
+      displayName: Name
+      type: string
+      required: true
+    - id: email
+      name: email
+      displayName: Email
+      type: string
+      required: true
+    - id: role
+      name: role
+      displayName: Role
+      type: enum
+      required: true
+      options:
+        - owner
+        - production_manager
+        - operator
+        - purchasing
+        - quality
+        - sales
+    - id: active
+      name: active
+      displayName: Active
+      type: boolean
+      required: false

@@ -1,0 +1,61 @@
+module: operations
+workflow:
+  id: timesheet_approval
+  name: Timesheet Approval
+  entity: timesheet
+  trigger:
+    action: submit_for_approval
+  steps:
+  - id: mark_submitted
+    type: update_record
+    set:
+      approval_status: submitted
+  - id: audit_submitted
+    type: audit_event
+    event: timesheet.submitted
+    message: Timesheet submitted for approval.
+  - id: request_project_manager_approval
+    type: approval
+    label: Project Manager Approval
+    assignedTo:
+      type: relation_user
+      path: project.project_manager
+      requiredRole: project_manager
+      fallbackRole: owner
+    approveLabel: Approve
+    rejectLabel: Reject
+  - id: overtime_owner_review
+    type: condition
+    label: Overtime Owner Review
+    condition:
+      op: gt
+      left:
+        field: hours
+      right:
+        value: 8
+    then:
+    - id: request_owner_overtime_approval
+      type: approval
+      label: Owner Overtime Approval
+      assignedTo:
+        type: role
+        role: owner
+      approveLabel: Approve Overtime
+      rejectLabel: Reject Overtime
+  - id: mark_approved
+    type: update_record
+    set:
+      approval_status: approved
+  - id: audit_approved
+    type: audit_event
+    event: timesheet.approved
+    message: Timesheet approved.
+  onRejected:
+  - id: mark_rejected
+    type: update_record
+    set:
+      approval_status: rejected
+  - id: audit_rejected
+    type: audit_event
+    event: timesheet.rejected
+    message: Timesheet rejected.

@@ -1,0 +1,31 @@
+module: products
+entity:
+  id: bill_of_material_line
+  name: bill_of_material_lines
+  displayName: BOM lines
+  display:
+    primary: bill_of_material_id
+    secondary: item_id
+  fields:
+    - id: bill_of_material
+      name: bill_of_material_id
+      displayName: Bill of material
+      type: relation
+      required: true
+      references: bill_of_material
+    - id: item
+      name: item_id
+      displayName: Item
+      type: relation
+      required: true
+      references: item
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: scrap_percent
+      name: scrap_percent
+      displayName: Scrap percent
+      type: number
+      required: false

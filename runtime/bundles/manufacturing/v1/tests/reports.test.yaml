@@ -1,0 +1,37 @@
+test:
+  key: reports
+  label: Manufacturing reports return rows
+setup:
+  seed: demo
+steps:
+  - id: sales_orders_by_status
+    type: call_report
+    report: sales_orders_by_status
+    as_role: owner
+  - id: open_work_orders
+    type: call_report
+    report: open_work_orders
+    as_role: owner
+  - id: stock_on_hand
+    type: call_report
+    report: stock_on_hand
+    as_role: owner
+  - id: inventory_movements
+    type: call_report
+    report: inventory_movements
+    as_role: owner
+  - id: material_shortages
+    type: call_report
+    report: items_at_or_below_reorder_point
+    as_role: owner
+assertions:
+  - type: report_has_rows
+    report: sales_orders_by_status
+  - type: report_has_rows
+    report: open_work_orders
+  - type: report_has_rows
+    report: stock_on_hand
+  - type: report_has_rows
+    report: inventory_movements
+  - type: report_has_rows
+    report: items_at_or_below_reorder_point

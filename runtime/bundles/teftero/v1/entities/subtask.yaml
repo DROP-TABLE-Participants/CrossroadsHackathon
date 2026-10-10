@@ -1,0 +1,42 @@
+module: delivery
+entity:
+  id: subtask
+  name: subtasks
+  displayName: Subtasks
+  display:
+    primary: title
+    secondary: status
+  fields:
+  - id: task
+    name: task_id
+    displayName: Task
+    type: relation
+    required: true
+    references: task
+  - id: assignee
+    name: assignee_id
+    displayName: Assignee
+    type: relation
+    required: false
+    references: employee
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - todo
+    - in_progress
+    - done
+    - cancelled
+  - id: due_date
+    name: due_date
+    displayName: Due date
+    type: date
+    required: false
+

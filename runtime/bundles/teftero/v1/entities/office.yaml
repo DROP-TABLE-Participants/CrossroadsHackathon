@@ -1,0 +1,35 @@
+module: foundations
+entity:
+  id: office
+  name: offices
+  displayName: Offices
+  display:
+    primary: name
+    secondary: city
+  fields:
+  - id: name
+    name: name
+    displayName: Name
+    type: string
+    required: true
+  - id: city
+    name: city
+    displayName: City
+    type: string
+    required: false
+  - id: country
+    name: country
+    displayName: Country
+    type: string
+    required: false
+  - id: address
+    name: address
+    displayName: Address
+    type: text
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+

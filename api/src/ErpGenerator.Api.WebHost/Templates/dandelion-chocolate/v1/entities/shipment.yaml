@@ -1,0 +1,82 @@
+{
+  "module": "sales",
+  "entity": {
+    "id": "shipment",
+    "name": "shipments",
+    "displayName": "Shipment lines",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Shipment",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "order",
+        "name": "order",
+        "displayName": "Wholesale order",
+        "type": "relation",
+        "required": true,
+        "references": "sales_order"
+      },
+      {
+        "id": "product",
+        "name": "product",
+        "displayName": "Chocolate",
+        "type": "relation",
+        "required": true,
+        "references": "product"
+      },
+      {
+        "id": "lot",
+        "name": "lot",
+        "displayName": "Select released finished lot",
+        "type": "relation",
+        "required": true,
+        "references": "stock_lot"
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "displayName": "Bars to ship",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "negative_quantity",
+        "name": "negative_quantity",
+        "displayName": "Ledger shipment quantity",
+        "type": "number",
+        "required": false,
+        "computed": {
+          "op": "multiply",
+          "left": {
+            "field": "quantity"
+          },
+          "right": {
+            "value": -1
+          }
+        }
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "displayName": "Status",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "draft",
+          "posted"
+        ],
+        "lifecycle": {
+          "initial": "draft",
+          "transitions": "named_action"
+        }
+      }
+    ]
+  }
+}

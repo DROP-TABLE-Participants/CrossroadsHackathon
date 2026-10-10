@@ -1,0 +1,47 @@
+module: purchase_orders
+entity:
+  id: purchase_order
+  name: purchase_orders
+  displayName: Purchase orders
+  display:
+    primary: po_number
+    secondary: status
+  fields:
+    - id: vendor
+      name: vendor_id
+      displayName: Vendor
+      type: relation
+      required: true
+      references: vendor
+    - id: po_number
+      name: po_number
+      displayName: PO number
+      type: string
+      required: true
+      unique: true
+    - id: order_date
+      name: order_date
+      displayName: Order date
+      type: date
+      required: false
+    - id: expected_date
+      name: expected_date
+      displayName: Expected date
+      type: date
+      required: false
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - draft
+        - submitted
+        - approved
+        - received
+        - cancelled
+    - id: total_amount
+      name: total_amount
+      displayName: Total amount
+      type: money
+      required: false

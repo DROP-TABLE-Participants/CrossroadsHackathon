@@ -1,0 +1,285 @@
+{
+  "roles": {
+    "demo_operator": {
+      "displayName": "Demo operator",
+      "grants": [
+        {
+          "action": "read",
+          "entity": "*"
+        },
+        {
+          "action": "create",
+          "entity": "material_issue"
+        },
+        {
+          "action": "create",
+          "entity": "production_batch"
+        },
+        {
+          "action": "create",
+          "entity": "quality_check"
+        },
+        {
+          "action": "create",
+          "entity": "shipment"
+        },
+        {
+          "entity": "material_issue",
+          "action": "read"
+        },
+        {
+          "entity": "production_batch",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "read"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "effect_create"
+        },
+        {
+          "entity": "material_issue",
+          "action": "effect_update"
+        },
+        {
+          "entity": "material_issue",
+          "scope": "action",
+          "action": "execute",
+          "target": "post_material_issue"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "name"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "lot"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "kind"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "quantity"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "batch"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "issue"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "quantity"
+        },
+        {
+          "entity": "material_issue",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "status"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_create"
+        },
+        {
+          "entity": "production_receipt",
+          "action": "effect_create"
+        },
+        {
+          "entity": "production_batch",
+          "action": "effect_update"
+        },
+        {
+          "entity": "production_batch",
+          "scope": "action",
+          "action": "execute",
+          "target": "receive_production"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "name"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "kind"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "product"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "batch"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "unit"
+        },
+        {
+          "entity": "stock_lot",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "released"
+        },
+        {
+          "entity": "production_receipt",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "name"
+        },
+        {
+          "entity": "production_receipt",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "batch"
+        },
+        {
+          "entity": "production_receipt",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "lot"
+        },
+        {
+          "entity": "production_receipt",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "quantity"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "receipt"
+        },
+        {
+          "entity": "production_batch",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "status"
+        },
+        {
+          "entity": "quality_check",
+          "action": "read"
+        },
+        {
+          "entity": "quality_check",
+          "action": "effect_update"
+        },
+        {
+          "entity": "quality_check",
+          "scope": "action",
+          "action": "execute",
+          "target": "release_quality"
+        },
+        {
+          "entity": "quality_check",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "status"
+        },
+        {
+          "entity": "quality_check",
+          "scope": "action",
+          "action": "execute",
+          "target": "reject_quality"
+        },
+        {
+          "entity": "shipment",
+          "action": "read"
+        },
+        {
+          "entity": "sales_order",
+          "action": "read"
+        },
+        {
+          "entity": "sales_order",
+          "action": "effect_update"
+        },
+        {
+          "entity": "shipment",
+          "action": "effect_update"
+        },
+        {
+          "entity": "shipment",
+          "scope": "action",
+          "action": "execute",
+          "target": "post_shipment"
+        },
+        {
+          "entity": "stock_movement",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "shipment"
+        },
+        {
+          "entity": "shipment",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "status"
+        },
+        {
+          "entity": "sales_order",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "shipped_quantity"
+        },
+        {
+          "entity": "sales_order",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "remaining_quantity"
+        },
+        {
+          "entity": "sales_order",
+          "scope": "action",
+          "action": "execute",
+          "target": "close_order"
+        },
+        {
+          "entity": "sales_order",
+          "scope": "field",
+          "action": "effect_write",
+          "target": "status"
+        }
+      ]
+    }
+  }
+}

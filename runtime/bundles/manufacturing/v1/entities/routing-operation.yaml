@@ -1,0 +1,41 @@
+module: production
+entity:
+  id: routing_operation
+  name: routing_operations
+  displayName: Routing operations
+  display:
+    primary: operation_name
+    secondary: sequence_number
+  fields:
+    - id: routing
+      name: routing_id
+      displayName: Routing
+      type: relation
+      required: true
+      references: routing
+    - id: work_center
+      name: work_center_id
+      displayName: Work center
+      type: relation
+      required: true
+      references: work_center
+    - id: sequence_number
+      name: sequence_number
+      displayName: Sequence number
+      type: integer
+      required: true
+    - id: operation_name
+      name: operation_name
+      displayName: Operation name
+      type: string
+      required: true
+    - id: setup_hours
+      name: setup_hours
+      displayName: Setup hours
+      type: number
+      required: false
+    - id: run_hours_per_unit
+      name: run_hours_per_unit
+      displayName: Run hours per unit
+      type: number
+      required: false

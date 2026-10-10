@@ -1,0 +1,31 @@
+module: foundations
+entity:
+  id: position
+  name: positions
+  displayName: Positions
+  display:
+    primary: title
+    secondary: level
+  fields:
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: level
+    name: level
+    displayName: Level
+    type: enum
+    required: false
+    options:
+    - junior
+    - mid
+    - senior
+    - lead
+    - executive
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+

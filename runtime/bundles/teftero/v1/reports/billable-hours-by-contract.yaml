@@ -1,0 +1,18 @@
+report:
+  key: billable_hours_by_contract
+  label: Billable hours by contract
+  description: Billable hours grouped by contract.
+  source: time_entry
+  group_by:
+  - field: contract
+    label: Contract
+  metrics:
+  - key: billable_hours
+    label: Billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: true
+

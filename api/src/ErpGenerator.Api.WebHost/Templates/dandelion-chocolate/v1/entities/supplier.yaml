@@ -1,0 +1,34 @@
+{
+  "module": "catalog",
+  "entity": {
+    "id": "supplier",
+    "name": "suppliers",
+    "displayName": "Suppliers · simulated",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Supplier",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "kind",
+        "name": "kind",
+        "displayName": "Supplies",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "displayName": "Notes",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}

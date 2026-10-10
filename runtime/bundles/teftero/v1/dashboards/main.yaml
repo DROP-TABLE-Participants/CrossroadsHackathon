@@ -1,0 +1,37 @@
+dashboard:
+  widgets:
+  - key: pipeline_prospects
+    label: Pipeline prospects
+    type: metric
+    report: prospects_by_status
+    metric: prospect_count
+  - key: pipeline_value
+    label: Pipeline value
+    type: metric
+    report: prospects_by_status
+    metric: estimated_value
+  - key: offer_count
+    label: Offers
+    type: metric
+    report: offers_by_status
+    metric: offer_count
+  - key: active_contracts
+    label: Active contracts
+    type: metric
+    report: active_contracts
+    metric: active_contract_count
+  - key: active_contract_value
+    label: Active contract value
+    type: metric
+    report: active_contracts
+    metric: total_contract_value
+  - key: billable_contract_hours
+    label: Billable contract hours
+    type: metric
+    report: billable_hours_by_contract
+    metric: billable_hours
+  - key: task_count
+    label: Tasks
+    type: metric
+    report: tasks_by_status
+    metric: task_count

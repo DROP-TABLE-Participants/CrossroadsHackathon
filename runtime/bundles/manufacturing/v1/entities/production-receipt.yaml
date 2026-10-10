@@ -1,0 +1,42 @@
+module: production
+entity:
+  id: production_receipt
+  name: production_receipts
+  displayName: Production receipts
+  display:
+    primary: work_order_id
+    secondary: receipt_date
+  fields:
+    - id: work_order
+      name: work_order_id
+      displayName: Work order
+      type: relation
+      required: true
+      references: work_order
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: true
+      references: product
+    - id: location
+      name: location_id
+      displayName: Location
+      type: relation
+      required: false
+      references: inventory_location
+    - id: quantity_good
+      name: quantity_good
+      displayName: Quantity good
+      type: number
+      required: true
+    - id: quantity_scrap
+      name: quantity_scrap
+      displayName: Quantity scrap
+      type: number
+      required: false
+    - id: receipt_date
+      name: receipt_date
+      displayName: Receipt date
+      type: date
+      required: false

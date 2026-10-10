@@ -1,0 +1,26 @@
+{
+  "name": "erp-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ERP Generator API, Runtime, and Portal monorepo",
+  "scripts": {
+    "restore": "node scripts/workspace.mjs restore",
+    "build": "node scripts/workspace.mjs build",
+    "test": "node scripts/workspace.mjs test",
+    "lint": "npm --prefix portal run lint",
+    "dev:api": "dotnet run --project api/src/ErpGenerator.Api.WebHost",
+    "dev:runtime": "dotnet run --project runtime/src/ErpGenerator.Runtime.WebHost",
+    "dev:portal": "npm --prefix portal run dev -- --port 3001",
+    "demo:setup": "node scripts/demo.mjs setup",
+    "demo:prepare": "node scripts/demo.mjs prepare",
+    "demo:start": "node scripts/demo.mjs start",
+    "demo:stop": "node scripts/demo.mjs stop",
+    "demo:health": "node scripts/demo.mjs health",
+    "demo:qr": "node scripts/qr.mjs"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=10"
+  }
+}

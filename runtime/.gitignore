@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+
+*.user
+*.suo
+*.rsuser
+
+TestResults/
+coverage/
+*.trx
+.tmp/
+
+.DS_Store
+.env

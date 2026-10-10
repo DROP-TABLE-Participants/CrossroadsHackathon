@@ -1,0 +1,360 @@
+{
+  "schema": "erpgenerator.bundle-acceptance-test.v3",
+  "test": {
+    "key": "order_to_shipment",
+    "label": "600 ordered, 200 available, produce 400, release quality, ship 600",
+    "contract_hash": "84d5d9ca5cc5257734c06077ffbfd2592b258243a8e5a1ef7105b9f6d11ef339",
+    "suite_hash": "8d6fd46a426066c29096464b3b797f699a9fe84b1ccb997464739bfd0ebde663",
+    "suite_index": 0
+  },
+  "setup": {
+    "seed": "demo",
+    "seed_hash": "1363698f512505fe150fc029ba1778880cb5a278b740973cbea5786b70905f54"
+  },
+  "actors": [
+    {
+      "id": "operator",
+      "roles": [
+        "demo_operator"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "post_cocoa",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_cocoa"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_sugar",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_sugar"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_wrapper",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_wrapper"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "produce400",
+      "type": "run_action",
+      "entity": "production_batch",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "batch_demo"
+      },
+      "action": "receive_production"
+    },
+    {
+      "id": "shipment400",
+      "type": "create_record",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "values": {
+        "name": "SHIP-400-NEW",
+        "order": {
+          "ref": "order_demo"
+        },
+        "product": {
+          "ref": "product_belize"
+        },
+        "lot": {
+          "ref": "lot_production"
+        },
+        "quantity": 400
+      }
+    },
+    {
+      "id": "blocked_before_quality",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment400"
+      },
+      "action": "post_shipment",
+      "expected": {
+        "outcome": "business_rule_rejected",
+        "code": "action.guard",
+        "target": "lot_guard"
+      }
+    },
+    {
+      "id": "quality",
+      "type": "create_record",
+      "entity": "quality_check",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "values": {
+        "name": "QC-400",
+        "lot": {
+          "ref": "lot_production"
+        },
+        "result": "pass",
+        "notes": "Simulated tasting and visual pass."
+      }
+    },
+    {
+      "id": "release",
+      "type": "run_action",
+      "entity": "quality_check",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "quality"
+      },
+      "action": "release_quality"
+    },
+    {
+      "id": "ship200",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment_opening"
+      },
+      "action": "post_shipment"
+    },
+    {
+      "id": "ship400",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment400"
+      },
+      "action": "post_shipment"
+    },
+    {
+      "id": "finish",
+      "type": "run_action",
+      "entity": "sales_order",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "order_demo"
+      },
+      "action": "close_order"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "ordered",
+      "after_step": "$setup",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "quantity",
+      "value": 600
+    },
+    {
+      "id": "opening",
+      "after_step": "$setup",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_opening"
+      },
+      "field": "quantity",
+      "value": 200
+    },
+    {
+      "id": "produced",
+      "after_step": "produce400",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "quantity",
+      "value": 400
+    },
+    {
+      "id": "batch_link",
+      "after_step": "produce400",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "batch",
+      "value_ref": "batch_demo"
+    },
+    {
+      "id": "unreleased",
+      "after_step": "produce400",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "released",
+      "value": false
+    },
+    {
+      "id": "still_draft",
+      "after_step": "blocked_before_quality",
+      "type": "record_field_equals",
+      "entity": "shipment",
+      "record": {
+        "ref": "shipment400"
+      },
+      "field": "status",
+      "value": "draft"
+    },
+    {
+      "id": "released",
+      "after_step": "release",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "released",
+      "value": true
+    },
+    {
+      "id": "shipped",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "shipped_quantity",
+      "value": 600
+    },
+    {
+      "id": "remaining",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "remaining_quantity",
+      "value": 0
+    },
+    {
+      "id": "finished",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "status",
+      "value": "shipped"
+    },
+    {
+      "id": "opening_empty",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_opening"
+      },
+      "field": "quantity",
+      "value": 0
+    },
+    {
+      "id": "new_empty",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_production"
+      },
+      "field": "quantity",
+      "value": 0
+    },
+    {
+      "id": "cocoa_conserved",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_belize"
+      },
+      "field": "quantity",
+      "value": 84.04
+    },
+    {
+      "id": "sugar_conserved",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_sugar"
+      },
+      "field": "quantity",
+      "value": 93.16
+    },
+    {
+      "id": "wrapper_conserved",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_wrapper"
+      },
+      "field": "quantity",
+      "value": 600
+    },
+    {
+      "id": "shipment_lot",
+      "after_step": "finish",
+      "type": "record_field_equals",
+      "entity": "shipment",
+      "record": {
+        "ref": "shipment400"
+      },
+      "field": "lot",
+      "value_ref": "lot_production"
+    },
+    {
+      "id": "ledger_count",
+      "after_step": "finish",
+      "type": "record_count",
+      "entity": "stock_movement",
+      "count": 12
+    },
+    {
+      "id": "issue_ledger_link",
+      "after_step": "post_cocoa",
+      "type": "record_count",
+      "entity": "stock_movement",
+      "where": {
+        "field": "issue",
+        "op": "eq",
+        "value_ref": "issue_cocoa"
+      },
+      "count": 1
+    }
+  ]
+}

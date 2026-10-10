@@ -1,0 +1,13 @@
+module: operations
+view:
+  id: submitted_expenses
+  name: Submitted expenses
+  entity: expense
+  fields:
+  - employee_id
+  - project_id
+  - date
+  - category
+  - amount
+  - currency
+  - status

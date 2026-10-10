@@ -1,0 +1,41 @@
+module: sales_orders
+workflow:
+  id: sales_order_approval
+  name: Sales Order Approval
+  entity: sales_order
+  trigger:
+    action: submit_for_approval
+  steps:
+    - id: mark_submitted
+      type: update_record
+      set:
+        status: submitted
+    - id: audit_submitted
+      type: audit_event
+      event: sales_order.submitted
+      message: Sales order submitted for approval.
+    - id: owner_approval
+      type: approval
+      label: Sales Approval
+      assignedTo:
+        type: role
+        role: sales
+      approveLabel: Approve sales order
+      rejectLabel: Reject sales order
+    - id: mark_approved
+      type: update_record
+      set:
+        status: approved
+    - id: audit_approved
+      type: audit_event
+      event: sales_order.approved
+      message: Sales order approved.
+  onRejected:
+    - id: mark_cancelled
+      type: update_record
+      set:
+        status: cancelled
+    - id: audit_cancelled
+      type: audit_event
+      event: sales_order.cancelled
+      message: Sales order cancelled after rejection.

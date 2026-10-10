@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/api/" />
+  <Folder Name="/api/src/">
+    <Project Path="api/src/ErpGenerator.Api.Data/ErpGenerator.Api.Data.csproj" />
+    <Project Path="api/src/ErpGenerator.Api.MigrationService/ErpGenerator.Api.MigrationService.csproj" />
+    <Project Path="api/src/ErpGenerator.Api.Services/ErpGenerator.Api.Services.csproj" />
+    <Project Path="api/src/ErpGenerator.Api.Shared/ErpGenerator.Api.Shared.csproj" />
+    <Project Path="api/src/ErpGenerator.Api.WebHost/ErpGenerator.Api.WebHost.csproj" />
+  </Folder>
+  <Folder Name="/api/tests/">
+    <Project Path="api/tests/ErpGenerator.Api.Tests/ErpGenerator.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/runtime/" />
+  <Folder Name="/runtime/src/">
+    <Project Path="runtime/src/ErpGenerator.Runtime.Data/ErpGenerator.Runtime.Data.csproj" />
+    <Project Path="runtime/src/ErpGenerator.Runtime.GeneratedPrimitives.Generator/ErpGenerator.Runtime.GeneratedPrimitives.Generator.csproj" />
+    <Project Path="runtime/src/ErpGenerator.Runtime.GeneratedPrimitives/ErpGenerator.Runtime.GeneratedPrimitives.csproj" />
+    <Project Path="runtime/src/ErpGenerator.Runtime.Services/ErpGenerator.Runtime.Services.csproj" />
+    <Project Path="runtime/src/ErpGenerator.Runtime.Shared/ErpGenerator.Runtime.Shared.csproj" />
+    <Project Path="runtime/src/ErpGenerator.Runtime.WebHost/ErpGenerator.Runtime.WebHost.csproj" />
+  </Folder>
+  <Folder Name="/runtime/tests/">
+    <Project Path="runtime/tests/ErpGenerator.Runtime.Tests/ErpGenerator.Runtime.Tests.csproj" />
+  </Folder>
+</Solution>

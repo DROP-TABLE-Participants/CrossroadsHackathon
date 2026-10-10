@@ -1,0 +1,48 @@
+module: sales
+entity:
+  id: offer_team_cost_line
+  name: offer_team_cost_lines
+  displayName: Offer Team Cost Lines
+  display:
+    primary: description
+    secondary: cost
+  fields:
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: true
+    references: offer
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: false
+    references: employee
+  - id: description
+    name: description
+    displayName: Description
+    type: string
+    required: true
+  - id: hours
+    name: hours
+    displayName: Hours
+    type: number
+    required: true
+  - id: hourly_cost
+    name: hourly_cost
+    displayName: Hourly cost
+    type: money
+    required: true
+  - id: cost
+    name: cost
+    displayName: Cost
+    type: money
+    required: false
+    computed:
+      op: multiply
+      left:
+        field: hours
+      right:
+        field: hourly_cost
+

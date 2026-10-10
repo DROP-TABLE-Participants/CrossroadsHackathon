@@ -1,0 +1,56 @@
+module: inventory
+entity:
+  id: item
+  name: items
+  displayName: Items
+  display:
+    primary: sku
+    secondary: name
+  fields:
+    - id: sku
+      name: sku
+      displayName: SKU
+      type: string
+      required: true
+      unique: true
+    - id: name
+      name: name
+      displayName: Name
+      type: string
+      required: true
+    - id: description
+      name: description
+      displayName: Description
+      type: text
+      required: false
+    - id: item_type
+      name: item_type
+      displayName: Item type
+      type: enum
+      required: true
+      options:
+        - raw_material
+        - purchased_part
+        - packaging
+        - consumable
+    - id: unit_of_measure
+      name: unit_of_measure
+      displayName: Unit of measure
+      type: string
+      required: true
+    - id: standard_cost
+      name: standard_cost
+      displayName: Standard cost
+      type: money
+      required: false
+    - id: preferred_vendor
+      name: preferred_vendor_id
+      displayName: Preferred vendor
+      type: relation
+      required: false
+      references: vendor
+    - id: active
+      name: active
+      displayName: Active
+      type: boolean
+      required: false

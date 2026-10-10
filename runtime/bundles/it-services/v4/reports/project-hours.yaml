@@ -1,0 +1,34 @@
+report:
+  key: project_hours
+  label: Project hours
+  description: Hours, billable hours, non-billable hours, and billable amount grouped
+    by project.
+  source: timesheet
+  group_by:
+  - field: project
+    label: Project
+  metrics:
+  - key: total_hours
+    label: Total hours
+    op: sum
+    field: hours
+  - key: billable_hours
+    label: Billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: true
+  - key: non_billable_hours
+    label: Non-billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: false
+  - key: billable_amount
+    label: Billable amount
+    op: sum
+    field: billable_amount

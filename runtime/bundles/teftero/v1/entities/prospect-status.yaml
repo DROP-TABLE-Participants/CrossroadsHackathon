@@ -1,0 +1,29 @@
+module: foundations
+entity:
+  id: prospect_status
+  name: prospect_statuses
+  displayName: Prospect Statuses
+  display:
+    primary: name
+    secondary: probability_percent
+  fields:
+  - id: code
+    name: code
+    displayName: Code
+    type: string
+    required: true
+  - id: name
+    name: name
+    displayName: Name
+    type: string
+    required: true
+  - id: probability_percent
+    name: probability_percent
+    displayName: Probability percent
+    type: number
+    required: false
+  - id: final
+    name: final
+    displayName: Final
+    type: boolean
+    required: false

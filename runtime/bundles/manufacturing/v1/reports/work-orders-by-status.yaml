@@ -1,0 +1,16 @@
+report:
+  key: work_orders_by_status
+  label: Work orders by status
+  description: Work order count and quantity grouped by production status.
+  source: work_order
+  group_by:
+    - field: status
+      label: Status
+  metrics:
+    - key: work_order_count
+      label: Work orders
+      op: count
+    - key: quantity
+      label: Quantity
+      op: sum
+      field: quantity

@@ -1,0 +1,240 @@
+{
+  "action": {
+    "key": "post_material_issue",
+    "label": "Post material issue",
+    "entity": "material_issue",
+    "type": "record_action",
+    "description": "Post material issue · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "material_issue",
+          "action": "read"
+        },
+        {
+          "entity": "production_batch",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "read"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "effect_create"
+        },
+        {
+          "entity": "material_issue",
+          "action": "effect_update"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "positive",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "field": "quantity"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Choose a positive manual quantity."
+      },
+      {
+        "id": "planned_batch",
+        "type": "query_records",
+        "entity": "production_batch",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "batch"
+            }
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "planned"
+          }
+        ]
+      },
+      {
+        "id": "batch_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "planned_batch"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Materials can only be issued to a planned batch."
+      },
+      {
+        "id": "available_lot",
+        "type": "query_records",
+        "entity": "stock_lot",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value_from": {
+              "record": "kind"
+            }
+          },
+          {
+            "field": "quantity",
+            "op": "gte",
+            "value_from": {
+              "record": "quantity"
+            }
+          }
+        ]
+      },
+      {
+        "id": "stock_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "available_lot"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Insufficient stock or wrong ingredient lot."
+      },
+      {
+        "id": "movement",
+        "type": "create_record",
+        "entity": "stock_movement",
+        "values": {
+          "name": {
+            "template": "ISSUE-{{record.id}}"
+          },
+          "lot": {
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          "kind": {
+            "value": "material_issue"
+          },
+          "quantity": {
+            "value_from": {
+              "record": "negative_quantity"
+            }
+          },
+          "batch": {
+            "value_from": {
+              "record": "batch"
+            }
+          },
+          "issue": {
+            "value_from": {
+              "record": "id"
+            }
+          }
+        }
+      },
+      {
+        "id": "ledger",
+        "type": "query_records",
+        "entity": "stock_movement",
+        "where": [
+          {
+            "field": "lot",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          }
+        ]
+      },
+      {
+        "id": "balance",
+        "type": "update_records",
+        "records_from": {
+          "result": "available_lot"
+        },
+        "set": {
+          "quantity": {
+            "aggregate": {
+              "result": "ledger",
+              "op": "sum",
+              "expression": {
+                "op": "add",
+                "left": {
+                  "value_from": {
+                    "item": "quantity"
+                  }
+                },
+                "right": {
+                  "value": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "posted",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "posted"
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "material_issue.posted",
+        "message": "material issue.posted"
+      },
+      {
+        "id": "result",
+        "type": "return_result",
+        "return": {
+          "step": "movement",
+          "entity": "stock_movement",
+          "message": "Material issued; stock ledger committed."
+        }
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "draft"
+        }
+      }
+    ]
+  }
+}

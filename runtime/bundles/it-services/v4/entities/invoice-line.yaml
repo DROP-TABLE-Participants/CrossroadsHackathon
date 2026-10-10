@@ -1,0 +1,53 @@
+module: operations
+entity:
+  id: invoice_line
+  name: invoice_lines
+  displayName: Invoice lines
+  display:
+    primary: description
+    secondary: invoice_id
+  fields:
+  - id: invoice
+    name: invoice_id
+    displayName: Invoice
+    type: relation
+    required: true
+    references: invoice
+  - id: project
+    name: project_id
+    displayName: Project
+    type: relation
+    required: false
+    references: project
+  - id: timesheet
+    name: timesheet_id
+    displayName: Timesheet
+    type: relation
+    required: false
+    references: timesheet
+  - id: description
+    name: description
+    displayName: Description
+    type: text
+    required: true
+  - id: quantity
+    name: quantity
+    displayName: Quantity
+    type: number
+    required: true
+  - id: unit_price
+    name: unit_price
+    displayName: Unit price
+    type: money
+    required: true
+  - id: amount
+    name: amount
+    displayName: Amount
+    type: money
+    required: false
+    computed:
+      op: multiply
+      left:
+        field: quantity
+      right:
+        field: unit_price

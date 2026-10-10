@@ -1,0 +1,17 @@
+report:
+  key: production_receipts
+  label: Production receipts
+  description: Production receipt quantity and scrap totals.
+  source: production_receipt
+  metrics:
+    - key: receipt_count
+      label: Receipts
+      op: count
+    - key: quantity_good
+      label: Quantity good
+      op: sum
+      field: quantity_good
+    - key: quantity_scrap
+      label: Quantity scrap
+      op: sum
+      field: quantity_scrap

@@ -1,0 +1,180 @@
+roles:
+  owner:
+    displayName: Owner
+    grants:
+    - action: '*'
+      entity: '*'
+    - action: read
+      entity: timesheet
+    - action: read_task
+      entity: timesheet
+    - action: approve_task
+      entity: timesheet
+    - action: reject_task
+      entity: timesheet
+    - action: read
+      entity: expense
+    - action: read_task
+      entity: expense
+    - action: approve_task
+      entity: expense
+    - action: reject_task
+      entity: expense
+    - scope: action
+      action: execute
+      entity: project
+      target: create_invoice_draft
+  admin:
+    displayName: Admin
+    grants:
+    - action: read
+      entity: '*'
+    - action: create
+      entity: '*'
+    - action: update
+      entity: '*'
+    - action: archive
+      entity: '*'
+    - action: restore
+      entity: '*'
+    - action: start_workflow
+      entity: '*'
+    - action: approve_task
+      entity: '*'
+    - action: reject_task
+      entity: '*'
+    - action: read_task
+      entity: '*'
+    - action: admin
+      entity: '*'
+    - scope: action
+      action: execute
+      entity: project
+      target: create_invoice_draft
+  member:
+    displayName: Member
+    grants:
+    - action: read
+      entity: customer
+    - action: read
+      entity: project
+    - action: read
+      entity: timesheet
+    - action: read
+      entity: employee
+    - action: read
+      entity: invoice
+    - action: read
+      entity: invoice_line
+    - action: read
+      entity: expense
+    - action: read
+      entity: resource_allocation
+    - action: create
+      entity: timesheet
+    - action: update
+      entity: timesheet
+    - action: create
+      entity: expense
+    - action: update
+      entity: expense
+    - action: start_workflow
+      entity: timesheet
+    - action: start_workflow
+      entity: expense
+    - action: approve_task
+      entity: timesheet
+    - action: reject_task
+      entity: timesheet
+    - action: read_task
+      entity: timesheet
+    - action: read_task
+      entity: expense
+  readonly:
+    displayName: ReadOnly
+    grants:
+    - action: read
+      entity: '*'
+  read_only:
+    displayName: Read only
+    grants:
+    - action: read
+      entity: '*'
+  finance:
+    displayName: Finance
+    grants:
+    - action: read
+      entity: '*'
+    - action: read
+      entity: invoice
+    - action: create
+      entity: invoice
+    - action: update
+      entity: invoice
+    - action: create
+      entity: invoice_line
+    - action: update
+      entity: invoice_line
+    - action: update
+      entity: timesheet
+    - action: archive
+      entity: invoice_line
+    - action: restore
+      entity: invoice_line
+    - action: start_workflow
+      entity: invoice
+    - action: approve_task
+      entity: invoice
+    - action: reject_task
+      entity: invoice
+    - action: read_task
+      entity: invoice
+    - scope: action
+      action: execute
+      entity: project
+      target: create_invoice_draft
+  project_manager:
+    displayName: Project manager
+    grants:
+    - action: read
+      entity: '*'
+    - action: read
+      entity: timesheet
+    - action: read
+      entity: expense
+    - action: create
+      entity: project
+    - action: update
+      entity: project
+    - action: create
+      entity: timesheet
+    - action: update
+      entity: timesheet
+    - action: create
+      entity: expense
+    - action: update
+      entity: expense
+    - action: archive
+      entity: expense
+    - action: restore
+      entity: expense
+    - action: create
+      entity: resource_allocation
+    - action: update
+      entity: resource_allocation
+    - action: start_workflow
+      entity: timesheet
+    - action: start_workflow
+      entity: expense
+    - action: approve_task
+      entity: timesheet
+    - action: reject_task
+      entity: timesheet
+    - action: read_task
+      entity: timesheet
+    - action: approve_task
+      entity: expense
+    - action: reject_task
+      entity: expense
+    - action: read_task
+      entity: expense

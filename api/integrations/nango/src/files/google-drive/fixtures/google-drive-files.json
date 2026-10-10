@@ -1,0 +1,33 @@
+[
+  {
+    "id": "gdrive-operations-sop",
+    "name": "Operations SOP.md",
+    "mimeType": "text/markdown",
+    "webViewLink": "https://drive.google.com/file/d/gdrive-operations-sop/view",
+    "modifiedTime": "2026-06-15T10:00:00Z",
+    "owners": [
+      {
+        "displayName": "Operations Lead",
+        "emailAddress": "ops@example.test"
+      }
+    ],
+    "text": "  Production orders are reviewed every morning.\n\n\nBearer google-drive-secret-token\naccess_token=drive-secret-value\nThe production manager releases approved work orders.  ",
+    "size": "2048",
+    "md5Checksum": "abc123",
+    "access_token": "drive-secret-value"
+  },
+  {
+    "id": "gdrive-empty-draft",
+    "name": "Empty Draft.txt",
+    "mimeType": "text/plain",
+    "webViewLink": "https://drive.google.com/file/d/gdrive-empty-draft/view",
+    "modifiedTime": "2026-06-16T08:00:00Z",
+    "owners": [
+      {
+        "displayName": "Operations Lead",
+        "emailAddress": "ops@example.test"
+      }
+    ],
+    "text": ""
+  }
+]

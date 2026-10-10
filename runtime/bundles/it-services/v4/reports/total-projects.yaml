@@ -1,0 +1,13 @@
+report:
+  key: total_projects
+  label: Active projects
+  description: Active project count.
+  source: project
+  filters:
+  - field: status
+    op: eq
+    value: active
+  metrics:
+  - key: total_projects
+    label: Active projects
+    op: count

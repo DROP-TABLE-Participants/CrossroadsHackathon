@@ -1,0 +1,10 @@
+module: vendors
+view:
+  id: vendors_list
+  name: Vendors
+  entity: vendor
+  fields:
+    - name
+    - email
+    - lead_time_days
+    - active

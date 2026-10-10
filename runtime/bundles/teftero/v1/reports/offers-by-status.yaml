@@ -1,0 +1,17 @@
+report:
+  key: offers_by_status
+  label: Offers by status
+  description: Offer count grouped by offer status.
+  source: offer
+  group_by:
+  - field: status
+    label: Status
+  metrics:
+  - key: offer_count
+    label: Offers
+    op: count
+  - key: average_probability
+    label: Average probability
+    op: avg
+    field: probability_percent
+

@@ -1,0 +1,8 @@
+{
+  "branch": "main",
+  "components": {
+    "api": "63b78bcd56fe6a32f56c4b43e9946d4dcb1d5851",
+    "runtime": "42cdc6f0d9b7ac12f92eff52e517e26fe796b094",
+    "portal": "e7ab9a024d1d2450bfcf7826940f9245d66245e9"
+  }
+}

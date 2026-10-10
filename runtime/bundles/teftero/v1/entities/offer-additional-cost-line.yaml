@@ -1,0 +1,36 @@
+module: sales
+entity:
+  id: offer_additional_cost_line
+  name: offer_additional_cost_lines
+  displayName: Offer Additional Cost Lines
+  display:
+    primary: description
+    secondary: cost
+  fields:
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: true
+    references: offer
+  - id: description
+    name: description
+    displayName: Description
+    type: string
+    required: true
+  - id: category
+    name: category
+    displayName: Category
+    type: enum
+    required: false
+    options:
+    - travel
+    - software
+    - subcontractor
+    - other
+  - id: cost
+    name: cost
+    displayName: Cost
+    type: money
+    required: true
+

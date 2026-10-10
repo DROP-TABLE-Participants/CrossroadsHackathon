@@ -1,0 +1,45 @@
+module: operations
+entity:
+  id: employee
+  name: employees
+  displayName: Employees
+  display:
+    primary: full_name
+    secondary: email
+  fields:
+  - id: full_name
+    name: full_name
+    displayName: Full name
+    type: string
+    required: true
+  - id: email
+    name: email
+    displayName: Email
+    type: string
+    required: true
+    unique: true
+  - id: role
+    name: role
+    displayName: Role
+    type: string
+    required: false
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+  - id: hourly_cost
+    name: hourly_cost
+    displayName: Hourly cost
+    type: money
+    required: false
+  - id: weekly_capacity_hours
+    name: weekly_capacity_hours
+    displayName: Weekly capacity hours
+    type: number
+    required: false

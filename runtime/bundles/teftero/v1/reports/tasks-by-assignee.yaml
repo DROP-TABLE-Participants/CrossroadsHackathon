@@ -1,0 +1,13 @@
+report:
+  key: tasks_by_assignee
+  label: Tasks by assignee
+  description: Task count grouped by employee assignee.
+  source: task
+  group_by:
+  - field: assignee
+    label: Assignee
+  metrics:
+  - key: task_count
+    label: Tasks
+    op: count
+

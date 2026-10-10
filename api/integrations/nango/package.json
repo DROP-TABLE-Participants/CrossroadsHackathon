@@ -1,0 +1,23 @@
+{
+  "name": "erpgenerator-nango-integrations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.json && node --test \"dist/tests/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/unzipper": "^0.10.11",
+    "fflate": "^0.8.3",
+    "typescript": "^5.9.3",
+    "zod": "4.3.6",
+    "nango": "0.70.9"
+  },
+  "dependencies": {
+    "nango": "^0.70.9",
+    "unzipper": "^0.12.5",
+    "zod": "^4.3.6"
+  }
+}

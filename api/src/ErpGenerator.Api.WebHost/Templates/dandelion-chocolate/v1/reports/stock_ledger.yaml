@@ -1,0 +1,26 @@
+{
+  "report": {
+    "key": "stock_ledger",
+    "label": "Stock ledger",
+    "source": "stock_movement",
+    "metrics": [
+      {
+        "key": "quantity",
+        "label": "Signed quantity",
+        "op": "sum",
+        "field": "quantity"
+      },
+      {
+        "key": "movements",
+        "label": "Movements",
+        "op": "count"
+      }
+    ],
+    "group_by": [
+      {
+        "field": "lot",
+        "label": "Lot"
+      }
+    ]
+  }
+}

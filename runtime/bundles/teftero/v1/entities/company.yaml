@@ -1,0 +1,60 @@
+module: foundations
+entity:
+  id: company
+  name: companies
+  displayName: Companies
+  display:
+    primary: name
+    secondary: email
+  fields:
+  - id: business_category
+    name: business_category_id
+    displayName: Business category
+    type: relation
+    required: false
+    references: business_category
+  - id: name
+    name: name
+    displayName: Name
+    type: string
+    required: true
+  - id: registration_number
+    name: registration_number
+    displayName: Registration number
+    type: string
+    required: false
+  - id: vat_number
+    name: vat_number
+    displayName: VAT number
+    type: string
+    required: false
+  - id: website
+    name: website
+    displayName: Website
+    type: string
+    required: false
+  - id: email
+    name: email
+    displayName: Email
+    type: string
+    required: false
+  - id: phone
+    name: phone
+    displayName: Phone
+    type: string
+    required: false
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - lead
+    - active
+    - inactive
+  - id: notes
+    name: notes
+    displayName: Notes
+    type: text
+    required: false
+

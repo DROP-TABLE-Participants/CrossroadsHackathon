@@ -1,0 +1,52 @@
+module: foundations
+entity:
+  id: employee
+  name: employees
+  displayName: Employees
+  display:
+    primary: full_name
+    secondary: email
+  fields:
+  - id: office
+    name: office_id
+    displayName: Office
+    type: relation
+    required: false
+    references: office
+  - id: position
+    name: position_id
+    displayName: Position
+    type: relation
+    required: false
+    references: position
+  - id: full_name
+    name: full_name
+    displayName: Full name
+    type: string
+    required: true
+  - id: email
+    name: email
+    displayName: Email
+    type: string
+    required: true
+  - id: phone
+    name: phone
+    displayName: Phone
+    type: string
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+  - id: hire_date
+    name: hire_date
+    displayName: Hire date
+    type: date
+    required: false
+  - id: hourly_cost
+    name: hourly_cost
+    displayName: Hourly cost
+    type: money
+    required: false
+

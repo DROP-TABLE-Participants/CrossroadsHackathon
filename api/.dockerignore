@@ -1,0 +1,15 @@
+.git
+.github
+.tmp
+**/bin
+**/obj
+**/TestResults
+**/coverage
+**/coverage.*
+**/node_modules
+.env
+.env.*
+*.user
+*.suo
+*.log
+Dockerfile

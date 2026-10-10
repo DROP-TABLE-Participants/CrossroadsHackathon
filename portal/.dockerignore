@@ -1,0 +1,17 @@
+# Docker build context exclusions
+node_modules
+.next
+.git
+.gitignore
+npm-debug.log
+Dockerfile*
+.dockerignore
+.playwright-mcp
+
+# Local env files (pass at runtime instead)
+.env
+.env.*
+
+# OS / Editor
+.DS_Store
+.vscode

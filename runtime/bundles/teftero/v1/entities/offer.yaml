@@ -1,0 +1,85 @@
+module: sales
+entity:
+  id: offer
+  name: offers
+  displayName: Offers
+  display:
+    primary: subject
+    secondary: status
+  fields:
+  - id: prospect
+    name: prospect_id
+    displayName: Prospect
+    type: relation
+    required: false
+    references: prospect
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: true
+    references: company
+  - id: contact
+    name: contact_id
+    displayName: Contact
+    type: relation
+    required: false
+    references: contact
+  - id: owner_employee
+    name: owner_employee_id
+    displayName: Owner employee
+    type: relation
+    required: false
+    references: employee
+  - id: subject
+    name: subject
+    displayName: Subject
+    type: string
+    required: true
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - draft
+    - sent
+    - approved
+    - rejected
+    - cancelled
+  - id: offer_date
+    name: offer_date
+    displayName: Offer date
+    type: date
+    required: false
+  - id: valid_until
+    name: valid_until
+    displayName: Valid until
+    type: date
+    required: false
+  - id: currency
+    name: currency
+    displayName: Currency
+    type: string
+    required: false
+  - id: probability_percent
+    name: probability_percent
+    displayName: Probability percent
+    type: number
+    required: false
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+  - id: is_generated_contract
+    name: is_generated_contract
+    displayName: Generated contract
+    type: boolean
+    required: false
+  - id: generated_contract
+    name: generated_contract_id
+    displayName: Generated contract link
+    type: relation
+    required: false
+    references: contract

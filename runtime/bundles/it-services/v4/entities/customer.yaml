@@ -1,0 +1,25 @@
+module: operations
+entity:
+  id: customer
+  name: customers
+  displayName: Customers
+  display:
+    primary: company_name
+    secondary: contact_email
+  fields:
+  - id: company_name
+    name: company_name
+    displayName: Company name
+    type: string
+    required: true
+    unique: true
+  - id: contact_email
+    name: contact_email
+    displayName: Contact email
+    type: string
+    required: true
+  - id: status
+    name: status
+    displayName: Status
+    type: string
+    required: true

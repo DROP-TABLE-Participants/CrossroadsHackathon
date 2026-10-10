@@ -1,0 +1,11 @@
+module: quality
+view:
+  id: quality_inspections_list
+  name: Quality inspections
+  entity: quality_inspection
+  fields:
+    - work_order_id
+    - production_receipt_id
+    - inspector_id
+    - inspection_date
+    - result

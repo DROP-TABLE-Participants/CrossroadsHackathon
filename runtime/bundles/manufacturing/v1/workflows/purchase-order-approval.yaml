@@ -1,0 +1,41 @@
+module: purchase_orders
+workflow:
+  id: purchase_order_approval
+  name: Purchase Order Approval
+  entity: purchase_order
+  trigger:
+    action: submit_for_approval
+  steps:
+    - id: mark_submitted
+      type: update_record
+      set:
+        status: submitted
+    - id: audit_submitted
+      type: audit_event
+      event: purchase_order.submitted
+      message: Purchase order submitted for approval.
+    - id: owner_approval
+      type: approval
+      label: Purchasing Approval
+      assignedTo:
+        type: role
+        role: purchasing
+      approveLabel: Approve purchase order
+      rejectLabel: Reject purchase order
+    - id: mark_approved
+      type: update_record
+      set:
+        status: approved
+    - id: audit_approved
+      type: audit_event
+      event: purchase_order.approved
+      message: Purchase order approved.
+  onRejected:
+    - id: mark_cancelled
+      type: update_record
+      set:
+        status: cancelled
+    - id: audit_cancelled
+      type: audit_event
+      event: purchase_order.cancelled
+      message: Purchase order cancelled after rejection.

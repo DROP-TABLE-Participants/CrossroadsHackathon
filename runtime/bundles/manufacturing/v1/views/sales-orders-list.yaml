@@ -1,0 +1,12 @@
+module: sales_orders
+view:
+  id: sales_orders_list
+  name: Sales orders
+  entity: sales_order
+  fields:
+    - order_number
+    - customer_id
+    - order_date
+    - requested_ship_date
+    - status
+    - total_amount

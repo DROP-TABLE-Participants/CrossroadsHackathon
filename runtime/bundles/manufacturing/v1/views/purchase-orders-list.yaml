@@ -1,0 +1,12 @@
+module: purchase_orders
+view:
+  id: purchase_orders_list
+  name: Purchase orders
+  entity: purchase_order
+  fields:
+    - po_number
+    - vendor_id
+    - order_date
+    - expected_date
+    - status
+    - total_amount

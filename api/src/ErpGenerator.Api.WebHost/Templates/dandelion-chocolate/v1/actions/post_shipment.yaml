@@ -1,0 +1,327 @@
+{
+  "action": {
+    "key": "post_shipment",
+    "label": "Post shipment",
+    "entity": "shipment",
+    "type": "record_action",
+    "description": "Post shipment · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "shipment",
+          "action": "read"
+        },
+        {
+          "entity": "sales_order",
+          "action": "read"
+        },
+        {
+          "entity": "sales_order",
+          "action": "effect_update"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "read"
+        },
+        {
+          "entity": "stock_movement",
+          "action": "effect_create"
+        },
+        {
+          "entity": "shipment",
+          "action": "effect_update"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "positive",
+        "type": "guard",
+        "condition": {
+          "op": "gt",
+          "left": {
+            "field": "quantity"
+          },
+          "right": {
+            "value": 0
+          }
+        },
+        "error": "Ship a positive number of bars."
+      },
+      {
+        "id": "order",
+        "type": "query_records",
+        "entity": "sales_order",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "order"
+            }
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "open"
+          },
+          {
+            "field": "remaining_quantity",
+            "op": "gte",
+            "value_from": {
+              "record": "quantity"
+            }
+          },
+          {
+            "field": "product",
+            "op": "eq",
+            "value_from": {
+              "record": "product"
+            }
+          }
+        ]
+      },
+      {
+        "id": "order_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "order"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Shipment exceeds the remaining order quantity or uses another product."
+      },
+      {
+        "id": "available_lot",
+        "type": "query_records",
+        "entity": "stock_lot",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "finished"
+          },
+          {
+            "field": "released",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "quantity",
+            "op": "gte",
+            "value_from": {
+              "record": "quantity"
+            }
+          },
+          {
+            "field": "product",
+            "op": "eq",
+            "value_from": {
+              "record": "product"
+            }
+          }
+        ]
+      },
+      {
+        "id": "lot_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "available_lot"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Insufficient finished stock or quality has not been released."
+      },
+      {
+        "id": "movement",
+        "type": "create_record",
+        "entity": "stock_movement",
+        "values": {
+          "name": {
+            "template": "SHIP-{{record.id}}"
+          },
+          "lot": {
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          "kind": {
+            "value": "shipment"
+          },
+          "quantity": {
+            "value_from": {
+              "record": "negative_quantity"
+            }
+          },
+          "shipment": {
+            "value_from": {
+              "record": "id"
+            }
+          }
+        }
+      },
+      {
+        "id": "ledger",
+        "type": "query_records",
+        "entity": "stock_movement",
+        "where": [
+          {
+            "field": "lot",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          }
+        ]
+      },
+      {
+        "id": "balance",
+        "type": "update_records",
+        "records_from": {
+          "result": "available_lot"
+        },
+        "set": {
+          "quantity": {
+            "aggregate": {
+              "result": "ledger",
+              "op": "sum",
+              "expression": {
+                "op": "add",
+                "left": {
+                  "value_from": {
+                    "item": "quantity"
+                  }
+                },
+                "right": {
+                  "value": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "posted",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "posted"
+          }
+        }
+      },
+      {
+        "id": "posted_shipments",
+        "type": "query_records",
+        "entity": "shipment",
+        "where": [
+          {
+            "field": "order",
+            "op": "eq",
+            "value_from": {
+              "record": "order"
+            }
+          },
+          {
+            "field": "status",
+            "op": "eq",
+            "value": "posted"
+          }
+        ]
+      },
+      {
+        "id": "order_totals",
+        "type": "update_records",
+        "records_from": {
+          "result": "order"
+        },
+        "set": {
+          "shipped_quantity": {
+            "aggregate": {
+              "result": "posted_shipments",
+              "op": "sum",
+              "expression": {
+                "op": "add",
+                "left": {
+                  "value_from": {
+                    "item": "quantity"
+                  }
+                },
+                "right": {
+                  "value": 0
+                }
+              }
+            }
+          },
+          "remaining_quantity": {
+            "aggregate": {
+              "result": "order",
+              "op": "sum",
+              "expression": {
+                "op": "subtract",
+                "left": {
+                  "value_from": {
+                    "item": "remaining_quantity"
+                  }
+                },
+                "right": {
+                  "value_from": {
+                    "record": "quantity"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "shipment.posted",
+        "message": "shipment.posted"
+      },
+      {
+        "id": "result",
+        "type": "return_result",
+        "return": {
+          "step": "movement",
+          "entity": "stock_movement",
+          "message": "Shipment posted; order and inventory quantities committed."
+        }
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "draft"
+        }
+      }
+    ]
+  }
+}

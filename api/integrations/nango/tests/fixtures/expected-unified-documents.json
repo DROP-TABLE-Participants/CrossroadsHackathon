@@ -1,0 +1,50 @@
+[
+  {
+    "id": "gdrive-operations-sop",
+    "title": "Operations SOP.md",
+    "text": "Production orders are reviewed every morning.\n\nBearer ***masked***\n***masked***\nThe production manager releases approved work orders.",
+    "contentState": "content_extracted",
+    "sourceUrl": "https://drive.google.com/file/d/gdrive-operations-sop/view",
+    "provider": "google-drive",
+    "mimeType": "text/markdown",
+    "modifiedAt": "2026-06-15T10:00:00Z",
+    "author": "Operations Lead",
+    "metadata": {
+      "size": "2048",
+      "md5Checksum": "abc123",
+      "mimeType": "text/markdown",
+      "ownerEmail": "ops@example.test"
+    }
+  },
+  {
+    "id": "gdrive-empty-draft",
+    "title": "Empty Draft.txt",
+    "text": "",
+    "contentState": "metadata_only",
+    "sourceUrl": "https://drive.google.com/file/d/gdrive-empty-draft/view",
+    "provider": "google-drive",
+    "mimeType": "text/plain",
+    "modifiedAt": "2026-06-16T08:00:00Z",
+    "author": "Operations Lead",
+    "metadata": {
+      "mimeType": "text/plain",
+      "ownerEmail": "ops@example.test"
+    }
+  },
+  {
+    "id": "sharepoint-quality-checklist",
+    "title": "Quality Checklist.docx",
+    "text": "Quality holds are reviewed by the quality manager before inventory is released.",
+    "contentState": "content_extracted",
+    "sourceUrl": "https://contoso.sharepoint.com/sites/ops/Shared%20Documents/Quality%20Checklist.docx",
+    "provider": "sharepoint",
+    "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "modifiedAt": "2026-06-20T14:30:00Z",
+    "author": "Quality Manager",
+    "metadata": {
+      "size": 4096,
+      "eTag": "\"{12345},1\"",
+      "authorEmail": "quality@example.test"
+    }
+  }
+]

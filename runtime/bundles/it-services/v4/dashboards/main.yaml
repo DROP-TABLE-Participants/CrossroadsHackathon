@@ -1,0 +1,47 @@
+dashboard:
+  widgets:
+  - key: total_customers
+    label: Total customers
+    type: metric
+    report: total_customers
+    metric: total_customers
+  - key: total_projects
+    label: Active projects
+    type: metric
+    report: total_projects
+    metric: total_projects
+  - key: billable_hours_this_month
+    label: Billable hours this month
+    type: metric
+    report: project_hours
+    metric: billable_hours
+  - key: unpaid_invoice_amount
+    label: Unpaid invoice amount
+    type: metric
+    report: unpaid_invoices
+    metric: unpaid_amount
+  - key: overdue_invoice_count
+    label: Overdue invoice count
+    type: metric
+    report: overdue_invoices
+    metric: overdue_count
+  - key: approved_expense_amount
+    label: Approved expense amount
+    type: metric
+    report: approved_expenses
+    metric: total_expenses
+  - key: billable_utilization_hours
+    label: Billable utilization hours
+    type: metric
+    report: employee_utilization
+    metric: billable_hours
+  - key: project_profitability_summary
+    label: Project profitability summary
+    type: metric
+    report: project_profitability
+    metric: invoice_amount
+  - key: average_allocation
+    label: Average allocation
+    type: metric
+    report: resource_allocations
+    metric: average_allocation

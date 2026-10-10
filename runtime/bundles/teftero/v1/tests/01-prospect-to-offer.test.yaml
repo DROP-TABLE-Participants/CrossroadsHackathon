@@ -1,0 +1,35 @@
+test:
+  key: prospect_to_offer
+  label: Create an offer from a prospect
+setup:
+  seed: demo
+steps:
+  - id: create_offer_from_prospect
+    type: run_action
+    entity: prospect
+    record:
+      ref: prospect_acme_crm
+    action: create_offer_from_prospect
+    as_role: sales
+assertions:
+  - type: record_count
+    entity: offer
+    where:
+      field: prospect
+      op: eq
+      value_ref: prospect_acme_crm
+    count: 2
+  - type: record_field_equals
+    entity: prospect
+    record:
+      ref: prospect_acme_crm
+    field: converted
+    value: true
+  - type: record_field_equals
+    entity: prospect
+    record:
+      ref: prospect_acme_crm
+    field: generated_offer
+    value_ref: create_offer_from_prospect
+  - type: audit_event_exists
+    event: offer.created_from_prospect

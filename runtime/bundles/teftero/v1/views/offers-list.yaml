@@ -1,0 +1,15 @@
+module: sales
+view:
+  id: offers_list
+  name: Offers
+  entity: offer
+  fields:
+  - subject
+  - company_id
+  - prospect_id
+  - owner_employee_id
+  - status
+  - offer_date
+  - valid_until
+  - probability_percent
+

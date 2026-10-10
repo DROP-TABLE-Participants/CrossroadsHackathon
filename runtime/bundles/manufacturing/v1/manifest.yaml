@@ -1,0 +1,29 @@
+bundle:
+  id: manufacturing_demo
+  name: Manufacturing Demo ERP
+  version: 0.1.0
+  description: Lightweight make-to-order manufacturing ERP demo for customers, products, BOMs, inventory, sales orders, purchase orders, work orders, production, quality, and reporting.
+runtime:
+  min_version: 0.1.0
+industry: manufacturing
+modules:
+  - id: customers
+    name: Customers
+  - id: vendors
+    name: Vendors
+  - id: products
+    name: Products
+  - id: inventory
+    name: Inventory
+  - id: sales_orders
+    name: Sales Orders
+  - id: purchase_orders
+    name: Purchase Orders
+  - id: work_orders
+    name: Work Orders
+  - id: production
+    name: Production
+  - id: quality
+    name: Quality
+  - id: reports
+    name: Reports

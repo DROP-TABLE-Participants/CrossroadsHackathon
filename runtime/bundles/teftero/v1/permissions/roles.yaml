@@ -1,0 +1,181 @@
+roles:
+  owner:
+    displayName: Owner
+    grants:
+    - action: '*'
+      entity: '*'
+    - scope: action
+      action: execute
+      entity: prospect
+      target: create_offer_from_prospect
+    - scope: action
+      action: execute
+      entity: offer
+      target: generate_contract_from_offer
+  admin:
+    displayName: Admin
+    grants:
+    - action: read
+      entity: '*'
+    - action: create
+      entity: '*'
+    - action: update
+      entity: '*'
+    - action: archive
+      entity: '*'
+    - action: restore
+      entity: '*'
+    - action: start_workflow
+      entity: '*'
+    - action: approve_task
+      entity: '*'
+    - action: reject_task
+      entity: '*'
+    - action: read_task
+      entity: '*'
+    - action: admin
+      entity: '*'
+    - scope: action
+      action: execute
+      entity: prospect
+      target: create_offer_from_prospect
+    - scope: action
+      action: execute
+      entity: offer
+      target: generate_contract_from_offer
+  sales:
+    displayName: Sales
+    grants:
+    - action: read
+      entity: '*'
+    - action: create
+      entity: company
+    - action: update
+      entity: company
+    - action: create
+      entity: contact
+    - action: update
+      entity: contact
+    - action: create
+      entity: prospect
+    - action: update
+      entity: prospect
+    - action: create
+      entity: prospect_activity
+    - action: update
+      entity: prospect_activity
+    - action: create
+      entity: offer
+    - action: update
+      entity: offer
+    - action: create
+      entity: offer_milestone
+    - action: update
+      entity: offer_milestone
+    - action: create
+      entity: offer_price_line
+    - action: update
+      entity: offer_price_line
+    - action: create
+      entity: offer_team_cost_line
+    - action: update
+      entity: offer_team_cost_line
+    - action: create
+      entity: offer_additional_cost_line
+    - action: update
+      entity: offer_additional_cost_line
+    - action: create
+      entity: offer_comment
+    - action: update
+      entity: offer_comment
+    - scope: action
+      action: execute
+      entity: prospect
+      target: create_offer_from_prospect
+  delivery:
+    displayName: Delivery
+    grants:
+    - action: read
+      entity: '*'
+    - action: read
+      entity: time_entry
+    - action: create
+      entity: time_entry
+    - action: update
+      entity: time_entry
+    - action: start_workflow
+      entity: time_entry
+    - action: approve_task
+      entity: time_entry
+    - action: reject_task
+      entity: time_entry
+    - action: read_task
+      entity: time_entry
+    - action: create
+      entity: task
+    - action: update
+      entity: task
+    - action: start_workflow
+      entity: task
+    - action: approve_task
+      entity: task
+    - action: reject_task
+      entity: task
+    - action: read_task
+      entity: task
+    - action: create
+      entity: subtask
+    - action: update
+      entity: subtask
+    - action: create
+      entity: task_comment
+    - action: update
+      entity: task_comment
+    - action: create
+      entity: time_entry_comment
+    - action: update
+      entity: time_entry_comment
+    - action: create
+      entity: subtask_time_log
+    - action: update
+      entity: subtask_time_log
+  finance:
+    displayName: Finance
+    grants:
+    - action: read
+      entity: '*'
+    - action: update
+      entity: offer
+    - action: create
+      entity: contract
+    - action: update
+      entity: contract
+    - action: create
+      entity: contract_milestone
+    - action: update
+      entity: contract_milestone
+    - action: create
+      entity: contract_price_line
+    - action: update
+      entity: contract_price_line
+    - action: create
+      entity: contract_team_cost_line
+    - action: update
+      entity: contract_team_cost_line
+    - action: create
+      entity: contract_additional_cost_line
+    - action: update
+      entity: contract_additional_cost_line
+    - action: create
+      entity: contract_comment
+    - action: update
+      entity: contract_comment
+    - scope: action
+      action: execute
+      entity: offer
+      target: generate_contract_from_offer
+  readonly:
+    displayName: Read only
+    grants:
+    - action: read
+      entity: '*'

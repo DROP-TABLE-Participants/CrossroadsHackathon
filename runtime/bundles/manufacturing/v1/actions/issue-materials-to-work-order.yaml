@@ -1,0 +1,42 @@
+action:
+  key: issue_materials_to_work_order
+  label: Issue Materials to Work Order
+  entity: work_order
+  type: record_action
+  description: Marks a work order in progress and records that material issue should be captured manually.
+  visible_when:
+    - op: neq
+      left:
+        field: status
+      right:
+        value: completed
+    - op: neq
+      left:
+        field: status
+      right:
+        value: cancelled
+  requires:
+    permissions:
+      - entity: work_order
+        action: update
+  steps:
+    - id: mark_in_progress
+      type: update_current_record
+      set:
+        status:
+          value: in_progress
+        actual_start_date:
+          value_from:
+            now: date
+    - id: audit_materials_requested
+      type: audit_event
+      event: work_order.material_issue_requested
+      message: Materials should be issued manually for this work order.
+      metadata:
+        work_order_id:
+          value_from:
+            record: id
+    - id: return_summary
+      type: return_result
+      return:
+        message: Work order marked in progress. Record material issues manually.

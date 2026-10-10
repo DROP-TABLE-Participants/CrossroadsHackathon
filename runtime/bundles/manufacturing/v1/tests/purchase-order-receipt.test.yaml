@@ -1,0 +1,28 @@
+test:
+  key: purchase_order_receipt
+  label: Receive purchase order
+setup:
+  seed: demo
+steps:
+  - id: receive_purchase_order
+    type: run_action
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    action: receive_purchase_order
+    as_role: purchasing
+assertions:
+  - type: record_field_equals
+    entity: purchase_order
+    record:
+      ref: purchase_order_demo
+    field: status
+    value: received
+  - type: record_exists
+    entity: stock_movement
+    where:
+      field: reference_type
+      op: eq
+      value: purchase_order
+  - type: audit_event_exists
+    event: purchase_order.received

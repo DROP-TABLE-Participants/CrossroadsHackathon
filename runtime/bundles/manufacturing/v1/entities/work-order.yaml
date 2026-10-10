@@ -1,0 +1,69 @@
+module: work_orders
+entity:
+  id: work_order
+  name: work_orders
+  displayName: Work orders
+  display:
+    primary: product_id
+    secondary: status
+  fields:
+    - id: sales_order
+      name: sales_order_id
+      displayName: Sales order
+      type: relation
+      required: false
+      references: sales_order
+    - id: sales_order_line
+      name: sales_order_line_id
+      displayName: Sales order line
+      type: relation
+      required: false
+      references: sales_order_line
+    - id: product
+      name: product_id
+      displayName: Product
+      type: relation
+      required: true
+      references: product
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - draft
+        - released
+        - in_progress
+        - completed
+        - cancelled
+    - id: planned_start_date
+      name: planned_start_date
+      displayName: Planned start date
+      type: date
+      required: false
+    - id: planned_end_date
+      name: planned_end_date
+      displayName: Planned end date
+      type: date
+      required: false
+    - id: actual_start_date
+      name: actual_start_date
+      displayName: Actual start date
+      type: date
+      required: false
+    - id: actual_end_date
+      name: actual_end_date
+      displayName: Actual end date
+      type: date
+      required: false
+    - id: assigned_to
+      name: assigned_to_id
+      displayName: Assigned to
+      type: relation
+      required: false
+      references: employee

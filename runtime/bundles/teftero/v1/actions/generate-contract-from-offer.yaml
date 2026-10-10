@@ -1,0 +1,232 @@
+action:
+  key: generate_contract_from_offer
+  label: Generate Contract from Offer
+  entity: offer
+  type: record_action
+  description: Creates a contract and copies offer milestones, price lines, team
+    cost lines, and additional cost lines into contract rows.
+  visible_when:
+  - op: eq
+    left:
+      field: status
+    right:
+      value: approved
+  requires:
+    permissions:
+    - entity: offer
+      action: update
+    - entity: contract
+      action: create
+    - entity: contract_milestone
+      action: create
+    - entity: contract_price_line
+      action: create
+    - entity: contract_team_cost_line
+      action: create
+    - entity: contract_additional_cost_line
+      action: create
+    - entity: offer_milestone
+      action: read
+    - entity: offer_price_line
+      action: read
+    - entity: offer_team_cost_line
+      action: read
+    - entity: offer_additional_cost_line
+      action: read
+  steps:
+  - id: find_offer_milestones
+    type: query_records
+    entity: offer_milestone
+    where:
+    - field: offer
+      op: eq
+      value_from:
+        record: id
+  - id: find_offer_price_lines
+    type: query_records
+    entity: offer_price_line
+    where:
+    - field: offer
+      op: eq
+      value_from:
+        record: id
+  - id: find_offer_team_cost_lines
+    type: query_records
+    entity: offer_team_cost_line
+    where:
+    - field: offer
+      op: eq
+      value_from:
+        record: id
+  - id: find_offer_additional_cost_lines
+    type: query_records
+    entity: offer_additional_cost_line
+    where:
+    - field: offer
+      op: eq
+      value_from:
+        record: id
+  - id: create_contract
+    type: create_record
+    entity: contract
+    values:
+      offer:
+        value_from:
+          record: id
+      company:
+        value_from:
+          record: company
+      contact:
+        value_from:
+          record: contact
+      owner_employee:
+        value_from:
+          record: owner_employee
+      title:
+        template: Contract for {{record.subject}}
+      status:
+        value: active
+      start_date:
+        value_from:
+          now: date
+      currency:
+        value_from:
+          record: currency
+      total_value:
+        aggregate:
+          result: find_offer_price_lines
+          op: sum
+          expression:
+            op: multiply
+            left:
+              value_from:
+                item: quantity
+            right:
+              value_from:
+                item: unit_price
+      active:
+        value: true
+  - id: mark_offer_generated_contract
+    type: update_current_record
+    set:
+      is_generated_contract:
+        value: true
+      generated_contract:
+        value_from:
+          step: create_contract
+          field: id
+  - id: create_contract_milestones
+    type: create_records_for_each
+    entity: contract_milestone
+    foreach:
+      result: find_offer_milestones
+    values:
+      contract:
+        value_from:
+          step: create_contract
+          field: id
+      offer_milestone:
+        value_from:
+          item: id
+      name:
+        value_from:
+          item: name
+      due_date:
+        value_from:
+          item: due_date
+      amount:
+        value_from:
+          item: amount
+      status:
+        value_from:
+          item: status
+  - id: create_contract_price_lines
+    type: create_records_for_each
+    entity: contract_price_line
+    foreach:
+      result: find_offer_price_lines
+    values:
+      contract:
+        value_from:
+          step: create_contract
+          field: id
+      offer_price_line:
+        value_from:
+          item: id
+      service_catalogue:
+        value_from:
+          item: service_catalogue
+      description:
+        value_from:
+          item: description
+      quantity:
+        value_from:
+          item: quantity
+      unit_price:
+        value_from:
+          item: unit_price
+  - id: create_contract_team_cost_lines
+    type: create_records_for_each
+    entity: contract_team_cost_line
+    foreach:
+      result: find_offer_team_cost_lines
+    values:
+      contract:
+        value_from:
+          step: create_contract
+          field: id
+      offer_team_cost_line:
+        value_from:
+          item: id
+      employee:
+        value_from:
+          item: employee
+      description:
+        value_from:
+          item: description
+      hours:
+        value_from:
+          item: hours
+      hourly_cost:
+        value_from:
+          item: hourly_cost
+  - id: create_contract_additional_cost_lines
+    type: create_records_for_each
+    entity: contract_additional_cost_line
+    foreach:
+      result: find_offer_additional_cost_lines
+    values:
+      contract:
+        value_from:
+          step: create_contract
+          field: id
+      offer_additional_cost_line:
+        value_from:
+          item: id
+      description:
+        value_from:
+          item: description
+      category:
+        value_from:
+          item: category
+      cost:
+        value_from:
+          item: cost
+  - id: audit_contract_generated
+    type: audit_event
+    event: contract.generated_from_offer
+    message: Contract generated from approved offer.
+    metadata:
+      contract_id:
+        value_from:
+          step: create_contract
+          field: id
+      offer_id:
+        value_from:
+          record: id
+  - id: return_contract
+    type: return_result
+    return:
+      step: create_contract
+      entity: contract
+      message: Contract generated.

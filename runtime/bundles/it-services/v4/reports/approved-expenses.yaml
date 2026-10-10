@@ -1,0 +1,19 @@
+report:
+  key: approved_expenses
+  label: Approved expenses
+  description: Approved and reimbursed expense totals.
+  source: expense
+  filters:
+  - field: status
+    op: in
+    values:
+    - approved
+    - reimbursed
+  metrics:
+  - key: expense_count
+    label: Approved expenses
+    op: count
+  - key: total_expenses
+    label: Approved expense amount
+    op: sum
+    field: amount

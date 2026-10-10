@@ -1,0 +1,32 @@
+module: delivery
+entity:
+  id: time_entry_comment
+  name: time_entry_comments
+  displayName: Time Entry Comments
+  display:
+    primary: body
+    secondary: commented_at
+  fields:
+  - id: time_entry
+    name: time_entry_id
+    displayName: Time entry
+    type: relation
+    required: true
+    references: time_entry
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: false
+    references: employee
+  - id: body
+    name: body
+    displayName: Body
+    type: text
+    required: true
+  - id: commented_at
+    name: commented_at
+    displayName: Commented at
+    type: datetime
+    required: false
+

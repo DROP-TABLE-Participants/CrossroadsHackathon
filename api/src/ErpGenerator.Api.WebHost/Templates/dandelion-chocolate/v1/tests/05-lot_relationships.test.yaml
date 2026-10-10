@@ -1,0 +1,78 @@
+{
+  "schema": "erpgenerator.bundle-acceptance-test.v3",
+  "test": {
+    "key": "lot_relationships",
+    "label": "Ingredient lot type is checked before posting",
+    "contract_hash": "43754d475b218d894b064ec9f28a4669c45b5021cf7aaca63c8ab72f9daddf3d",
+    "suite_hash": "8d6fd46a426066c29096464b3b797f699a9fe84b1ccb997464739bfd0ebde663",
+    "suite_index": 4
+  },
+  "setup": {
+    "seed": "demo",
+    "seed_hash": "1363698f512505fe150fc029ba1778880cb5a278b740973cbea5786b70905f54"
+  },
+  "actors": [
+    {
+      "id": "operator",
+      "roles": [
+        "demo_operator"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "wrong_lot",
+      "type": "create_record",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "values": {
+        "name": "Wrong sugar lot",
+        "batch": {
+          "ref": "batch_demo"
+        },
+        "lot": {
+          "ref": "lot_belize"
+        },
+        "kind": "sugar",
+        "quantity": 5
+      }
+    },
+    {
+      "id": "reject_lot",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "wrong_lot"
+      },
+      "action": "post_material_issue",
+      "expected": {
+        "outcome": "business_rule_rejected",
+        "code": "action.guard",
+        "target": "stock_guard"
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "id": "lot_intact",
+      "after_step": "reject_lot",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_belize"
+      },
+      "field": "quantity",
+      "value": 100
+    },
+    {
+      "id": "no_ledger",
+      "after_step": "reject_lot",
+      "type": "record_count",
+      "entity": "stock_movement",
+      "count": 6
+    }
+  ]
+}

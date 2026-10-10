@@ -1,0 +1,61 @@
+module: operations
+workflow:
+  id: expense_approval
+  name: Expense Approval
+  entity: expense
+  trigger:
+    action: submit_for_approval
+  steps:
+  - id: mark_submitted
+    type: update_record
+    set:
+      status: submitted
+  - id: audit_submitted
+    type: audit_event
+    event: expense.submitted
+    message: Expense submitted for approval.
+  - id: request_project_manager_approval
+    type: approval
+    label: Project Manager Approval
+    assignedTo:
+      type: relation_user
+      path: project.project_manager
+      requiredRole: project_manager
+      fallbackRole: owner
+    approveLabel: Approve expense
+    rejectLabel: Reject expense
+  - id: high_value_owner_review
+    type: condition
+    label: High Value Owner Review
+    condition:
+      op: gt
+      left:
+        field: amount
+      right:
+        value: 500
+    then:
+    - id: request_owner_expense_approval
+      type: approval
+      label: Owner Expense Approval
+      assignedTo:
+        type: role
+        role: owner
+      approveLabel: Approve expense
+      rejectLabel: Reject expense
+  - id: mark_approved
+    type: update_record
+    set:
+      status: approved
+  - id: audit_approved
+    type: audit_event
+    event: expense.approved
+    message: Expense approved.
+  onRejected:
+  - id: mark_rejected
+    type: update_record
+    set:
+      status: rejected
+  - id: audit_rejected
+    type: audit_event
+    event: expense.rejected
+    message: Expense rejected.

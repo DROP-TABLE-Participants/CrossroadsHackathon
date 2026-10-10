@@ -1,0 +1,39 @@
+module: sales_orders
+entity:
+  id: shipment
+  name: shipments
+  displayName: Shipments
+  display:
+    primary: sales_order_id
+    secondary: status
+  fields:
+    - id: sales_order
+      name: sales_order_id
+      displayName: Sales order
+      type: relation
+      required: true
+      references: sales_order
+    - id: ship_date
+      name: ship_date
+      displayName: Ship date
+      type: date
+      required: false
+    - id: carrier
+      name: carrier
+      displayName: Carrier
+      type: string
+      required: false
+    - id: tracking_number
+      name: tracking_number
+      displayName: Tracking number
+      type: string
+      required: false
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - pending
+        - shipped
+        - delivered

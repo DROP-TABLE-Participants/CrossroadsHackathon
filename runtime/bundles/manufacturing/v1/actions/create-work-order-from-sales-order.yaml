@@ -1,0 +1,100 @@
+action:
+  key: create_work_order_from_sales_order
+  label: Create Work Order from Sales Order
+  entity: sales_order
+  type: record_action
+  description: Creates draft work orders from the sales order lines and marks the sales order in production.
+  visible_when:
+    - op: eq
+      left:
+        field: status
+      right:
+        value: approved
+  requires:
+    permissions:
+      - entity: work_order
+        action: create
+      - entity: sales_order
+        action: update
+      - entity: sales_order_line
+        action: read
+      - entity: work_order
+        action: read
+  steps:
+    - id: find_sales_order_lines
+      type: query_records
+      entity: sales_order_line
+      where:
+        - field: sales_order
+          op: eq
+          value_from:
+            record: id
+    - id: ensure_sales_order_lines_exist
+      type: guard
+      condition:
+        op: gt
+        left:
+          result_count: find_sales_order_lines
+        right:
+          value: 0
+      error: No sales order lines found.
+    - id: find_existing_work_orders
+      type: query_records
+      entity: work_order
+      where:
+        - field: sales_order
+          op: eq
+          value_from:
+            record: id
+    - id: ensure_no_existing_work_orders
+      type: guard
+      condition:
+        op: eq
+        left:
+          result_count: find_existing_work_orders
+        right:
+          value: 0
+      error: Work orders already exist for this sales order.
+    - id: create_work_orders
+      type: create_records_for_each
+      entity: work_order
+      foreach:
+        result: find_sales_order_lines
+      values:
+        sales_order:
+          value_from:
+            record: id
+        sales_order_line:
+          value_from:
+            item: id
+        product:
+          value_from:
+            item: product
+        quantity:
+          value_from:
+            item: quantity
+        status:
+          value: draft
+        planned_start_date:
+          value_from:
+            now: date
+        planned_end_date:
+          value_from:
+            now: date
+    - id: mark_sales_order_in_production
+      type: update_current_record
+      set:
+        status:
+          value: in_production
+    - id: audit_work_orders_created
+      type: audit_event
+      event: work_order.created_from_sales_order
+      message: Work orders created from sales order lines.
+      metadata:
+        sales_order_id:
+          value_from:
+            record: id
+    - id: return_summary
+      type: return_result
+      return:
+        message: Work orders created from sales order.

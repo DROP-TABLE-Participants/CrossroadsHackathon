@@ -1,0 +1,51 @@
+{
+  "module": "materials",
+  "entity": {
+    "id": "material",
+    "name": "materials",
+    "displayName": "Ingredients & packaging",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Material",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "kind",
+        "name": "kind",
+        "displayName": "Kind",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "cocoa",
+          "sugar",
+          "wrapper"
+        ]
+      },
+      {
+        "id": "unit",
+        "name": "unit",
+        "displayName": "Unit",
+        "type": "enum",
+        "required": true,
+        "options": [
+          "kg",
+          "units"
+        ]
+      },
+      {
+        "id": "supplier",
+        "name": "supplier",
+        "displayName": "Supplier",
+        "type": "relation",
+        "required": true,
+        "references": "supplier"
+      }
+    ]
+  }
+}

@@ -1,0 +1,398 @@
+seed:
+  key: demo
+  label: Demo Teftero Company
+records:
+  - ref: category_consulting
+    entity: business_category
+    values:
+      code: CONSULTING
+      name: Consulting
+      description: Professional services and ERP implementation.
+      active: true
+  - ref: office_sofia
+    entity: office
+    values:
+      name: Sofia HQ
+      city: Sofia
+      country: Bulgaria
+      address: 1 Demo Street
+      active: true
+  - ref: position_partner
+    entity: position
+    values:
+      title: Partner
+      level: executive
+      active: true
+  - ref: position_consultant
+    entity: position
+    values:
+      title: ERP Consultant
+      level: senior
+      active: true
+  - ref: employee_owner
+    entity: employee
+    values:
+      office:
+        ref: office_sofia
+      position:
+        ref: position_partner
+      full_name: Mira Owner
+      email: owner@teftero.example
+      phone: "+359100000001"
+      active: true
+      hire_date: "2024-01-01"
+      hourly_cost: 80
+  - ref: employee_consultant
+    entity: employee
+    values:
+      office:
+        ref: office_sofia
+      position:
+        ref: position_consultant
+      full_name: Ivan Consultant
+      email: consultant@teftero.example
+      phone: "+359100000002"
+      active: true
+      hire_date: "2024-03-01"
+      hourly_cost: 55
+  - ref: org_delivery
+    entity: organization_structure
+    values:
+      manager_employee:
+        ref: employee_owner
+      name: Delivery
+      type: department
+      active: true
+  - ref: company_acme
+    entity: company
+    values:
+      business_category:
+        ref: category_consulting
+      name: Acme Manufacturing
+      registration_number: BG123456789
+      vat_number: BG123456789
+      website: https://acme.example
+      email: office@acme.example
+      phone: "+359200000001"
+      status: active
+      notes: Demo customer for Teftero v1.
+  - ref: contact_ana
+    entity: contact
+    values:
+      company:
+        ref: company_acme
+      full_name: Ana Sponsor
+      email: ana@acme.example
+      phone: "+359200000002"
+      position: Operations Director
+      is_primary: true
+  - ref: employee_contact_owner
+    entity: employee_contact
+    values:
+      employee:
+        ref: employee_owner
+      contact:
+        ref: contact_ana
+      company:
+        ref: company_acme
+      label: Executive sponsor
+      email: ana@acme.example
+      phone: "+359200000002"
+  - ref: service_discovery
+    entity: service_catalogue
+    values:
+      business_category:
+        ref: category_consulting
+      service_name: ERP Discovery
+      description: Discovery and implementation planning.
+      default_unit_price: 120
+      active: true
+  - ref: service_configuration
+    entity: service_catalogue
+    values:
+      business_category:
+        ref: category_consulting
+      service_name: ERP Configuration
+      description: Runtime configuration and rollout.
+      default_unit_price: 150
+      active: true
+  - ref: status_qualified
+    entity: prospect_status
+    values:
+      code: qualified
+      name: Qualified
+      probability_percent: 60
+      final: false
+  - ref: prospect_acme_crm
+    entity: prospect
+    values:
+      company:
+        ref: company_acme
+      contact:
+        ref: contact_ana
+      owner_employee:
+        ref: employee_owner
+      status:
+        ref: status_qualified
+      title: CRM modernization
+      stage: qualified
+      source: referral
+      estimated_value: 18000
+      probability_percent: 60
+      expected_close_date: "2026-08-15"
+      notes: Demo prospect for offer creation.
+  - ref: prospect_activity_intro
+    entity: prospect_activity
+    values:
+      prospect:
+        ref: prospect_acme_crm
+      employee:
+        ref: employee_owner
+      activity_date: "2026-07-01"
+      type: meeting
+      summary: Initial discovery meeting
+      notes: Confirmed interest in replacing spreadsheets.
+  - ref: offer_crm_implementation
+    entity: offer
+    values:
+      prospect:
+        ref: prospect_acme_crm
+      company:
+        ref: company_acme
+      contact:
+        ref: contact_ana
+      owner_employee:
+        ref: employee_owner
+      subject: CRM implementation package
+      status: approved
+      offer_date: "2026-07-02"
+      valid_until: "2026-08-01"
+      currency: EUR
+      probability_percent: 90
+      active: true
+      is_generated_contract: false
+  - ref: offer_milestone_discovery
+    entity: offer_milestone
+    values:
+      offer:
+        ref: offer_crm_implementation
+      name: Discovery complete
+      due_date: "2026-07-20"
+      amount: 4000
+      status: planned
+  - ref: offer_price_discovery
+    entity: offer_price_line
+    values:
+      offer:
+        ref: offer_crm_implementation
+      service_catalogue:
+        ref: service_discovery
+      description: Discovery workshops
+      quantity: 100
+      unit_price: 120
+      billable: true
+  - ref: offer_price_configuration
+    entity: offer_price_line
+    values:
+      offer:
+        ref: offer_crm_implementation
+      service_catalogue:
+        ref: service_configuration
+      description: Configuration sprint
+      quantity: 20
+      unit_price: 150
+      billable: true
+  - ref: offer_team_cost_consultant
+    entity: offer_team_cost_line
+    values:
+      offer:
+        ref: offer_crm_implementation
+      employee:
+        ref: employee_consultant
+      description: Consultant delivery time
+      hours: 90
+      hourly_cost: 55
+  - ref: offer_additional_cost_travel
+    entity: offer_additional_cost_line
+    values:
+      offer:
+        ref: offer_crm_implementation
+      description: On-site travel
+      category: travel
+      cost: 600
+  - ref: offer_comment_scope
+    entity: offer_comment
+    values:
+      offer:
+        ref: offer_crm_implementation
+      employee:
+        ref: employee_owner
+      body: Scope confirmed for CRM implementation package.
+      commented_at: "2026-07-02T10:00:00Z"
+  - ref: contract_erp
+    entity: contract
+    values:
+      offer:
+        ref: offer_crm_implementation
+      company:
+        ref: company_acme
+      contact:
+        ref: contact_ana
+      owner_employee:
+        ref: employee_owner
+      title: CRM implementation contract
+      status: active
+      start_date: "2026-07-10"
+      end_date: "2026-09-30"
+      currency: EUR
+      total_value: 15000
+      active: true
+  - ref: contract_milestone_discovery
+    entity: contract_milestone
+    values:
+      contract:
+        ref: contract_erp
+      offer_milestone:
+        ref: offer_milestone_discovery
+      name: Discovery complete
+      due_date: "2026-07-20"
+      amount: 4000
+      status: planned
+  - ref: contract_price_discovery
+    entity: contract_price_line
+    values:
+      contract:
+        ref: contract_erp
+      offer_price_line:
+        ref: offer_price_discovery
+      service_catalogue:
+        ref: service_discovery
+      description: Discovery workshops
+      quantity: 100
+      unit_price: 120
+  - ref: contract_team_cost_consultant
+    entity: contract_team_cost_line
+    values:
+      contract:
+        ref: contract_erp
+      offer_team_cost_line:
+        ref: offer_team_cost_consultant
+      employee:
+        ref: employee_consultant
+      description: Consultant delivery time
+      hours: 90
+      hourly_cost: 55
+  - ref: contract_additional_cost_travel
+    entity: contract_additional_cost_line
+    values:
+      contract:
+        ref: contract_erp
+      offer_additional_cost_line:
+        ref: offer_additional_cost_travel
+      description: On-site travel
+      category: travel
+      cost: 600
+  - ref: contract_comment_kickoff
+    entity: contract_comment
+    values:
+      contract:
+        ref: contract_erp
+      employee:
+        ref: employee_owner
+      body: Kickoff date agreed with customer.
+      commented_at: "2026-07-05T09:00:00Z"
+  - ref: time_entry_approved
+    entity: time_entry
+    values:
+      contract:
+        ref: contract_erp
+      offer:
+        ref: offer_crm_implementation
+      employee:
+        ref: employee_consultant
+      entry_date: "2026-07-11"
+      hours: 6
+      billable: true
+      rate: 120
+      status: approved
+      invoiced: false
+      description: Discovery workshop preparation.
+  - ref: time_entry_submit
+    entity: time_entry
+    values:
+      contract:
+        ref: contract_erp
+      offer:
+        ref: offer_crm_implementation
+      employee:
+        ref: employee_consultant
+      entry_date: "2026-07-12"
+      hours: 9
+      billable: true
+      rate: 120
+      status: draft
+      invoiced: false
+      description: Configuration workshop.
+  - ref: time_entry_comment_review
+    entity: time_entry_comment
+    values:
+      time_entry:
+        ref: time_entry_approved
+      employee:
+        ref: employee_owner
+      body: Hours reviewed with delivery lead.
+      commented_at: "2026-07-12T17:30:00Z"
+  - ref: task_setup
+    entity: task
+    values:
+      contract:
+        ref: contract_erp
+      offer:
+        ref: offer_crm_implementation
+      company:
+        ref: company_acme
+      assignee:
+        ref: employee_consultant
+      title: Configure CRM workspace
+      description: Configure first CRM workspace for Acme.
+      status: in_progress
+      priority: high
+      due_date: "2026-07-18"
+  - ref: subtask_fields
+    entity: subtask
+    values:
+      task:
+        ref: task_setup
+      assignee:
+        ref: employee_consultant
+      title: Configure pipeline fields
+      status: todo
+      due_date: "2026-07-14"
+  - ref: task_dependency_scope
+    entity: task_dependency
+    values:
+      task:
+        ref: task_setup
+      depends_on_task:
+        ref: task_setup
+      dependency_type: relates_to
+  - ref: task_comment_setup
+    entity: task_comment
+    values:
+      task:
+        ref: task_setup
+      employee:
+        ref: employee_owner
+      body: Prioritize the customer pipeline fields.
+      commented_at: "2026-07-13T09:00:00Z"
+  - ref: subtask_log_fields
+    entity: subtask_time_log
+    values:
+      subtask:
+        ref: subtask_fields
+      employee:
+        ref: employee_consultant
+      logged_on: "2026-07-13"
+      hours: 2
+      billable: true
+      notes: Initial field setup.

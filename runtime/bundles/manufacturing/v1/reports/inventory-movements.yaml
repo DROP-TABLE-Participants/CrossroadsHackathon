@@ -1,0 +1,16 @@
+report:
+  key: inventory_movements
+  label: Inventory movements
+  description: Stock movement count and quantity grouped by movement type.
+  source: stock_movement
+  group_by:
+    - field: movement_type
+      label: Movement type
+  metrics:
+    - key: movement_count
+      label: Movements
+      op: count
+    - key: movement_quantity
+      label: Movement quantity
+      op: sum
+      field: quantity

@@ -1,0 +1,41 @@
+module: foundations
+entity:
+  id: contact
+  name: contacts
+  displayName: Contacts
+  display:
+    primary: full_name
+    secondary: email
+  fields:
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: true
+    references: company
+  - id: full_name
+    name: full_name
+    displayName: Full name
+    type: string
+    required: true
+  - id: email
+    name: email
+    displayName: Email
+    type: string
+    required: false
+  - id: phone
+    name: phone
+    displayName: Phone
+    type: string
+    required: false
+  - id: position
+    name: position
+    displayName: Position
+    type: string
+    required: false
+  - id: is_primary
+    name: is_primary
+    displayName: Primary contact
+    type: boolean
+    required: false
+

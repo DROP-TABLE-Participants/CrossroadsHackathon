@@ -1,0 +1,38 @@
+{
+  "bundle": {
+    "id": "dandelion_chocolate",
+    "name": "Dandelion Chocolate · Simulated manufacturing",
+    "version": "1.0.0",
+    "description": "Curated API-owned hackathon template, adapted from manufacturing v1. All operational data and material quantities are simulated."
+  },
+  "runtime": {
+    "min_version": "0.1.0"
+  },
+  "industry": "Chocolate manufacturing",
+  "modules": [
+    {
+      "id": "catalog",
+      "name": "Catalog"
+    },
+    {
+      "id": "materials",
+      "name": "Materials"
+    },
+    {
+      "id": "production",
+      "name": "Production"
+    },
+    {
+      "id": "quality",
+      "name": "Quality"
+    },
+    {
+      "id": "sales",
+      "name": "Sales"
+    },
+    {
+      "id": "inventory",
+      "name": "Inventory"
+    }
+  ]
+}

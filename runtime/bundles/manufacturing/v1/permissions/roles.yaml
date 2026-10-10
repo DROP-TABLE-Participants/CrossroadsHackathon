@@ -1,0 +1,229 @@
+roles:
+  owner:
+    displayName: Owner
+    grants:
+      - action: '*'
+        entity: '*'
+      - scope: action
+        action: execute
+        entity: sales_order
+        target: create_work_order_from_sales_order
+      - scope: action
+        action: execute
+        entity: purchase_order
+        target: receive_purchase_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: complete_work_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: issue_materials_to_work_order
+  admin:
+    displayName: Admin
+    grants:
+      - action: read
+        entity: '*'
+      - action: create
+        entity: '*'
+      - action: update
+        entity: '*'
+      - action: archive
+        entity: '*'
+      - action: restore
+        entity: '*'
+      - action: start_workflow
+        entity: '*'
+      - action: approve_task
+        entity: '*'
+      - action: reject_task
+        entity: '*'
+      - action: read_task
+        entity: '*'
+      - action: admin
+        entity: '*'
+      - scope: action
+        action: execute
+        entity: sales_order
+        target: create_work_order_from_sales_order
+      - scope: action
+        action: execute
+        entity: purchase_order
+        target: receive_purchase_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: complete_work_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: issue_materials_to_work_order
+  sales:
+    displayName: Sales
+    grants:
+      - action: read
+        entity: '*'
+      - action: read
+        entity: sales_order
+      - action: create
+        entity: customer
+      - action: update
+        entity: customer
+      - action: create
+        entity: sales_order
+      - action: update
+        entity: sales_order
+      - action: create
+        entity: sales_order_line
+      - action: update
+        entity: sales_order_line
+      - action: create
+        entity: work_order
+      - action: create
+        entity: shipment
+      - action: update
+        entity: shipment
+      - action: start_workflow
+        entity: sales_order
+      - action: read_task
+        entity: sales_order
+      - action: approve_task
+        entity: sales_order
+      - action: reject_task
+        entity: sales_order
+      - scope: action
+        action: execute
+        entity: sales_order
+        target: create_work_order_from_sales_order
+  purchasing:
+    displayName: Purchasing
+    grants:
+      - action: read
+        entity: '*'
+      - action: read
+        entity: purchase_order
+      - action: create
+        entity: vendor
+      - action: update
+        entity: vendor
+      - action: create
+        entity: item
+      - action: update
+        entity: item
+      - action: create
+        entity: purchase_order
+      - action: update
+        entity: purchase_order
+      - action: create
+        entity: purchase_order_line
+      - action: update
+        entity: purchase_order_line
+      - action: create
+        entity: stock_movement
+      - action: start_workflow
+        entity: purchase_order
+      - action: approve_task
+        entity: purchase_order
+      - action: reject_task
+        entity: purchase_order
+      - action: read_task
+        entity: purchase_order
+      - scope: action
+        action: execute
+        entity: purchase_order
+        target: receive_purchase_order
+  production_manager:
+    displayName: Production manager
+    grants:
+      - action: read
+        entity: '*'
+      - action: read
+        entity: work_order
+      - action: create
+        entity: product
+      - action: update
+        entity: product
+      - action: create
+        entity: bill_of_material
+      - action: update
+        entity: bill_of_material
+      - action: create
+        entity: bill_of_material_line
+      - action: update
+        entity: bill_of_material_line
+      - action: create
+        entity: routing
+      - action: update
+        entity: routing
+      - action: create
+        entity: routing_operation
+      - action: update
+        entity: routing_operation
+      - action: create
+        entity: work_center
+      - action: update
+        entity: work_center
+      - action: create
+        entity: work_order
+      - action: update
+        entity: work_order
+      - action: create
+        entity: production_receipt
+      - action: update
+        entity: production_receipt
+      - action: start_workflow
+        entity: work_order
+      - action: approve_task
+        entity: work_order
+      - action: reject_task
+        entity: work_order
+      - action: read_task
+        entity: work_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: complete_work_order
+      - scope: action
+        action: execute
+        entity: work_order
+        target: issue_materials_to_work_order
+  operator:
+    displayName: Operator
+    grants:
+      - action: read
+        entity: '*'
+      - action: update
+        entity: work_order
+      - action: create
+        entity: material_issue
+      - action: update
+        entity: material_issue
+      - action: create
+        entity: production_receipt
+      - action: update
+        entity: production_receipt
+  quality:
+    displayName: Quality
+    grants:
+      - action: read
+        entity: '*'
+      - action: read
+        entity: quality_inspection
+      - action: create
+        entity: quality_inspection
+      - action: update
+        entity: quality_inspection
+      - action: start_workflow
+        entity: quality_inspection
+      - action: approve_task
+        entity: quality_inspection
+      - action: reject_task
+        entity: quality_inspection
+      - action: read_task
+        entity: quality_inspection
+  readonly:
+    displayName: Read only
+    grants:
+      - action: read
+        entity: '*'

@@ -1,0 +1,34 @@
+{
+  "dashboard": {
+    "widgets": [
+      {
+        "key": "bars_ordered",
+        "label": "Bars ordered · 600",
+        "type": "metric",
+        "report": "bars_ordered",
+        "metric": "quantity"
+      },
+      {
+        "key": "bars_available",
+        "label": "Bars available",
+        "type": "metric",
+        "report": "bars_available",
+        "metric": "quantity"
+      },
+      {
+        "key": "bars_to_produce",
+        "label": "Bars to produce",
+        "type": "metric",
+        "report": "bars_to_produce",
+        "metric": "quantity"
+      },
+      {
+        "key": "bars_shipped",
+        "label": "Bars shipped",
+        "type": "metric",
+        "report": "bars_shipped",
+        "metric": "quantity"
+      }
+    ]
+  }
+}

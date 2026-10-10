@@ -1,0 +1,27 @@
+{
+  "module": "sales",
+  "entity": {
+    "id": "customer",
+    "name": "customers",
+    "displayName": "Customers · simulated",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Customer",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "displayName": "Notes",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}

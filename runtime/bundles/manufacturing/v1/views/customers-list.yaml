@@ -1,0 +1,10 @@
+module: customers
+view:
+  id: customers_list
+  name: Customers
+  entity: customer
+  fields:
+    - name
+    - email
+    - phone
+    - active

@@ -1,0 +1,56 @@
+{
+  "module": "production",
+  "entity": {
+    "id": "recipe",
+    "name": "recipes",
+    "displayName": "Recipes · simulated",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Recipe",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "product",
+        "name": "product",
+        "displayName": "Chocolate",
+        "type": "relation",
+        "required": true,
+        "references": "product"
+      },
+      {
+        "id": "cocoa_kg_per_bar",
+        "name": "cocoa_kg_per_bar",
+        "displayName": "Processed cocoa kg / bar",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "sugar_kg_per_bar",
+        "name": "sugar_kg_per_bar",
+        "displayName": "Sugar kg / bar",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "wrappers_per_bar",
+        "name": "wrappers_per_bar",
+        "displayName": "Wrappers / bar",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "displayName": "Manual issue instructions",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}

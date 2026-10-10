@@ -1,0 +1,30 @@
+report:
+  key: employee_utilization
+  label: Employee utilization
+  description: Logged and billable hours grouped by employee. Capacity-based percentages
+    need cross-entity formulas in a later report pass.
+  source: timesheet
+  group_by:
+  - field: employee
+    label: Employee
+  metrics:
+  - key: logged_hours
+    label: Logged hours
+    op: sum
+    field: hours
+  - key: billable_hours
+    label: Billable hours
+    op: sum
+    field: hours
+    filter:
+      field: billable
+      op: eq
+      value: true
+  - key: approved_hours
+    label: Approved hours
+    op: sum
+    field: hours
+    filter:
+      field: approval_status
+      op: eq
+      value: approved

@@ -1,0 +1,1198 @@
+id: sample_operations_erp
+name: IT Services ERP
+version: 0.4.0
+description: A declarative IT-services ERP Bundle covering projects, time, invoices, expenses, allocations, approval workflows, reports, dashboard widgets, and safe business actions.
+modules:
+  - id: operations
+    name: Operations
+    entities:
+      - id: customer
+        name: customers
+        displayName: Customers
+        display:
+          primary: company_name
+          secondary: contact_email
+        fields:
+          - id: company_name
+            name: company_name
+            displayName: Company name
+            type: string
+            required: true
+            unique: true
+          - id: contact_email
+            name: contact_email
+            displayName: Contact email
+            type: string
+            required: true
+          - id: status
+            name: status
+            displayName: Status
+            type: string
+            required: true
+      - id: project
+        name: projects
+        displayName: Projects
+        display:
+          primary: title
+          secondary: customer_id
+        fields:
+          - id: customer
+            name: customer_id
+            displayName: Customer
+            type: relation
+            required: true
+            references: customer
+          - id: title
+            name: title
+            displayName: Title
+            type: string
+            required: true
+          - id: budget
+            name: budget
+            displayName: Budget
+            type: money
+            required: false
+          - id: starts_on
+            name: starts_on
+            displayName: Starts on
+            type: date
+            required: false
+          - id: ends_on
+            name: ends_on
+            displayName: Ends on
+            type: date
+            required: false
+          - id: project_manager
+            name: project_manager_id
+            displayName: Project manager
+            type: relation
+            required: false
+            references: employee
+          - id: status
+            name: status
+            displayName: Status
+            type: enum
+            required: false
+            options:
+              - planned
+              - active
+              - paused
+              - completed
+              - cancelled
+          - id: priority
+            name: priority
+            displayName: Priority
+            type: enum
+            required: false
+            options:
+              - low
+              - normal
+              - high
+      - id: employee
+        name: employees
+        displayName: Employees
+        display:
+          primary: full_name
+          secondary: email
+        fields:
+          - id: full_name
+            name: full_name
+            displayName: Full name
+            type: string
+            required: true
+          - id: email
+            name: email
+            displayName: Email
+            type: string
+            required: true
+            unique: true
+          - id: role
+            name: role
+            displayName: Role
+            type: string
+            required: false
+          - id: title
+            name: title
+            displayName: Title
+            type: string
+            required: false
+          - id: active
+            name: active
+            displayName: Active
+            type: boolean
+            required: false
+          - id: hourly_cost
+            name: hourly_cost
+            displayName: Hourly cost
+            type: money
+            required: false
+          - id: weekly_capacity_hours
+            name: weekly_capacity_hours
+            displayName: Weekly capacity hours
+            type: number
+            required: false
+      - id: timesheet
+        name: timesheets
+        displayName: Timesheets
+        display:
+          primary: logged_on
+          secondary: approval_status
+        fields:
+          - id: employee
+            name: employee_id
+            displayName: Employee
+            type: relation
+            required: true
+            references: employee
+          - id: project
+            name: project_id
+            displayName: Project
+            type: relation
+            required: true
+            references: project
+          - id: invoice
+            name: invoice_id
+            displayName: Invoice
+            type: relation
+            required: false
+            references: invoice
+          - id: logged_on
+            name: logged_on
+            displayName: Logged on
+            type: date
+            required: true
+          - id: hours
+            name: hours
+            displayName: Hours
+            type: number
+            required: true
+          - id: billable
+            name: billable
+            displayName: Billable
+            type: boolean
+            required: false
+          - id: invoiced
+            name: invoiced
+            displayName: Invoiced
+            type: boolean
+            required: false
+          - id: billable_rate
+            name: billable_rate
+            displayName: Billable rate
+            type: money
+            required: false
+          - id: billable_amount
+            name: billable_amount
+            displayName: Billable amount
+            type: money
+            required: false
+            computed:
+              op: multiply
+              left:
+                field: hours
+              right:
+                field: billable_rate
+          - id: approval_status
+            name: approval_status
+            displayName: Approval status
+            type: enum
+            required: false
+            options:
+              - draft
+              - submitted
+              - approved
+              - rejected
+      - id: invoice
+        name: invoices
+        displayName: Invoices
+        display:
+          primary: invoice_number
+          secondary: amount
+        fields:
+          - id: customer
+            name: customer_id
+            displayName: Customer
+            type: relation
+            required: true
+            references: customer
+          - id: project
+            name: project_id
+            displayName: Project
+            type: relation
+            required: false
+            references: project
+          - id: invoice_number
+            name: invoice_number
+            displayName: Invoice number
+            type: string
+            required: true
+            unique: true
+          - id: issued_on
+            name: issued_on
+            displayName: Issued on
+            type: date
+            required: true
+          - id: amount
+            name: amount
+            displayName: Amount
+            type: money
+            required: true
+          - id: status
+            name: status
+            displayName: Status
+            type: enum
+            required: true
+            options:
+              - draft
+              - submitted
+              - approved
+              - sent
+              - paid
+              - overdue
+              - cancelled
+          - id: due_date
+            name: due_date
+            displayName: Due date
+            type: date
+            required: false
+          - id: notes
+            name: notes
+            displayName: Notes
+            type: text
+            required: false
+      - id: invoice_line
+        name: invoice_lines
+        displayName: Invoice lines
+        display:
+          primary: description
+          secondary: invoice_id
+        fields:
+          - id: invoice
+            name: invoice_id
+            displayName: Invoice
+            type: relation
+            required: true
+            references: invoice
+          - id: project
+            name: project_id
+            displayName: Project
+            type: relation
+            required: false
+            references: project
+          - id: timesheet
+            name: timesheet_id
+            displayName: Timesheet
+            type: relation
+            required: false
+            references: timesheet
+          - id: description
+            name: description
+            displayName: Description
+            type: text
+            required: true
+          - id: quantity
+            name: quantity
+            displayName: Quantity
+            type: number
+            required: true
+          - id: unit_price
+            name: unit_price
+            displayName: Unit price
+            type: money
+            required: true
+          - id: amount
+            name: amount
+            displayName: Amount
+            type: money
+            required: false
+            computed:
+              op: multiply
+              left:
+                field: quantity
+              right:
+                field: unit_price
+      - id: expense
+        name: expenses
+        displayName: Expenses
+        display:
+          primary: description
+          secondary: status
+        fields:
+          - id: employee
+            name: employee_id
+            displayName: Employee
+            type: relation
+            required: true
+            references: employee
+          - id: project
+            name: project_id
+            displayName: Project
+            type: relation
+            required: false
+            references: project
+          - id: date
+            name: date
+            displayName: Date
+            type: date
+            required: true
+          - id: category
+            name: category
+            displayName: Category
+            type: enum
+            required: true
+            options:
+              - travel
+              - software
+              - meals
+              - other
+          - id: amount
+            name: amount
+            displayName: Amount
+            type: money
+            required: true
+          - id: currency
+            name: currency
+            displayName: Currency
+            type: string
+            required: true
+          - id: description
+            name: description
+            displayName: Description
+            type: text
+            required: true
+          - id: receipt_url
+            name: receipt_url
+            displayName: Receipt URL
+            type: string
+            required: false
+          - id: status
+            name: status
+            displayName: Status
+            type: enum
+            required: true
+            options:
+              - draft
+              - submitted
+              - approved
+              - rejected
+              - reimbursed
+      - id: resource_allocation
+        name: resource_allocations
+        displayName: Resource allocations
+        display:
+          primary: role_on_project
+          secondary: employee_id
+        fields:
+          - id: employee
+            name: employee_id
+            displayName: Employee
+            type: relation
+            required: true
+            references: employee
+          - id: project
+            name: project_id
+            displayName: Project
+            type: relation
+            required: true
+            references: project
+          - id: start_date
+            name: start_date
+            displayName: Start date
+            type: date
+            required: true
+          - id: end_date
+            name: end_date
+            displayName: End date
+            type: date
+            required: false
+          - id: allocation_percent
+            name: allocation_percent
+            displayName: Allocation percent
+            type: number
+            required: true
+          - id: role_on_project
+            name: role_on_project
+            displayName: Role on project
+            type: string
+            required: false
+    views:
+      - id: active_projects
+        name: Active projects
+        entity: project
+        fields:
+          - title
+          - customer_id
+          - project_manager_id
+          - budget
+          - starts_on
+          - ends_on
+          - priority
+      - id: submitted_expenses
+        name: Submitted expenses
+        entity: expense
+        fields:
+          - employee_id
+          - project_id
+          - date
+          - category
+          - amount
+          - currency
+          - status
+    workflows:
+      - id: timesheet_approval
+        name: Timesheet Approval
+        entity: timesheet
+        trigger:
+          action: submit_for_approval
+        steps:
+          - id: mark_submitted
+            type: update_record
+            set:
+              approval_status: submitted
+          - id: audit_submitted
+            type: audit_event
+            event: timesheet.submitted
+            message: Timesheet submitted for approval.
+          - id: request_project_manager_approval
+            type: approval
+            label: Project Manager Approval
+            assignedTo:
+              type: relation_user
+              path: project.project_manager
+              requiredRole: project_manager
+              fallbackRole: owner
+            approveLabel: Approve
+            rejectLabel: Reject
+          - id: overtime_owner_review
+            type: condition
+            label: Overtime Owner Review
+            condition:
+              op: gt
+              left:
+                field: hours
+              right:
+                value: 8
+            then:
+              - id: request_owner_overtime_approval
+                type: approval
+                label: Owner Overtime Approval
+                assignedTo:
+                  type: role
+                  role: owner
+                approveLabel: Approve Overtime
+                rejectLabel: Reject Overtime
+          - id: mark_approved
+            type: update_record
+            set:
+              approval_status: approved
+          - id: audit_approved
+            type: audit_event
+            event: timesheet.approved
+            message: Timesheet approved.
+        onRejected:
+          - id: mark_rejected
+            type: update_record
+            set:
+              approval_status: rejected
+          - id: audit_rejected
+            type: audit_event
+            event: timesheet.rejected
+            message: Timesheet rejected.
+      - id: expense_approval
+        name: Expense Approval
+        entity: expense
+        trigger:
+          action: submit_for_approval
+        steps:
+          - id: mark_submitted
+            type: update_record
+            set:
+              status: submitted
+          - id: audit_submitted
+            type: audit_event
+            event: expense.submitted
+            message: Expense submitted for approval.
+          - id: request_project_manager_approval
+            type: approval
+            label: Project Manager Approval
+            assignedTo:
+              type: relation_user
+              path: project.project_manager
+              requiredRole: project_manager
+              fallbackRole: owner
+            approveLabel: Approve expense
+            rejectLabel: Reject expense
+          - id: high_value_owner_review
+            type: condition
+            label: High Value Owner Review
+            condition:
+              op: gt
+              left:
+                field: amount
+              right:
+                value: 500
+            then:
+              - id: request_owner_expense_approval
+                type: approval
+                label: Owner Expense Approval
+                assignedTo:
+                  type: role
+                  role: owner
+                approveLabel: Approve expense
+                rejectLabel: Reject expense
+          - id: mark_approved
+            type: update_record
+            set:
+              status: approved
+          - id: audit_approved
+            type: audit_event
+            event: expense.approved
+            message: Expense approved.
+        onRejected:
+          - id: mark_rejected
+            type: update_record
+            set:
+              status: rejected
+          - id: audit_rejected
+            type: audit_event
+            event: expense.rejected
+            message: Expense rejected.
+      - id: invoice_approval
+        name: Invoice Approval
+        entity: invoice
+        trigger:
+          action: submit_for_approval
+        steps:
+          - id: mark_submitted
+            type: update_record
+            set:
+              status: submitted
+          - id: audit_submitted
+            type: audit_event
+            event: invoice.submitted
+            message: Invoice submitted for approval.
+          - id: request_finance_approval
+            type: approval
+            label: Finance Approval
+            assignedTo:
+              type: role
+              role: finance
+            approveLabel: Approve invoice
+            rejectLabel: Reject invoice
+          - id: mark_approved
+            type: update_record
+            set:
+              status: approved
+          - id: audit_approved
+            type: audit_event
+            event: invoice.approved
+            message: Invoice approved.
+        onRejected:
+          - id: mark_cancelled
+            type: update_record
+            set:
+              status: cancelled
+          - id: audit_rejected
+            type: audit_event
+            event: invoice.rejected
+            message: Invoice rejected.
+reports:
+  - key: total_customers
+    label: Total customers
+    description: Active customer count.
+    source: customer
+    metrics:
+      - key: total_customers
+        label: Total customers
+        op: count
+  - key: total_projects
+    label: Active projects
+    description: Active project count.
+    source: project
+    filters:
+      - field: status
+        op: eq
+        value: active
+    metrics:
+      - key: total_projects
+        label: Active projects
+        op: count
+  - key: project_hours
+    label: Project hours
+    description: Hours, billable hours, non-billable hours, and billable amount grouped by project.
+    source: timesheet
+    group_by:
+      - field: project
+        label: Project
+    metrics:
+      - key: total_hours
+        label: Total hours
+        op: sum
+        field: hours
+      - key: billable_hours
+        label: Billable hours
+        op: sum
+        field: hours
+        filter:
+          field: billable
+          op: eq
+          value: true
+      - key: non_billable_hours
+        label: Non-billable hours
+        op: sum
+        field: hours
+        filter:
+          field: billable
+          op: eq
+          value: false
+      - key: billable_amount
+        label: Billable amount
+        op: sum
+        field: billable_amount
+  - key: employee_utilization
+    label: Employee utilization
+    description: Logged and billable hours grouped by employee. Capacity-based percentages need cross-entity formulas in a later report pass.
+    source: timesheet
+    group_by:
+      - field: employee
+        label: Employee
+    metrics:
+      - key: logged_hours
+        label: Logged hours
+        op: sum
+        field: hours
+      - key: billable_hours
+        label: Billable hours
+        op: sum
+        field: hours
+        filter:
+          field: billable
+          op: eq
+          value: true
+      - key: approved_hours
+        label: Approved hours
+        op: sum
+        field: hours
+        filter:
+          field: approval_status
+          op: eq
+          value: approved
+  - key: billable_hours
+    label: Billable hours
+    description: Billable and non-billable time totals.
+    source: timesheet
+    metrics:
+      - key: billable_hours
+        label: Billable hours
+        op: sum
+        field: hours
+        filter:
+          field: billable
+          op: eq
+          value: true
+      - key: non_billable_hours
+        label: Non-billable hours
+        op: sum
+        field: hours
+        filter:
+          field: billable
+          op: eq
+          value: false
+  - key: invoices_by_status
+    label: Invoices by status
+    description: Invoice counts and amount grouped by status.
+    source: invoice
+    group_by:
+      - field: status
+        label: Status
+    metrics:
+      - key: invoice_count
+        label: Invoices
+        op: count
+      - key: invoice_amount
+        label: Invoice amount
+        op: sum
+        field: amount
+  - key: unpaid_invoices
+    label: Unpaid invoices
+    description: Sent and overdue invoice exposure.
+    source: invoice
+    filters:
+      - field: status
+        op: in
+        values:
+          - sent
+          - overdue
+    metrics:
+      - key: unpaid_count
+        label: Unpaid invoices
+        op: count
+      - key: unpaid_amount
+        label: Unpaid amount
+        op: sum
+        field: amount
+  - key: overdue_invoices
+    label: Overdue invoices
+    description: Overdue invoice count and exposure.
+    source: invoice
+    filters:
+      - field: status
+        op: eq
+        value: overdue
+    metrics:
+      - key: overdue_count
+        label: Overdue invoices
+        op: count
+      - key: overdue_amount
+        label: Overdue amount
+        op: sum
+        field: amount
+  - key: project_profitability
+    label: Project profitability
+    description: First-pass project revenue from invoices. Labor and expense allocation need cross-source report formulas in a later pass.
+    source: invoice
+    group_by:
+      - field: project
+        label: Project
+    metrics:
+      - key: invoice_amount
+        label: Invoice amount
+        op: sum
+        field: amount
+      - key: invoice_count
+        label: Invoices
+        op: count
+  - key: expenses_by_project
+    label: Expenses by project
+    description: Expense exposure grouped by project.
+    source: expense
+    group_by:
+      - field: project
+        label: Project
+    metrics:
+      - key: expense_count
+        label: Expenses
+        op: count
+      - key: total_expenses
+        label: Total expenses
+        op: sum
+        field: amount
+      - key: approved_expenses
+        label: Approved expenses
+        op: sum
+        field: amount
+        filter:
+          field: status
+          op: in
+          values:
+            - approved
+            - reimbursed
+  - key: approved_expenses
+    label: Approved expenses
+    description: Approved and reimbursed expense totals.
+    source: expense
+    filters:
+      - field: status
+        op: in
+        values:
+          - approved
+          - reimbursed
+    metrics:
+      - key: expense_count
+        label: Approved expenses
+        op: count
+      - key: total_expenses
+        label: Approved expense amount
+        op: sum
+        field: amount
+  - key: resource_allocations
+    label: Resource allocations
+    description: Allocation load grouped by employee.
+    source: resource_allocation
+    group_by:
+      - field: employee
+        label: Employee
+    metrics:
+      - key: allocation_count
+        label: Allocations
+        op: count
+      - key: average_allocation
+        label: Average allocation percent
+        op: avg
+        field: allocation_percent
+      - key: total_allocation
+        label: Total allocation percent
+        op: sum
+        field: allocation_percent
+dashboard:
+  widgets:
+    - key: total_customers
+      label: Total customers
+      type: metric
+      report: total_customers
+      metric: total_customers
+    - key: total_projects
+      label: Active projects
+      type: metric
+      report: total_projects
+      metric: total_projects
+    - key: billable_hours_this_month
+      label: Billable hours this month
+      type: metric
+      report: project_hours
+      metric: billable_hours
+    - key: unpaid_invoice_amount
+      label: Unpaid invoice amount
+      type: metric
+      report: unpaid_invoices
+      metric: unpaid_amount
+    - key: overdue_invoice_count
+      label: Overdue invoice count
+      type: metric
+      report: overdue_invoices
+      metric: overdue_count
+    - key: approved_expense_amount
+      label: Approved expense amount
+      type: metric
+      report: approved_expenses
+      metric: total_expenses
+    - key: billable_utilization_hours
+      label: Billable utilization hours
+      type: metric
+      report: employee_utilization
+      metric: billable_hours
+    - key: project_profitability_summary
+      label: Project profitability summary
+      type: metric
+      report: project_profitability
+      metric: invoice_amount
+    - key: average_allocation
+      label: Average allocation
+      type: metric
+      report: resource_allocations
+      metric: average_allocation
+actions:
+  - key: create_invoice_draft
+    label: Create Invoice Draft
+    entity: project
+    type: record_action
+    description: Creates a draft invoice from approved uninvoiced billable timesheets.
+    visible_when:
+      - op: neq
+        left:
+          field: status
+        right:
+          value: cancelled
+    requires:
+      permissions:
+        - entity: invoice
+          action: create
+        - entity: invoice_line
+          action: create
+        - entity: timesheet
+          action: read
+        - entity: timesheet
+          action: update
+    steps:
+      - id: find_timesheets
+        type: query_records
+        entity: timesheet
+        where:
+          - field: project
+            op: eq
+            value_from:
+              record: id
+          - field: approval_status
+            op: eq
+            value: approved
+          - field: billable
+            op: eq
+            value: true
+          - field: invoiced
+            op: neq
+            value: true
+      - id: ensure_timesheets_exist
+        type: guard
+        condition:
+          op: gt
+          left:
+            result_count: find_timesheets
+          right:
+            value: 0
+        error: No approved billable uninvoiced timesheets found.
+      - id: create_invoice
+        type: create_record
+        entity: invoice
+        values:
+          customer:
+            value_from:
+              record: customer
+          project:
+            value_from:
+              record: id
+          invoice_number:
+            template: "DRAFT-{{record.id}}-{{now_timestamp}}"
+          issued_on:
+            value_from:
+              now: date
+          amount:
+            aggregate:
+              result: find_timesheets
+              op: sum
+              expression:
+                op: multiply
+                left:
+                  value_from:
+                    item: hours
+                right:
+                  value_from:
+                    item: billable_rate
+          status:
+            value: draft
+          notes:
+            template: "Draft invoice generated from approved billable time for project {{record.id}}."
+      - id: create_invoice_lines
+        type: create_records_for_each
+        entity: invoice_line
+        foreach:
+          result: find_timesheets
+        values:
+          invoice:
+            value_from:
+              step: create_invoice
+              field: id
+          project:
+            value_from:
+              record: id
+          timesheet:
+            value_from:
+              item: id
+          description:
+            template: "Billable hours for {{item.logged_on}}"
+          quantity:
+            value_from:
+              item: hours
+          unit_price:
+            value_from:
+              item: billable_rate
+      - id: mark_timesheets_invoiced
+        type: update_records
+        records_from:
+          result: find_timesheets
+        set:
+          invoiced:
+            value: true
+          invoice:
+            value_from:
+              step: create_invoice
+              field: id
+      - id: audit_invoice_created
+        type: audit_event
+        event: invoice.draft_created
+        message: Draft invoice created from approved billable time.
+        metadata:
+          invoice_id:
+            value_from:
+              step: create_invoice
+              field: id
+          project_id:
+            value_from:
+              record: id
+      - id: audit_timesheets_marked
+        type: audit_event
+        event: timesheet.marked_invoiced
+        message: Timesheets marked invoiced by invoice draft action.
+        metadata:
+          invoice_id:
+            value_from:
+              step: create_invoice
+              field: id
+          project_id:
+            value_from:
+              record: id
+      - id: return_invoice
+        type: return_result
+        return:
+          step: create_invoice
+          entity: invoice
+          message: Draft invoice created.
+roles:
+  owner:
+    displayName: Owner
+    grants:
+      - action: "*"
+        entity: "*"
+      - action: read
+        entity: timesheet
+      - action: read_task
+        entity: timesheet
+      - action: approve_task
+        entity: timesheet
+      - action: reject_task
+        entity: timesheet
+      - action: read
+        entity: expense
+      - action: read_task
+        entity: expense
+      - action: approve_task
+        entity: expense
+      - action: reject_task
+        entity: expense
+      - scope: action
+        action: execute
+        entity: project
+        target: create_invoice_draft
+  admin:
+    displayName: Admin
+    grants:
+      - action: read
+        entity: "*"
+      - action: create
+        entity: "*"
+      - action: update
+        entity: "*"
+      - action: archive
+        entity: "*"
+      - action: restore
+        entity: "*"
+      - action: start_workflow
+        entity: "*"
+      - action: approve_task
+        entity: "*"
+      - action: reject_task
+        entity: "*"
+      - action: read_task
+        entity: "*"
+      - action: admin
+        entity: "*"
+      - scope: action
+        action: execute
+        entity: project
+        target: create_invoice_draft
+  member:
+    displayName: Member
+    grants:
+      - action: read
+        entity: customer
+      - action: read
+        entity: project
+      - action: read
+        entity: timesheet
+      - action: read
+        entity: employee
+      - action: read
+        entity: invoice
+      - action: read
+        entity: invoice_line
+      - action: read
+        entity: expense
+      - action: read
+        entity: resource_allocation
+      - action: create
+        entity: timesheet
+      - action: update
+        entity: timesheet
+      - action: create
+        entity: expense
+      - action: update
+        entity: expense
+      - action: start_workflow
+        entity: timesheet
+      - action: start_workflow
+        entity: expense
+      - action: approve_task
+        entity: timesheet
+      - action: reject_task
+        entity: timesheet
+      - action: read_task
+        entity: timesheet
+      - action: read_task
+        entity: expense
+  readonly:
+    displayName: ReadOnly
+    grants:
+      - action: read
+        entity: "*"
+  read_only:
+    displayName: Read only
+    grants:
+      - action: read
+        entity: "*"
+  finance:
+    displayName: Finance
+    grants:
+      - action: read
+        entity: "*"
+      - action: read
+        entity: invoice
+      - action: create
+        entity: invoice
+      - action: update
+        entity: invoice
+      - action: create
+        entity: invoice_line
+      - action: update
+        entity: invoice_line
+      - action: update
+        entity: timesheet
+      - action: archive
+        entity: invoice_line
+      - action: restore
+        entity: invoice_line
+      - action: start_workflow
+        entity: invoice
+      - action: approve_task
+        entity: invoice
+      - action: reject_task
+        entity: invoice
+      - action: read_task
+        entity: invoice
+      - scope: action
+        action: execute
+        entity: project
+        target: create_invoice_draft
+  project_manager:
+    displayName: Project manager
+    grants:
+      - action: read
+        entity: "*"
+      - action: read
+        entity: timesheet
+      - action: read
+        entity: expense
+      - action: create
+        entity: project
+      - action: update
+        entity: project
+      - action: create
+        entity: timesheet
+      - action: update
+        entity: timesheet
+      - action: create
+        entity: expense
+      - action: update
+        entity: expense
+      - action: archive
+        entity: expense
+      - action: restore
+        entity: expense
+      - action: create
+        entity: resource_allocation
+      - action: update
+        entity: resource_allocation
+      - action: start_workflow
+        entity: timesheet
+      - action: start_workflow
+        entity: expense
+      - action: approve_task
+        entity: timesheet
+      - action: reject_task
+        entity: timesheet
+      - action: read_task
+        entity: timesheet
+      - action: approve_task
+        entity: expense
+      - action: reject_task
+        entity: expense
+      - action: read_task
+        entity: expense

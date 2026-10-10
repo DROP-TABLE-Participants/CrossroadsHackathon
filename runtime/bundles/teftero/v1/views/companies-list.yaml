@@ -1,0 +1,12 @@
+module: foundations
+view:
+  id: companies_list
+  name: Companies
+  entity: company
+  fields:
+  - name
+  - business_category_id
+  - email
+  - phone
+  - status
+

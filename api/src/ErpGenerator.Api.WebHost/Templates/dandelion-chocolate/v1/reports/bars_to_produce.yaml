@@ -1,0 +1,22 @@
+{
+  "report": {
+    "key": "bars_to_produce",
+    "label": "Bars planned",
+    "source": "production_batch",
+    "metrics": [
+      {
+        "key": "quantity",
+        "label": "Bars planned",
+        "op": "sum",
+        "field": "quantity"
+      }
+    ],
+    "filters": [
+      {
+        "field": "status",
+        "op": "eq",
+        "value": "planned"
+      }
+    ]
+  }
+}

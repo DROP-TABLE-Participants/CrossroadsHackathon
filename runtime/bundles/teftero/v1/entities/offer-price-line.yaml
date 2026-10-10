@@ -1,0 +1,53 @@
+module: sales
+entity:
+  id: offer_price_line
+  name: offer_price_lines
+  displayName: Offer Price Lines
+  display:
+    primary: description
+    secondary: total
+  fields:
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: true
+    references: offer
+  - id: service_catalogue
+    name: service_catalogue_id
+    displayName: Service
+    type: relation
+    required: false
+    references: service_catalogue
+  - id: description
+    name: description
+    displayName: Description
+    type: string
+    required: true
+  - id: quantity
+    name: quantity
+    displayName: Quantity
+    type: number
+    required: true
+  - id: unit_price
+    name: unit_price
+    displayName: Unit price
+    type: money
+    required: true
+  - id: total
+    name: total
+    displayName: Total
+    type: money
+    required: false
+    computed:
+      op: multiply
+      left:
+        field: quantity
+      right:
+        field: unit_price
+  - id: billable
+    name: billable
+    displayName: Billable
+    type: boolean
+    required: false
+

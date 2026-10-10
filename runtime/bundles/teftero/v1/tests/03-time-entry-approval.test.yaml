@@ -1,0 +1,35 @@
+test:
+  key: time_entry_approval
+  label: Approve a submitted time entry
+setup:
+  seed: demo
+steps:
+  - id: submit_time_entry
+    type: start_workflow_action
+    entity: time_entry
+    record:
+      ref: time_entry_submit
+    action: submit_for_approval
+    as_role: delivery
+  - id: approve_time_entry
+    type: approve_task
+    workflow_ref: submit_time_entry
+    entity: time_entry
+    record:
+      ref: time_entry_submit
+    as_role: delivery
+assertions:
+  - type: record_field_equals
+    entity: time_entry
+    record:
+      ref: time_entry_submit
+    field: status
+    value: approved
+  - type: workflow_status
+    entity: time_entry
+    record:
+      ref: time_entry_submit
+    workflow: time_entry_approval
+    status: completed
+  - type: audit_event_exists
+    event: time_entry.approved

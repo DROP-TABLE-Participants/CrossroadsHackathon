@@ -1,0 +1,91 @@
+module: sales
+entity:
+  id: prospect
+  name: prospects
+  displayName: Prospects
+  display:
+    primary: title
+    secondary: stage
+  fields:
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: true
+    references: company
+  - id: contact
+    name: contact_id
+    displayName: Contact
+    type: relation
+    required: false
+    references: contact
+  - id: owner_employee
+    name: owner_employee_id
+    displayName: Owner employee
+    type: relation
+    required: false
+    references: employee
+  - id: status
+    name: status_id
+    displayName: Status
+    type: relation
+    required: false
+    references: prospect_status
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: stage
+    name: stage
+    displayName: Stage
+    type: enum
+    required: true
+    options:
+    - new
+    - qualified
+    - proposal
+    - won
+    - lost
+  - id: source
+    name: source
+    displayName: Source
+    type: enum
+    required: false
+    options:
+    - referral
+    - web
+    - outbound
+    - partner
+    - other
+  - id: estimated_value
+    name: estimated_value
+    displayName: Estimated value
+    type: money
+    required: false
+  - id: probability_percent
+    name: probability_percent
+    displayName: Probability percent
+    type: number
+    required: false
+  - id: converted
+    name: converted
+    displayName: Converted
+    type: boolean
+    required: false
+  - id: generated_offer
+    name: generated_offer_id
+    displayName: Generated offer
+    type: relation
+    required: false
+    references: offer
+  - id: expected_close_date
+    name: expected_close_date
+    displayName: Expected close date
+    type: date
+    required: false
+  - id: notes
+    name: notes
+    displayName: Notes
+    type: text
+    required: false

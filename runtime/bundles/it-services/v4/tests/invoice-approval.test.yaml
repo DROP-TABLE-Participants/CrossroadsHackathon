@@ -1,0 +1,35 @@
+test:
+  key: invoice_approval
+  label: Approve submitted invoice
+setup:
+  seed: demo
+steps:
+  - id: submit_invoice
+    type: start_workflow_action
+    entity: invoice
+    record:
+      ref: invoice_draft
+    action: submit_for_approval
+    as_role: owner
+  - id: approve_invoice
+    type: approve_task
+    workflow_ref: submit_invoice
+    entity: invoice
+    record:
+      ref: invoice_draft
+    as_role: finance
+assertions:
+  - type: record_field_equals
+    entity: invoice
+    record:
+      ref: invoice_draft
+    field: status
+    value: approved
+  - type: workflow_status
+    entity: invoice
+    record:
+      ref: invoice_draft
+    workflow: invoice_approval
+    status: completed
+  - type: audit_event_exists
+    event: invoice.approved

@@ -1,0 +1,14 @@
+module: sales
+view:
+  id: prospects_list
+  name: Prospects
+  entity: prospect
+  fields:
+  - title
+  - company_id
+  - contact_id
+  - owner_employee_id
+  - stage
+  - estimated_value
+  - expected_close_date
+

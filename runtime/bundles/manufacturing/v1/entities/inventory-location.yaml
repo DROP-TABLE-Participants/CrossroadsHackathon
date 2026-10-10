@@ -1,0 +1,35 @@
+module: inventory
+entity:
+  id: inventory_location
+  name: inventory_locations
+  displayName: Inventory locations
+  display:
+    primary: name
+    secondary: location_type
+  fields:
+    - id: warehouse
+      name: warehouse_id
+      displayName: Warehouse
+      type: relation
+      required: true
+      references: warehouse
+    - id: name
+      name: name
+      displayName: Name
+      type: string
+      required: true
+    - id: location_type
+      name: location_type
+      displayName: Location type
+      type: enum
+      required: true
+      options:
+        - raw_material
+        - wip
+        - finished_goods
+        - shipping
+    - id: active
+      name: active
+      displayName: Active
+      type: boolean
+      required: false

@@ -1,0 +1,20 @@
+report:
+  key: stock_on_hand
+  label: Stock on hand
+  description: Inventory balance by location.
+  source: stock_balance
+  group_by:
+    - field: location
+      label: Location
+  metrics:
+    - key: balance_count
+      label: Balance rows
+      op: count
+    - key: quantity_on_hand
+      label: Quantity on hand
+      op: sum
+      field: quantity_on_hand
+    - key: quantity_reserved
+      label: Quantity reserved
+      op: sum
+      field: quantity_reserved

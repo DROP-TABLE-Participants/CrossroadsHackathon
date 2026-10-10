@@ -1,0 +1,46 @@
+module: quality
+entity:
+  id: quality_inspection
+  name: quality_inspections
+  displayName: Quality inspections
+  display:
+    primary: work_order_id
+    secondary: result
+  fields:
+    - id: work_order
+      name: work_order_id
+      displayName: Work order
+      type: relation
+      required: true
+      references: work_order
+    - id: production_receipt
+      name: production_receipt_id
+      displayName: Production receipt
+      type: relation
+      required: false
+      references: production_receipt
+    - id: inspector
+      name: inspector_id
+      displayName: Inspector
+      type: relation
+      required: true
+      references: employee
+    - id: inspection_date
+      name: inspection_date
+      displayName: Inspection date
+      type: date
+      required: false
+    - id: result
+      name: result
+      displayName: Result
+      type: enum
+      required: true
+      options:
+        - pending
+        - passed
+        - failed
+    - id: notes
+      name: notes
+      displayName: Notes
+      type: text
+      required: false

@@ -1,0 +1,41 @@
+module: operations
+workflow:
+  id: invoice_approval
+  name: Invoice Approval
+  entity: invoice
+  trigger:
+    action: submit_for_approval
+  steps:
+  - id: mark_submitted
+    type: update_record
+    set:
+      status: submitted
+  - id: audit_submitted
+    type: audit_event
+    event: invoice.submitted
+    message: Invoice submitted for approval.
+  - id: request_finance_approval
+    type: approval
+    label: Finance Approval
+    assignedTo:
+      type: role
+      role: finance
+    approveLabel: Approve invoice
+    rejectLabel: Reject invoice
+  - id: mark_approved
+    type: update_record
+    set:
+      status: approved
+  - id: audit_approved
+    type: audit_event
+    event: invoice.approved
+    message: Invoice approved.
+  onRejected:
+  - id: mark_cancelled
+    type: update_record
+    set:
+      status: cancelled
+  - id: audit_rejected
+    type: audit_event
+    event: invoice.rejected
+    message: Invoice rejected.

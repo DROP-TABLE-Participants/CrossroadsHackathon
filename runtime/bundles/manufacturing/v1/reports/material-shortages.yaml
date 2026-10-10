@@ -1,0 +1,13 @@
+report:
+  key: items_at_or_below_reorder_point
+  label: Items at or below reorder point
+  description: Simplified low-stock report using a fixed local demo threshold.
+  source: stock_balance
+  filters:
+    - field: quantity_on_hand
+      op: lte
+      value: 20
+  metrics:
+    - key: low_stock_count
+      label: Low-stock balances
+      op: count

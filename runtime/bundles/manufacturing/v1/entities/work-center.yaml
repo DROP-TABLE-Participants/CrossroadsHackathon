@@ -1,0 +1,34 @@
+module: production
+entity:
+  id: work_center
+  name: work_centers
+  displayName: Work centers
+  display:
+    primary: name
+    secondary: hourly_rate
+  fields:
+    - id: name
+      name: name
+      displayName: Name
+      type: string
+      required: true
+    - id: description
+      name: description
+      displayName: Description
+      type: text
+      required: false
+    - id: hourly_rate
+      name: hourly_rate
+      displayName: Hourly rate
+      type: money
+      required: false
+    - id: capacity_hours_per_day
+      name: capacity_hours_per_day
+      displayName: Capacity hours per day
+      type: number
+      required: false
+    - id: active
+      name: active
+      displayName: Active
+      type: boolean
+      required: false

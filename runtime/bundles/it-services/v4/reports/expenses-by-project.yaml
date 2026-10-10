@@ -1,0 +1,26 @@
+report:
+  key: expenses_by_project
+  label: Expenses by project
+  description: Expense exposure grouped by project.
+  source: expense
+  group_by:
+  - field: project
+    label: Project
+  metrics:
+  - key: expense_count
+    label: Expenses
+    op: count
+  - key: total_expenses
+    label: Total expenses
+    op: sum
+    field: amount
+  - key: approved_expenses
+    label: Approved expenses
+    op: sum
+    field: amount
+    filter:
+      field: status
+      op: in
+      values:
+      - approved
+      - reimbursed

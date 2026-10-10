@@ -1,0 +1,49 @@
+module: sales_orders
+entity:
+  id: sales_order
+  name: sales_orders
+  displayName: Sales orders
+  display:
+    primary: order_number
+    secondary: status
+  fields:
+    - id: customer
+      name: customer_id
+      displayName: Customer
+      type: relation
+      required: true
+      references: customer
+    - id: order_number
+      name: order_number
+      displayName: Order number
+      type: string
+      required: true
+      unique: true
+    - id: order_date
+      name: order_date
+      displayName: Order date
+      type: date
+      required: false
+    - id: requested_ship_date
+      name: requested_ship_date
+      displayName: Requested ship date
+      type: date
+      required: false
+    - id: status
+      name: status
+      displayName: Status
+      type: enum
+      required: true
+      options:
+        - draft
+        - submitted
+        - approved
+        - in_production
+        - ready_to_ship
+        - shipped
+        - cancelled
+    - id: total_amount
+      name: total_amount
+      displayName: Total amount
+      type: money
+      required: false

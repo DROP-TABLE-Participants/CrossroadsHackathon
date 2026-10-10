@@ -1,0 +1,48 @@
+{
+  "module": "catalog",
+  "entity": {
+    "id": "product",
+    "name": "products",
+    "displayName": "Chocolate products",
+    "display": {
+      "primary": "name"
+    },
+    "fields": [
+      {
+        "id": "name",
+        "name": "name",
+        "displayName": "Product",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "origin",
+        "name": "origin",
+        "displayName": "Cocoa origin",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": "cocoa_percent",
+        "name": "cocoa_percent",
+        "displayName": "Cocoa %",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "bar_weight_g",
+        "name": "bar_weight_g",
+        "displayName": "Bar weight (g)",
+        "type": "number",
+        "required": true
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "displayName": "Description",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+module: foundations
+entity:
+  id: organization_structure
+  name: organization_structures
+  displayName: Organization Structures
+  display:
+    primary: name
+    secondary: type
+  fields:
+  - id: parent
+    name: parent_id
+    displayName: Parent
+    type: relation
+    required: false
+    references: organization_structure
+  - id: manager_employee
+    name: manager_employee_id
+    displayName: Manager
+    type: relation
+    required: false
+    references: employee
+  - id: name
+    name: name
+    displayName: Name
+    type: string
+    required: true
+  - id: type
+    name: type
+    displayName: Type
+    type: enum
+    required: false
+    options:
+    - company
+    - department
+    - team
+  - id: active
+    name: active
+    displayName: Active
+    type: boolean
+    required: false
+

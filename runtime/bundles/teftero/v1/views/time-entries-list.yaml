@@ -1,0 +1,15 @@
+module: delivery
+view:
+  id: time_entries_list
+  name: Time entries
+  entity: time_entry
+  fields:
+  - entry_date
+  - employee_id
+  - contract_id
+  - offer_id
+  - hours
+  - billable
+  - status
+  - amount
+

@@ -1,0 +1,24 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.next/
+**/dist/
+**/coverage/
+**/TestResults/
+**/*.trx
+**/*.tsbuildinfo
+**/.env*
+!**/.env.example
+**/.idea/
+**/.vs/
+**/.vscode/
+**/.DS_Store
+**/*.user
+**/*.suo
+**/next-env.d.ts
+/output/
+/.playwright-cli/
+
+# Isolated hackathon rehearsal state (volumes are managed by Compose)
+/.demo/
+docs

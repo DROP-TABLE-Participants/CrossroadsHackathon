@@ -1,0 +1,9 @@
+report:
+  key: total_customers
+  label: Total customers
+  description: Active customer count.
+  source: customer
+  metrics:
+  - key: total_customers
+    label: Total customers
+    op: count

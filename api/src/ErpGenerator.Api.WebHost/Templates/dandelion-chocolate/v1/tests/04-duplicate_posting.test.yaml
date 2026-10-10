@@ -1,0 +1,169 @@
+{
+  "schema": "erpgenerator.bundle-acceptance-test.v3",
+  "test": {
+    "key": "duplicate_posting",
+    "label": "Issue, receipt and shipment cannot be posted twice",
+    "contract_hash": "b1da97048b5a3d200b638a00672935cc7a22f2521c0b01ff9cd75f93a63513bb",
+    "suite_hash": "8d6fd46a426066c29096464b3b797f699a9fe84b1ccb997464739bfd0ebde663",
+    "suite_index": 3
+  },
+  "setup": {
+    "seed": "demo",
+    "seed_hash": "1363698f512505fe150fc029ba1778880cb5a278b740973cbea5786b70905f54"
+  },
+  "actors": [
+    {
+      "id": "operator",
+      "roles": [
+        "demo_operator"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "post_cocoa",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_cocoa"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_sugar",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_sugar"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "post_wrapper",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_wrapper"
+      },
+      "action": "post_material_issue"
+    },
+    {
+      "id": "produce400",
+      "type": "run_action",
+      "entity": "production_batch",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "batch_demo"
+      },
+      "action": "receive_production"
+    },
+    {
+      "id": "repeat_issue",
+      "type": "run_action",
+      "entity": "material_issue",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "issue_cocoa"
+      },
+      "action": "post_material_issue",
+      "expected": {
+        "outcome": "action_conflict",
+        "code": "action.not_available",
+        "target": "post_material_issue"
+      }
+    },
+    {
+      "id": "repeat_production",
+      "type": "run_action",
+      "entity": "production_batch",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "batch_demo"
+      },
+      "action": "receive_production",
+      "expected": {
+        "outcome": "action_conflict",
+        "code": "action.not_available",
+        "target": "receive_production"
+      }
+    },
+    {
+      "id": "ship200",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment_opening"
+      },
+      "action": "post_shipment"
+    },
+    {
+      "id": "repeat_ship",
+      "type": "run_action",
+      "entity": "shipment",
+      "as_role": "demo_operator",
+      "as_actor": "operator",
+      "record": {
+        "ref": "shipment_opening"
+      },
+      "action": "post_shipment",
+      "expected": {
+        "outcome": "action_conflict",
+        "code": "action.not_available",
+        "target": "post_shipment"
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "id": "stock_once",
+      "after_step": "repeat_issue",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_belize"
+      },
+      "field": "quantity",
+      "value": 84.04
+    },
+    {
+      "id": "one_receipt",
+      "after_step": "repeat_production",
+      "type": "record_count",
+      "entity": "production_receipt",
+      "count": 1
+    },
+    {
+      "id": "shipped_once",
+      "after_step": "repeat_ship",
+      "type": "record_field_equals",
+      "entity": "sales_order",
+      "record": {
+        "ref": "order_demo"
+      },
+      "field": "shipped_quantity",
+      "value": 200
+    },
+    {
+      "id": "opening_zero",
+      "after_step": "repeat_ship",
+      "type": "record_field_equals",
+      "entity": "stock_lot",
+      "record": {
+        "ref": "lot_opening"
+      },
+      "field": "quantity",
+      "value": 0
+    }
+  ]
+}

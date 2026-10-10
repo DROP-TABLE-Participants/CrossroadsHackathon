@@ -1,0 +1,79 @@
+action:
+  key: create_offer_from_prospect
+  label: Create Offer from Prospect
+  entity: prospect
+  type: record_action
+  description: Creates a draft offer using the selected prospect's company, contact,
+    owner, and estimated value.
+  visible_when:
+  - op: neq
+    left:
+      field: stage
+    right:
+      value: lost
+  requires:
+    permissions:
+    - entity: prospect
+      action: update
+    - entity: offer
+      action: create
+  steps:
+  - id: create_offer
+    type: create_record
+    entity: offer
+    values:
+      prospect:
+        value_from:
+          record: id
+      company:
+        value_from:
+          record: company
+      contact:
+        value_from:
+          record: contact
+      owner_employee:
+        value_from:
+          record: owner_employee
+      subject:
+        template: Offer for {{record.title}}
+      status:
+        value: draft
+      offer_date:
+        value_from:
+          now: date
+      currency:
+        value: EUR
+      probability_percent:
+        value_from:
+          record: probability_percent
+      active:
+        value: true
+      is_generated_contract:
+        value: false
+  - id: mark_prospect_converted
+    type: update_current_record
+    set:
+      converted:
+        value: true
+      generated_offer:
+        value_from:
+          step: create_offer
+          field: id
+  - id: audit_offer_created
+    type: audit_event
+    event: offer.created_from_prospect
+    message: Draft offer created from prospect.
+    metadata:
+      offer_id:
+        value_from:
+          step: create_offer
+          field: id
+      prospect_id:
+        value_from:
+          record: id
+  - id: return_offer
+    type: return_result
+    return:
+      step: create_offer
+      entity: offer
+      message: Draft offer created.

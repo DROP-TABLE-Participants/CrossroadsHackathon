@@ -1,0 +1,47 @@
+module: sales
+entity:
+  id: prospect_activity
+  name: prospect_activities
+  displayName: Prospect Activities
+  display:
+    primary: summary
+    secondary: activity_date
+  fields:
+  - id: prospect
+    name: prospect_id
+    displayName: Prospect
+    type: relation
+    required: true
+    references: prospect
+  - id: employee
+    name: employee_id
+    displayName: Employee
+    type: relation
+    required: false
+    references: employee
+  - id: activity_date
+    name: activity_date
+    displayName: Activity date
+    type: date
+    required: true
+  - id: type
+    name: type
+    displayName: Type
+    type: enum
+    required: true
+    options:
+    - call
+    - email
+    - meeting
+    - note
+  - id: summary
+    name: summary
+    displayName: Summary
+    type: string
+    required: true
+  - id: notes
+    name: notes
+    displayName: Notes
+    type: text
+    required: false
+

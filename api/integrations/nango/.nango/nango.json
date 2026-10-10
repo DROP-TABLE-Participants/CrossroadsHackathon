@@ -1,0 +1,471 @@
+[
+  {
+    "providerConfigKey": "google-drive",
+    "actions": [],
+    "syncs": [
+      {
+        "type": "sync",
+        "description": "Syncs extractable Google Drive file content and explicit content-state metadata into ErpGenerator UnifiedDocument records.",
+        "auto_start": false,
+        "endpoints": [],
+        "input": null,
+        "name": "documents",
+        "output": [
+          "UnifiedDocument"
+        ],
+        "runs": "every hour",
+        "scopes": [],
+        "sync_type": "full",
+        "track_deletes": false,
+        "usedModels": [
+          "UnifiedDocument"
+        ],
+        "version": "1.0.0",
+        "webhookSubscriptions": [],
+        "json_schema": {
+          "definitions": {
+            "UnifiedDocument": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "contentState": {
+                  "type": "string",
+                  "enum": [
+                    "content_extracted",
+                    "metadata_only",
+                    "unsupported",
+                    "extraction_failed"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "modifiedAt": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "text",
+                "contentState",
+                "provider"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "features": []
+      }
+    ],
+    "functions": [],
+    "onEventScripts": {
+      "post-connection-creation": [],
+      "pre-connection-deletion": [],
+      "validate-connection": []
+    }
+  },
+  {
+    "providerConfigKey": "microsoft-teams",
+    "actions": [],
+    "syncs": [
+      {
+        "type": "sync",
+        "description": "Syncs bounded Microsoft Teams channel messages into ErpGenerator UnifiedMessage records.",
+        "auto_start": false,
+        "endpoints": [],
+        "input": null,
+        "name": "messages",
+        "output": [
+          "UnifiedMessage"
+        ],
+        "runs": "every hour",
+        "scopes": [],
+        "sync_type": "full",
+        "track_deletes": false,
+        "usedModels": [
+          "UnifiedMessage"
+        ],
+        "version": "1.0.0",
+        "webhookSubscriptions": [],
+        "json_schema": {
+          "definitions": {
+            "UnifiedMessage": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "channelOrThread": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "id",
+                "channelOrThread",
+                "text",
+                "provider"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "features": []
+      }
+    ],
+    "functions": [],
+    "onEventScripts": {
+      "post-connection-creation": [],
+      "pre-connection-deletion": [],
+      "validate-connection": []
+    }
+  },
+  {
+    "providerConfigKey": "notion",
+    "actions": [],
+    "syncs": [
+      {
+        "type": "sync",
+        "description": "Synchronizes all Notion content allowed by the customer's saved scope rule.",
+        "auto_start": false,
+        "endpoints": [],
+        "input": "SyncMetadata_notion_documents",
+        "name": "documents",
+        "output": [
+          "UnifiedDocument"
+        ],
+        "runs": "every hour",
+        "scopes": [],
+        "sync_type": "full",
+        "track_deletes": false,
+        "usedModels": [
+          "UnifiedDocument",
+          "SyncMetadata_notion_documents"
+        ],
+        "version": "2.0.0",
+        "webhookSubscriptions": [],
+        "json_schema": {
+          "definitions": {
+            "UnifiedDocument": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "contentState": {
+                  "type": "string",
+                  "enum": [
+                    "content_extracted",
+                    "metadata_only",
+                    "unsupported",
+                    "extraction_failed"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "modifiedAt": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "text",
+                "contentState",
+                "provider"
+              ],
+              "additionalProperties": false
+            },
+            "SyncMetadata_notion_documents": {
+              "type": "object",
+              "properties": {
+                "notionScope": {
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "all_accessible",
+                        "selected_roots"
+                      ]
+                    },
+                    "includedRootIds": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "excludedIds": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "includeDescendants": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "includeNewContent": {
+                      "default": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "includedRootIds",
+                    "excludedIds",
+                    "includeDescendants",
+                    "includeNewContent"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "features": [
+          "checkpoints"
+        ]
+      }
+    ],
+    "functions": [],
+    "onEventScripts": {
+      "post-connection-creation": [],
+      "pre-connection-deletion": [],
+      "validate-connection": []
+    }
+  },
+  {
+    "providerConfigKey": "sharepoint-online",
+    "actions": [],
+    "syncs": [
+      {
+        "type": "sync",
+        "description": "Syncs bounded, extractable SharePoint document-library content into ErpGenerator UnifiedDocument records.",
+        "auto_start": false,
+        "endpoints": [],
+        "input": null,
+        "name": "documents",
+        "output": [
+          "UnifiedDocument"
+        ],
+        "runs": "every hour",
+        "scopes": [],
+        "sync_type": "full",
+        "track_deletes": false,
+        "usedModels": [
+          "UnifiedDocument"
+        ],
+        "version": "1.0.0",
+        "webhookSubscriptions": [],
+        "json_schema": {
+          "definitions": {
+            "UnifiedDocument": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "contentState": {
+                  "type": "string",
+                  "enum": [
+                    "content_extracted",
+                    "metadata_only",
+                    "unsupported",
+                    "extraction_failed"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "modifiedAt": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "text",
+                "contentState",
+                "provider"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "features": []
+      }
+    ],
+    "functions": [],
+    "onEventScripts": {
+      "post-connection-creation": [],
+      "pre-connection-deletion": [],
+      "validate-connection": []
+    }
+  },
+  {
+    "providerConfigKey": "slack",
+    "actions": [],
+    "syncs": [
+      {
+        "type": "sync",
+        "description": "Syncs bounded Slack conversation history into ErpGenerator UnifiedMessage records.",
+        "auto_start": false,
+        "endpoints": [],
+        "input": null,
+        "name": "messages",
+        "output": [
+          "UnifiedMessage"
+        ],
+        "runs": "every hour",
+        "scopes": [],
+        "sync_type": "full",
+        "track_deletes": false,
+        "usedModels": [
+          "UnifiedMessage"
+        ],
+        "version": "1.0.0",
+        "webhookSubscriptions": [],
+        "json_schema": {
+          "definitions": {
+            "UnifiedMessage": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "channelOrThread": {
+                  "type": "string"
+                },
+                "author": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "id",
+                "channelOrThread",
+                "text",
+                "provider"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "features": []
+      }
+    ],
+    "functions": [],
+    "onEventScripts": {
+      "post-connection-creation": [],
+      "pre-connection-deletion": [],
+      "validate-connection": []
+    }
+  }
+]

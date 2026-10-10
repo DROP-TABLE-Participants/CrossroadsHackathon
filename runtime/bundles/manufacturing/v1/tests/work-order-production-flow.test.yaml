@@ -1,0 +1,28 @@
+test:
+  key: work_order_production_flow
+  label: Complete work order and create production receipt
+setup:
+  seed: demo
+steps:
+  - id: complete_work_order
+    type: run_action
+    entity: work_order
+    record:
+      ref: work_order_demo
+    action: complete_work_order
+    as_role: production_manager
+assertions:
+  - type: record_field_equals
+    entity: work_order
+    record:
+      ref: work_order_demo
+    field: status
+    value: completed
+  - type: record_exists
+    entity: production_receipt
+    where:
+      field: work_order
+      op: eq
+      value_ref: work_order_demo
+  - type: audit_event_exists
+    event: work_order.completed

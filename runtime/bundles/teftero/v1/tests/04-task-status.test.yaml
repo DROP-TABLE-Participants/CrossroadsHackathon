@@ -1,0 +1,29 @@
+test:
+  key: task_status
+  label: Mark a task done
+setup:
+  seed: demo
+steps:
+  - id: mark_task_done
+    type: start_workflow_action
+    entity: task
+    record:
+      ref: task_setup
+    action: mark_done
+    as_role: owner
+assertions:
+  - type: record_field_equals
+    entity: task
+    record:
+      ref: task_setup
+    field: status
+    value: done
+  - type: workflow_status
+    entity: task
+    record:
+      ref: task_setup
+    workflow: task_status
+    status: completed
+  - type: audit_event_exists
+    event: task.done
+

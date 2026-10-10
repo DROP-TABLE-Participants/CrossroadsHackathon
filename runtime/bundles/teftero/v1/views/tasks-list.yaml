@@ -1,0 +1,13 @@
+module: delivery
+view:
+  id: tasks_list
+  name: Tasks
+  entity: task
+  fields:
+  - title
+  - company_id
+  - contract_id
+  - assignee_id
+  - status
+  - priority
+  - due_date

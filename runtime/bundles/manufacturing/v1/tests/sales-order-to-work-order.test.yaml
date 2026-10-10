@@ -1,0 +1,28 @@
+test:
+  key: sales_order_to_work_order
+  label: Create work order from sales order
+setup:
+  seed: demo
+steps:
+  - id: create_work_orders
+    type: run_action
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    action: create_work_order_from_sales_order
+    as_role: sales
+assertions:
+  - type: record_exists
+    entity: work_order
+    where:
+      field: sales_order
+      op: eq
+      value_ref: sales_order_demo
+  - type: record_field_equals
+    entity: sales_order
+    record:
+      ref: sales_order_demo
+    field: status
+    value: in_production
+  - type: audit_event_exists
+    event: work_order.created_from_sales_order

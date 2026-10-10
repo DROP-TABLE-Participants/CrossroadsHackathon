@@ -1,0 +1,16 @@
+report:
+  key: purchase_orders_by_status
+  label: Purchase orders by status
+  description: Purchase order count and amount grouped by status.
+  source: purchase_order
+  group_by:
+    - field: status
+      label: Status
+  metrics:
+    - key: po_count
+      label: Purchase orders
+      op: count
+    - key: po_amount
+      label: Purchase amount
+      op: sum
+      field: total_amount

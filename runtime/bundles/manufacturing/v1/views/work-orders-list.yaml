@@ -1,0 +1,13 @@
+module: work_orders
+view:
+  id: work_orders_list
+  name: Work orders
+  entity: work_order
+  fields:
+    - product_id
+    - sales_order_id
+    - quantity
+    - status
+    - planned_start_date
+    - planned_end_date
+    - assigned_to_id

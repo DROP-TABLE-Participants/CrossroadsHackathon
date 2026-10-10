@@ -1,0 +1,17 @@
+report:
+  key: project_profitability
+  label: Project profitability
+  description: First-pass project revenue from invoices. Labor and expense allocation
+    need cross-source report formulas in a later pass.
+  source: invoice
+  group_by:
+  - field: project
+    label: Project
+  metrics:
+  - key: invoice_amount
+    label: Invoice amount
+    op: sum
+    field: amount
+  - key: invoice_count
+    label: Invoices
+    op: count

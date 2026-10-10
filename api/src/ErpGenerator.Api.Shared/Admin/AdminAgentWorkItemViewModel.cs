@@ -1,0 +1,28 @@
+namespace ErpGenerator.Api.Shared.Admin;
+
+public sealed record AdminAgentWorkItemViewModel(
+    Guid Id,
+    Guid StageId,
+    Guid? ParentWorkItemId,
+    string WorkItemKey,
+    string AgentKey,
+    string AgentVersion,
+    string AgentRole,
+    string AgentLayer,
+    string ContractVersion,
+    string DefinitionHash,
+    string? SupervisorAgentKey,
+    string Status,
+    int AttemptCount,
+    int RepairCount,
+    int RoutingDepth,
+    string InputManifestHash,
+    string? Summary,
+    string? FailureDisposition,
+    string? FailureCode,
+    string? FailureMessage,
+    DateTimeOffset? LeaseExpiresAt,
+    DateTimeOffset? HeartbeatAt,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? CompletedAt,
+    IReadOnlyList<AdminAgentExecutionAttemptViewModel> Attempts);

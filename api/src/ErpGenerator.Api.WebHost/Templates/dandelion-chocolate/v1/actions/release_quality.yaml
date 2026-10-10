@@ -1,0 +1,116 @@
+{
+  "action": {
+    "key": "release_quality",
+    "label": "Release quality",
+    "entity": "quality_check",
+    "type": "record_action",
+    "description": "Release quality · simulated operations",
+    "requires": {
+      "permissions": [
+        {
+          "entity": "quality_check",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "read"
+        },
+        {
+          "entity": "stock_lot",
+          "action": "effect_update"
+        },
+        {
+          "entity": "quality_check",
+          "action": "effect_update"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "result_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "field": "result"
+          },
+          "right": {
+            "value": "pass"
+          }
+        },
+        "error": "A pass quality result is required."
+      },
+      {
+        "id": "finished_lot",
+        "type": "query_records",
+        "entity": "stock_lot",
+        "where": [
+          {
+            "field": "id",
+            "op": "eq",
+            "value_from": {
+              "record": "lot"
+            }
+          },
+          {
+            "field": "kind",
+            "op": "eq",
+            "value": "finished"
+          }
+        ]
+      },
+      {
+        "id": "lot_guard",
+        "type": "guard",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "result_count": "finished_lot"
+          },
+          "right": {
+            "value": 1
+          }
+        },
+        "error": "Select a finished chocolate lot."
+      },
+      {
+        "id": "quality",
+        "type": "update_records",
+        "records_from": {
+          "result": "finished_lot"
+        },
+        "set": {
+          "released": {
+            "value": true
+          }
+        }
+      },
+      {
+        "id": "decision",
+        "type": "update_current_record",
+        "set": {
+          "status": {
+            "value": "released"
+          }
+        }
+      },
+      {
+        "id": "audit",
+        "type": "audit_event",
+        "event": "quality.released",
+        "message": "quality.released"
+      }
+    ],
+    "visible_when": [
+      {
+        "op": "eq",
+        "left": {
+          "field": "status"
+        },
+        "right": {
+          "value": "pending"
+        }
+      }
+    ]
+  }
+}

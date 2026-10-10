@@ -1,0 +1,42 @@
+module: purchase_orders
+entity:
+  id: purchase_order_line
+  name: purchase_order_lines
+  displayName: Purchase order lines
+  display:
+    primary: purchase_order_id
+    secondary: item_id
+  fields:
+    - id: purchase_order
+      name: purchase_order_id
+      displayName: Purchase order
+      type: relation
+      required: true
+      references: purchase_order
+    - id: item
+      name: item_id
+      displayName: Item
+      type: relation
+      required: true
+      references: item
+    - id: quantity
+      name: quantity
+      displayName: Quantity
+      type: number
+      required: true
+    - id: unit_price
+      name: unit_price
+      displayName: Unit price
+      type: money
+      required: true
+    - id: line_total
+      name: line_total
+      displayName: Line total
+      type: money
+      required: false
+      computed:
+        op: multiply
+        left:
+          field: quantity
+        right:
+          field: unit_price

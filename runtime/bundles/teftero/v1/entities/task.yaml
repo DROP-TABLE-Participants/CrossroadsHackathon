@@ -1,0 +1,75 @@
+module: delivery
+entity:
+  id: task
+  name: tasks
+  displayName: Tasks
+  display:
+    primary: title
+    secondary: status
+  fields:
+  - id: contract
+    name: contract_id
+    displayName: Contract
+    type: relation
+    required: false
+    references: contract
+  - id: offer
+    name: offer_id
+    displayName: Offer
+    type: relation
+    required: false
+    references: offer
+  - id: company
+    name: company_id
+    displayName: Company
+    type: relation
+    required: false
+    references: company
+  - id: assignee
+    name: assignee_id
+    displayName: Assignee
+    type: relation
+    required: false
+    references: employee
+  - id: title
+    name: title
+    displayName: Title
+    type: string
+    required: true
+  - id: description
+    name: description
+    displayName: Description
+    type: text
+    required: false
+  - id: status
+    name: status
+    displayName: Status
+    type: enum
+    required: true
+    options:
+    - backlog
+    - todo
+    - in_progress
+    - done
+    - cancelled
+  - id: priority
+    name: priority
+    displayName: Priority
+    type: enum
+    required: false
+    options:
+    - low
+    - medium
+    - high
+    - urgent
+  - id: due_date
+    name: due_date
+    displayName: Due date
+    type: date
+    required: false
+  - id: completed_at
+    name: completed_at
+    displayName: Completed at
+    type: datetime
+    required: false
+

@@ -1,0 +1,20 @@
+report:
+  key: open_work_orders
+  label: Open work orders
+  description: Draft, released, and in-progress work orders.
+  source: work_order
+  filters:
+    - field: status
+      op: in
+      values:
+        - draft
+        - released
+        - in_progress
+  metrics:
+    - key: work_order_count
+      label: Work orders
+      op: count
+    - key: open_quantity
+      label: Open quantity
+      op: sum
+      field: quantity

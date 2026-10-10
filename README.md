@@ -53,13 +53,13 @@ flowchart LR
 | Customizations are costly to change | Workflows are designed to be regenerated and improved |
 | Much of the implementation work starts over for each customer | A shared generation engine can learn from repeated implementations |
 
-**Our thesis:** Software that builds ERP systems can become better at building the next one.
+Software that builds ERP systems can become better at building the next one.
 
 That's a different product from a fixed ERP with AI features added on top.
 
 ## How it works — technical overview
 
-The architecture described by our team consists of:
+The architecture consists of:
 
 - **Control plane:** Next.js, Payload, and PostgreSQL.
 - **ERP runtime:** C# / .NET, multi-tenant application design, and per-tenant PostgreSQL databases.
@@ -77,8 +77,6 @@ The architecture described by our team consists of:
 We've worked on ERP systems for manufacturers since **2022**, including a previous ERP product used by **50+ paying companies**.
 
 We started this project because we believe the bottleneck in enterprise software is not the absence of ERP features—it's the cost of understanding each company and keeping its software aligned with reality.
-
-Our hackathon pitch also draws on early conversations with potential customers and ERP consultants, including interest from **Power Partner Solutions**, an SAP integrator in Bulgaria.
 
 ## Team
 

@@ -85,25 +85,6 @@ public sealed record RuntimeLifecyclePrivilegePromotionAuthorization(
     RuntimeLifecyclePrivilegeMachineAttestation? MachineAttestation = null,
     RuntimeLifecyclePrivilegeSupervisorAttestation? SupervisorAttestation = null)
 {
-    public static RuntimeLifecyclePrivilegePromotionAuthorization FromBrokerRequest(
-        RuntimeProductionPromotionBrokerRequest request)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        return new RuntimeLifecyclePrivilegePromotionAuthorization(
-            request.OperationId,
-            request.RunId,
-            request.GenerationProjectId,
-            request.ProductionTarget.TenantStableId,
-            ComputeEnvironmentIdentity(request.StagingTarget),
-            ComputeEnvironmentIdentity(request.ProductionTarget),
-            request.TestSuiteHash,
-            request.LifecyclePrivilegeApplyIdentity ?? string.Empty,
-            request.ExpectedBaseBundleHash ?? string.Empty,
-            request.BundleHash,
-            request.LifecyclePrivilegeMachineAttestation,
-            request.LifecyclePrivilegeSupervisorAttestation);
-    }
-
     public static string ComputeEnvironmentIdentity(RuntimeDeploymentTarget target) =>
         ComputeEnvironmentIdentity(target.TenantStableId, target.Environment, target.DatabaseName);
 
@@ -846,11 +827,6 @@ public sealed class RuntimeLifecyclePrivilegeAttestationAuthority : IDisposable
             hash,
             Sign(supervisorSecret, SupervisorDomain, hash));
     }
-
-    public RuntimeLifecyclePrivilegeAttestationValidationResult Validate(
-        RuntimeProductionPromotionBrokerRequest request,
-        IReadOnlyList<RuntimeLifecyclePrivilegeChange> computedChanges) =>
-        Validate(RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(request), computedChanges);
 
     public RuntimeLifecyclePrivilegeAttestationValidationResult Validate(
         RuntimeLifecyclePrivilegePromotionAuthorization authorization,

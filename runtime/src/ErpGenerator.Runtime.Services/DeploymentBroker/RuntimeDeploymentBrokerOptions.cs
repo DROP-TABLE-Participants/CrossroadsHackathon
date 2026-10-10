@@ -8,5 +8,4 @@ public sealed record RuntimeDeploymentBrokerOptions
 
     public string? LifecycleSupervisorAttestationSecret { get; init; }
 
-    public string? PromotionReceiptSigningKey { get; init; }
 }

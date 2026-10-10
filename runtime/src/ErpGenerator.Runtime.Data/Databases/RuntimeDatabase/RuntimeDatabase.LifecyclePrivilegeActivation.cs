@@ -21,15 +21,16 @@ public sealed partial class RuntimeDatabase
         return active;
     }
 
-    private void EnsureProductionActivationAuthorized(
+    private void EnsureErpActivationAuthorized(
         ResolvedTenantEnvironment tenant,
         CompiledBundle? active,
         CompiledBundle candidate,
         RuntimeLifecyclePrivilegePromotionAuthorization? authorization)
     {
+        if (active is null) return; // Initial ERP creation has no existing privilege surface to widen.
         var targetIdentity = RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(
             tenant.TenantStableId,
-            TenantEnvironmentKind.Production.ToString(),
+            TenantEnvironmentKind.Erp.ToString(),
             tenant.DatabaseName);
         var result = productionActivationPolicy.Validate(
             active,
@@ -51,6 +52,7 @@ public sealed partial class RuntimeDatabase
         RuntimeLifecyclePrivilegePromotionAuthorization? authorization,
         CancellationToken cancellationToken)
     {
+        if (active is null) return;
         var changes = RuntimeLifecyclePrivilegePromotionRules.FindWidening(active, candidate);
         if (changes.Count == 0)
         {

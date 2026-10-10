@@ -10,9 +10,6 @@ export type TenantSummary = {
   host?: string
   runtimeUrl?: string
   deploymentStatus?: string
-  stagingDeploymentStatus?: string
-  productionDeploymentStatus?: string
-  activeProductionBundleVersion?: string
   latestStagedBundleVersion?: string
   deploymentHistory?: Array<{
     environment: string
@@ -80,14 +77,6 @@ export type ErpChangeProposalSummary = {
     reason?: string
   }>
   createdBy?: string
-  stagingAutomation?: {
-    status: 'queued' | 'claimed' | 'completed' | 'terminal'
-    attemptCount: number
-    nextAttemptAt?: string
-    failureCode?: string
-    failureReasonSafe?: string
-  }
-  reviewedAt?: string
   createdAt?: string
 }
 
@@ -103,21 +92,8 @@ export type ErpChangeJobSummary = {
   patchedBundleVersion?: string
   patchedBundleHash?: string
   compileStatus?: string
-  stagingDeploymentId?: string
-  stagingUrl?: string
   safeError?: string
-  productionEnvironmentId?: string
   generationProjectId?: string
-  productionApplyStatus?: string
-  productionApplyRequestedAt?: string
-  productionAppliedAt?: string
-  productionDeploymentId?: string
-  productionBundleVersion?: string
-  productionBundleHash?: string
-  productionUrl?: string
-  productionSafeError?: string
-  productionBaseBundleVersion?: string
-  productionBaseBundleHash?: string
   patchSummary?: string
   patchOperations?: Array<{
     operationType?: string
@@ -255,7 +231,7 @@ export type GenerationRunSummary = {
   startedAt?: string
   completedAt?: string
   failedAt?: string
-  staging?: {
+  erp?: {
     status: string
     url?: string
     deploymentId?: string
@@ -264,22 +240,6 @@ export type GenerationRunSummary = {
     readyAt?: string
     lastError?: string
     testsStatus?: string
-    activation?: RuntimeActivationSummary
-  }
-  production?: {
-    status: string
-    url?: string
-    productionUrl?: string
-    environment?: string
-    deploymentId?: string
-    bundleVersion?: string
-    bundleHash?: string
-    promotedAt?: string
-    lastError?: string
-    requestedAt?: string
-    canPromote?: boolean
-    promoteDisabledReason?: string
-    ownerActivationStatus?: RuntimeActivationSummary['status']
     activation?: RuntimeActivationSummary
   }
   generatedErp?: {
@@ -329,12 +289,12 @@ export type RuntimeActivationSummary = {
   activationExpiresAt?: string
   activatedAt?: string
   activationLastGeneratedAt?: string
-  activationEnvironment: 'staging' | 'production'
+  activationEnvironment: 'erp'
   activationEmail?: string
 }
 
 export type OneTimeActivationLink = {
-  environment: 'staging' | 'production'
+  environment: 'erp'
   status: string
   activationUrl: string
   activationEmail?: string

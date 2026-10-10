@@ -18,7 +18,7 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
             "first-blocked",
             "first-blocked.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Production);
+            TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -37,7 +37,7 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
                 tenant,
                 bundle,
                 blockedPlan,
-                "production",
+                "erp",
                 "failed",
                 activate: false,
                 message: "first deployment blocked");
@@ -68,9 +68,9 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
 
         try
         {
-            var acmeStaging = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeStagingDatabase, TenantEnvironmentKind.Staging);
-            var acmeProduction = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeProductionDatabase, TenantEnvironmentKind.Production);
-            var betaProduction = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaProductionDatabase, TenantEnvironmentKind.Production);
+            var acmeStaging = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeStagingDatabase, TenantEnvironmentKind.Erp);
+            var acmeProduction = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeProductionDatabase, TenantEnvironmentKind.Erp);
+            var betaProduction = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaProductionDatabase, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -87,15 +87,15 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
                 Roles = ["finance"]
             };
 
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v1, planner.PlanMigration(null, v1), "staging", "staged", activate: true, "v1 staged");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(betaProduction, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "beta v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v1, planner.PlanMigration(null, v1), "erp", "staged", activate: true, "v1 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(betaProduction, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "beta v1 promoted");
 
             var v2Plan = planner.PlanMigration(await runtimeDatabase.ReadActiveCompiledBundleAsync(acmeProduction), v2);
             v2Plan.RiskLevel.Should().Be("safe");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v2, v2Plan, "staging", "staged", activate: true, "v2 staged");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v2, v2Plan, "production", "production", activate: true, "v2 promoted");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(betaProduction, v2, v2Plan, "production", "production", activate: true, "beta v2 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v2, v2Plan, "erp", "staged", activate: true, "v2 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v2, v2Plan, "erp", "erp", activate: true, "v2 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(betaProduction, v2, v2Plan, "erp", "erp", activate: true, "beta v2 promoted");
 
             var customer = await records.CreateRecordAsync(acmeProduction, owner, "customers", RuntimeJson.JsonObject(
                 ("company_name", $"Acme Customer {suffix}"),
@@ -147,8 +147,8 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
             v3Plan.Operations.Should().Contain(operation => operation.Type == "add_workflow" && operation.Field == "expense_approval");
             v3Plan.Operations.Should().Contain(operation => operation.Type == "add_workflow" && operation.Field == "invoice_approval");
             v3Plan.Operations.Should().Contain(operation => operation.Type == "add_report" && operation.Field == "expenses_by_project");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v3, v3Plan, "staging", "staged", activate: true, "v3 staged");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v3, v3Plan, "production", "production", activate: true, "v3 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeStaging, v3, v3Plan, "erp", "staged", activate: true, "v3 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acmeProduction, v3, v3Plan, "erp", "erp", activate: true, "v3 promoted");
 
             var afterV3 = await runtimeDatabase.ReadMetadataAsync(acmeProduction);
             afterV3.BundleVersion.Should().Be("0.3.0");
@@ -301,7 +301,7 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
                 acmeProduction,
                 dangerousCompiled,
                 blockedPlan,
-                "production",
+                "erp",
                 "failed",
                 activate: false,
                 message: "dangerous v4 blocked");
@@ -309,8 +309,8 @@ public sealed class RuntimeBundleLifecycleIntegrationTests
             (await runtimeDatabase.ReadMetadataAsync(acmeProduction)).BundleVersion.Should().Be("0.2.0");
 
             var acmeHistory = await runtimeDatabase.ReadDeploymentHistoryAsync(acmeProduction);
-            acmeHistory.Should().Contain(item => item.Status == "production" && item.BundleVersion == "0.3.0");
-            acmeHistory.Should().Contain(item => item.Status == "production" && item.BundleVersion == "0.2.0");
+            acmeHistory.Should().Contain(item => item.Status == "deployed" && item.BundleVersion == "0.3.0");
+            acmeHistory.Should().Contain(item => item.Status == "deployed" && item.BundleVersion == "0.2.0");
             acmeHistory.Should().Contain(item => item.Status == "rolled_back");
             acmeHistory.Should().Contain(item => item.Status == "failed" && item.RiskLevel == "blocked");
 

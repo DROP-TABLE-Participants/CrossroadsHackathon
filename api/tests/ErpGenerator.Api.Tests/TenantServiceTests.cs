@@ -40,7 +40,7 @@ public sealed class TenantServiceTests
         Assert.NotEqual(result.Tenant.Slug, result.Tenant.StableId);
         Assert.Matches("^[a-f0-9]{32}$", result.Tenant.StableId);
         var environment = Assert.Single(await dbContext.TenantEnvironments.ToListAsync());
-        Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(result.Tenant.StableId, "staging"), environment.DatabaseName);
+        Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(result.Tenant.StableId, "erp"), environment.DatabaseName);
     }
 
     private static ErpGeneratorDbContext CreateContext() => new(

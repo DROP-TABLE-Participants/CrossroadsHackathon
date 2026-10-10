@@ -13,7 +13,7 @@ public sealed class RuntimeLayoutRendererTests
             "stable-1",
             "dandelion-chocolate",
             "dandelion-chocolate.staging.localhost",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_staging",
             null,
             "http://dandelion-chocolate.staging.localhost");

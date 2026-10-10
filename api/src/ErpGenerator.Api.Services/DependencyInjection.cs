@@ -42,8 +42,7 @@ public static class DependencyInjection
             options.TokenLifespan = TimeSpan.FromMinutes(30));
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IRuntimeControlPlaneService, RuntimeControlPlaneService>();
-        services.AddScoped<IRuntimePromotionReceiptVerifier, RuntimePromotionReceiptVerifier>();
-        services.AddScoped<IGeneratedStagingDeploymentQueue, GeneratedStagingDeploymentQueue>();
+        services.AddScoped<IGeneratedErpDeploymentQueue, GeneratedErpDeploymentQueue>();
         services.AddScoped<IRuntimeDeploymentProcessor, RuntimeDeploymentProcessor>();
         services.AddScoped<IRuntimeLifecycleService, RuntimeLifecycleService>();
         services.AddScoped<ICustomerFeedbackService, CustomerFeedbackService>();

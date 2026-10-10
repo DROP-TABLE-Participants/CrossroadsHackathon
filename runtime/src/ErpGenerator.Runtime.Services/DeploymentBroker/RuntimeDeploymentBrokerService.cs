@@ -8,7 +8,7 @@ using ErpGenerator.Runtime.Shared.Tenants;
 using ErpGenerator.Runtime.Services.ControlPlane;
 using ErpGenerator.Runtime.Data.Databases;
 using ErpGenerator.Runtime.Data.Databases.DeploymentLocks;
-using ErpGenerator.Runtime.Data.Databases.Staging;
+using ErpGenerator.Runtime.Data.Databases.Preparation;
 
 namespace ErpGenerator.Runtime.Services.DeploymentBroker;
 
@@ -17,35 +17,35 @@ public sealed class RuntimeDeploymentBrokerService(
     ITenantDatabaseProvisioner provisioner,
     RuntimeDatabase runtimeDatabase,
     RuntimeBundleTestRunner bundleTests,
-    ITenantStagingOperationFence stagingFence,
-    ITenantStagingDatabaseResetter stagingResetter,
+    ITenantPreparationOperationFence preparationFence,
+    ITenantPreparationDatabaseResetter preparationResetter,
     ErpBundleYamlLoader loader,
     ErpBundleCompiler compiler,
     ErpBundleMigrationPlanner planner,
-    RuntimeProductionPromotionReceiptIssuer promotionReceiptIssuer,
     IOptions<RuntimeDeploymentBrokerOptions> options,
     ILogger<RuntimeDeploymentBrokerService> logger)
     : IRuntimeDeploymentBrokerService
 {
     private static readonly TimeSpan ActivationLifetime = TimeSpan.FromDays(7);
 
-    public async Task<RuntimeStagingDeploymentBrokerResponse> DeployCuratedAsync(RuntimeCuratedDeploymentRequest request, CancellationToken cancellationToken = default)
+    public async Task<RuntimeErpDeploymentBrokerResponse> DeployCuratedAsync(RuntimeCuratedDeploymentRequest request, CancellationToken cancellationToken = default)
     {
-        // Runtime compiles the API-owned typed files; the usual staging broker still validates and tests the exact artifact.
+        // Runtime compiles the API-owned typed files; the usual ERP broker still validates and tests the exact artifact.
         var manifest = new RuntimeDeploymentArtifact("", "", "", RuntimeDeploymentArtifactHash.Compute(request.Files), request.Files);
         await using var materialized = await RuntimeDeploymentArtifactMaterializer.CreateAsync(manifest, cancellationToken);
         var compiled = compiler.Compile(await loader.LoadDirectoryAsync(materialized.DirectoryPath, cancellationToken));
         var artifact = manifest with { BundleId = compiled.BundleId, BundleVersion = compiled.Version, BundleHash = compiled.BundleHash };
-        return await DeployStagingAsync(new(request.OperationId, request.RunId, request.GenerationProjectId, request.Target, artifact), cancellationToken);
+        return await DeployAsync(new(request.OperationId, request.RunId, request.GenerationProjectId, request.Target, artifact), cancellationToken);
     }
 
     public async Task<RuntimeGuestEntryResponse> CreateGuestEntryAsync(RuntimeGuestEntryRequest request, CancellationToken cancellationToken = default)
     {
         if (!Guid.TryParse(request.CustomerId, out var customerId) || string.IsNullOrWhiteSpace(request.DisplayName) || request.DisplayName.Length > 120)
             throw new RuntimeDeploymentBrokerValidationException("A customer identity is required.");
-        var environment = request.Target.Environment == "production" ? TenantEnvironmentKind.Production : TenantEnvironmentKind.Staging;
+        var environment = ParseEnvironment(request.Target.Environment);
         var tenant = await ResolveExactTargetAsync(request.Target, environment, cancellationToken);
-        if (await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant, cancellationToken) is null)
+        var active = await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant, cancellationToken);
+        if (tenant.Status != "ready" || active is null)
             throw new RuntimeDeploymentBrokerValidationException("This ERP is not ready yet.");
         var ticket = await runtimeDatabase.CreateGuestEntryAsync(tenant, customerId.ToString("N"), request.DisplayName, TimeSpan.FromMinutes(2), cancellationToken);
         return new(ticket, tenant.RuntimeBaseUrl.TrimEnd('/') + "/api/auth/guest-entry", DateTimeOffset.UtcNow.AddMinutes(2));
@@ -84,8 +84,8 @@ public sealed class RuntimeDeploymentBrokerService(
         "permission_allowed"
     };
 
-    public async Task<RuntimeStagingDeploymentBrokerResponse> DeployStagingAsync(
-        RuntimeStagingDeploymentBrokerRequest request,
+    public async Task<RuntimeErpDeploymentBrokerResponse> DeployAsync(
+        RuntimeErpDeploymentBrokerRequest request,
         CancellationToken cancellationToken = default)
     {
         CompiledBundle? compiled = null;
@@ -97,7 +97,7 @@ public sealed class RuntimeDeploymentBrokerService(
             ValidateArtifactLineage(request.Artifact);
             var tenant = await ResolveExactTargetAsync(
                 request.Target,
-                TenantEnvironmentKind.Staging,
+                TenantEnvironmentKind.Erp,
                 cancellationToken);
 
             await using var materialized = await RuntimeDeploymentArtifactMaterializer.CreateAsync(
@@ -118,29 +118,29 @@ public sealed class RuntimeDeploymentBrokerService(
             if (seedKeys.Length != 1)
             {
                 throw new RuntimeDeploymentBrokerValidationException(
-                    "Generated staging acceptance tests must reference exactly one sample seed.");
+                    "Generated ERP acceptance tests must reference exactly one sample seed.");
             }
 
             var seed = await loader.LoadSeedFromDirectoryAsync(materialized.DirectoryPath, seedKeys[0]!, cancellationToken);
             if (seed is null || !string.Equals(seed.Seed.Key, seedKeys[0], StringComparison.OrdinalIgnoreCase))
             {
                 throw new RuntimeDeploymentBrokerValidationException(
-                    "The generated sample seed required by staging acceptance tests is unavailable.");
+                    "The generated sample seed required by ERP acceptance tests is unavailable.");
             }
 
-            await using var operationFence = await stagingFence.AcquireAsync(tenant, cancellationToken);
+            await using var operationFence = await preparationFence.AcquireAsync(tenant, cancellationToken);
             await provisioner.ProvisionAsync(tenant, cancellationToken);
             var active = await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant, cancellationToken);
             if (active is not null)
             {
                 if (!SameBundle(active, compiled))
                 {
-                    return StagingFailure(
+                    return DeploymentFailure(
                         request,
                         tenant.RuntimeBaseUrl,
                         compiled,
-                        "staging_reset_required",
-                        "Staging contains another active bundle and requires a clean reset before deterministic acceptance testing.",
+                        "erp_reset_required",
+                        "ERP contains another active bundle and requires a clean reset before deterministic acceptance testing.",
                         testSuiteHash: testSuiteHash);
                 }
 
@@ -151,24 +151,24 @@ public sealed class RuntimeDeploymentBrokerService(
                         testSuiteHash,
                         cancellationToken))
                 {
-                    return StagingFailure(
+                    return DeploymentFailure(
                         request,
                         tenant.RuntimeBaseUrl,
                         compiled,
                         "acceptance_failed",
-                        "The previous staging attempt has no passing acceptance evidence and requires a clean reset before retry.",
+                        "The previous ERP attempt has no passing acceptance evidence and requires a clean reset before retry.",
                         testSuiteHash: testSuiteHash);
                 }
 
                 var existingDeploymentId = await FindExactDeploymentIdAsync(tenant, compiled, cancellationToken);
                 if (existingDeploymentId is null)
                 {
-                    return StagingFailure(
+                    return DeploymentFailure(
                         request,
                         tenant.RuntimeBaseUrl,
                         compiled,
                         "deployment_receipt_missing",
-                        "The existing staging bundle has no durable deployment receipt.",
+                        "The existing ERP bundle has no durable deployment receipt.",
                         testSuiteHash: testSuiteHash);
                 }
 
@@ -176,7 +176,7 @@ public sealed class RuntimeDeploymentBrokerService(
                     tenant,
                     request.OwnerEmail,
                     cancellationToken);
-                return StagingSuccess(
+                return DeploymentSuccess(
                     request,
                     tenant.RuntimeBaseUrl,
                     compiled,
@@ -191,21 +191,21 @@ public sealed class RuntimeDeploymentBrokerService(
                 tenant,
                 compiled,
                 migrationPlan,
-                "staging",
+                "erp",
                 migrationPlan.IsBlocked ? "failed" : "staged",
                 activate: !migrationPlan.IsBlocked,
                 message: migrationPlan.IsBlocked
-                    ? "Runtime broker staging migration plan was blocked."
+                    ? "Runtime broker ERP migration plan was blocked."
                     : "Runtime broker staged the generated bundle for acceptance testing.",
                 cancellationToken);
             if (migrationPlan.IsBlocked || deployment.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
             {
-                return StagingFailure(
+                return DeploymentFailure(
                     request,
                     tenant.RuntimeBaseUrl,
                     compiled,
                     deployment.FailureCode ?? "deployment_failed",
-                    "Customer staging deployment could not be prepared for acceptance testing.",
+                    "Customer ERP deployment could not be prepared for acceptance testing.",
                     deployment.DeploymentId.ToString(),
                     testSuiteHash);
             }
@@ -226,13 +226,13 @@ public sealed class RuntimeDeploymentBrokerService(
                 RuntimeSeedFailureDiagnostics.TryCreate(exception, out var diagnostic);
                 logger.LogWarning(
                     exception,
-                    "Runtime deployment broker staging seed validation failed for operation {OperationId}, generation project {GenerationProjectId}; seed ref {SeedRef}, entity {Entity}, fields {Fields}.",
+                    "Runtime deployment broker ERP seed validation failed for operation {OperationId}, generation project {GenerationProjectId}; seed ref {SeedRef}, entity {Entity}, fields {Fields}.",
                     request.OperationId,
                     request.GenerationProjectId,
                     diagnostic.SeedRef ?? "unknown",
                     diagnostic.Entity ?? "unknown",
                     diagnostic.Fields.Count == 0 ? "unknown" : string.Join(",", diagnostic.Fields));
-                return StagingFailure(
+                return DeploymentFailure(
                     request,
                     tenant.RuntimeBaseUrl,
                     compiled,
@@ -244,12 +244,12 @@ public sealed class RuntimeDeploymentBrokerService(
 
             if (!IsCompletePass(testRun, compiled, testSuiteHash))
             {
-                return StagingFailure(
+                return DeploymentFailure(
                     request,
                     tenant.RuntimeBaseUrl,
                     compiled,
                     "acceptance_failed",
-                    "Customer staging acceptance tests did not pass.",
+                    "Customer ERP acceptance tests did not pass.",
                     deployment.DeploymentId.ToString(),
                     testSuiteHash);
             }
@@ -258,7 +258,7 @@ public sealed class RuntimeDeploymentBrokerService(
                 tenant,
                 request.OwnerEmail,
                 cancellationToken);
-            return StagingSuccess(
+            return DeploymentSuccess(
                 request,
                 tenant.RuntimeBaseUrl,
                 compiled,
@@ -269,15 +269,15 @@ public sealed class RuntimeDeploymentBrokerService(
         }
         catch (RuntimeDeploymentBrokerValidationException exception)
         {
-            return StagingFailure(request, null, compiled, "invalid_request", exception.Message, deployment?.DeploymentId.ToString(), testSuiteHash);
+            return DeploymentFailure(request, null, compiled, "invalid_request", exception.Message, deployment?.DeploymentId.ToString(), testSuiteHash);
         }
         catch (TenantDeploymentLockException)
         {
-            return StagingFailure(request, null, compiled, "deployment_locked", "Customer staging deployment is already in progress.", deployment?.DeploymentId.ToString(), testSuiteHash);
+            return DeploymentFailure(request, null, compiled, "deployment_locked", "Customer ERP deployment is already in progress.", deployment?.DeploymentId.ToString(), testSuiteHash);
         }
-        catch (TenantStagingOperationConflictException)
+        catch (TenantPreparationOperationConflictException)
         {
-            return StagingFailure(request, null, compiled, "staging_conflict", "Another customer staging lifecycle operation is already in progress.", deployment?.DeploymentId.ToString(), testSuiteHash);
+            return DeploymentFailure(request, null, compiled, "ERP_conflict", "Another customer ERP lifecycle operation is already in progress.", deployment?.DeploymentId.ToString(), testSuiteHash);
         }
         catch (PostgresException exception) when (
             deployment is null &&
@@ -289,38 +289,40 @@ public sealed class RuntimeDeploymentBrokerService(
             // normal reset/repair semantics instead of being replayed blindly.
             logger.LogWarning(
                 exception,
-                "Runtime deployment broker staging preflight {OperationId} temporarily lacked database capacity for generation project {GenerationProjectId}.",
+                "Runtime deployment broker ERP preflight {OperationId} temporarily lacked database capacity for generation project {GenerationProjectId}.",
                 request.OperationId,
                 request.GenerationProjectId);
-            return StagingFailure(
+            return DeploymentFailure(
                 request,
                 null,
                 compiled,
-                RuntimeDeploymentBrokerFailureCodes.StagingPreflightTemporarilyUnavailable,
-                "Customer staging deployment is temporarily unavailable.",
+                RuntimeDeploymentBrokerFailureCodes.ErpPreflightTemporarilyUnavailable,
+                "Customer ERP deployment is temporarily unavailable.",
                 testSuiteHash: testSuiteHash);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogWarning(
                 exception,
-                "Runtime deployment broker staging operation {OperationId} failed for generation project {GenerationProjectId}.",
+                "Runtime deployment broker ERP operation {OperationId} failed for generation project {GenerationProjectId}.",
                 request.OperationId,
                 request.GenerationProjectId);
-            return StagingFailure(request, null, compiled, "deployment_failed", "Customer staging deployment or acceptance testing failed.", deployment?.DeploymentId.ToString(), testSuiteHash);
+            return DeploymentFailure(request, null, compiled, "deployment_failed", "Customer ERP deployment or acceptance testing failed.", deployment?.DeploymentId.ToString(), testSuiteHash);
         }
     }
 
-    public async Task<RuntimeStagingResetBrokerResponse> ResetStagingAsync(
-        RuntimeStagingResetBrokerRequest request,
+    public async Task<RuntimeErpResetBrokerResponse> ResetAsync(
+        RuntimeErpResetBrokerRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
             ValidateCommon(request.OperationId, request.RunId, request.GenerationProjectId);
-            var tenant = await ResolveExactTargetAsync(request.Target, TenantEnvironmentKind.Staging, cancellationToken);
-            await stagingResetter.ResetAsync(tenant, cancellationToken);
-            return new RuntimeStagingResetBrokerResponse(
+            var tenant = await ResolveExactTargetAsync(request.Target, TenantEnvironmentKind.Erp, cancellationToken);
+            if (tenant.Status == "ready")
+                throw new RuntimeDeploymentBrokerValidationException("A ready ERP cannot be reset in place. Assign a fresh demo instead.");
+            await preparationResetter.ResetAsync(tenant, cancellationToken);
+            return new RuntimeErpResetBrokerResponse(
                 true,
                 "reset",
                 request.OperationId,
@@ -331,9 +333,9 @@ public sealed class RuntimeDeploymentBrokerService(
         {
             return ResetFailure(request, "invalid_request", exception.Message);
         }
-        catch (TenantStagingOperationConflictException)
+        catch (TenantPreparationOperationConflictException)
         {
-            return ResetFailure(request, "staging_conflict", "Another staging lifecycle operation is already in progress.");
+            return ResetFailure(request, "ERP_conflict", "Another ERP lifecycle operation is already in progress.");
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -342,172 +344,7 @@ public sealed class RuntimeDeploymentBrokerService(
                 "Runtime deployment broker reset operation {OperationId} failed for generation project {GenerationProjectId}.",
                 request.OperationId,
                 request.GenerationProjectId);
-            return ResetFailure(request, "reset_failed", "Customer staging could not be reset safely.");
-        }
-    }
-
-    public async Task<RuntimeProductionPromotionBrokerResponse> PromoteProductionAsync(
-        RuntimeProductionPromotionBrokerRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            promotionReceiptIssuer.EnsureConfigured();
-            ValidateCommon(request.OperationId, request.RunId, request.GenerationProjectId);
-            ValidateBundleLineage(request.BundleId, request.BundleVersion, request.BundleHash);
-            ValidateTestSuiteHash(request.TestSuiteHash);
-            var staging = await ResolveExactTargetAsync(
-                request.StagingTarget,
-                TenantEnvironmentKind.Staging,
-                cancellationToken);
-            var production = await ResolveExactTargetAsync(
-                request.ProductionTarget,
-                TenantEnvironmentKind.Production,
-                cancellationToken);
-            if (!string.Equals(staging.TenantId, production.TenantId, StringComparison.Ordinal) ||
-                !string.Equals(staging.TenantStableId, production.TenantStableId, StringComparison.Ordinal))
-            {
-                throw new RuntimeDeploymentBrokerValidationException(
-                    "Promotion source and target must belong to the same exact tenant.");
-            }
-
-            var stagedBundle = await runtimeDatabase.ReadCompiledBundleByVersionAsync(
-                staging,
-                request.BundleVersion,
-                cancellationToken);
-            if (stagedBundle is null ||
-                !string.Equals(stagedBundle.BundleId, request.BundleId, StringComparison.Ordinal) ||
-                !string.Equals(stagedBundle.Version, request.BundleVersion, StringComparison.Ordinal) ||
-                !string.Equals(stagedBundle.BundleHash, request.BundleHash, StringComparison.OrdinalIgnoreCase))
-            {
-                return PromotionFailure(request, production.RuntimeBaseUrl, "lineage_mismatch", "The exact staged bundle was not found for production promotion.");
-            }
-
-            if (!await bundleTests.HasPassingResultAsync(
-                    staging,
-                    stagedBundle.Version,
-                    stagedBundle.BundleHash,
-                    request.TestSuiteHash,
-                    cancellationToken))
-            {
-                return PromotionFailure(request, production.RuntimeBaseUrl, "acceptance_missing", "The exact staged bundle has no passing acceptance-test evidence.");
-            }
-
-            await provisioner.ProvisionAsync(production, cancellationToken);
-            var activeProduction = await runtimeDatabase.ReadActiveCompiledBundleAsync(production, cancellationToken);
-            if (activeProduction is not null && SameBundle(activeProduction, stagedBundle))
-            {
-                var existingDeploymentId = await FindExactDeploymentIdAsync(
-                    production,
-                    stagedBundle,
-                    cancellationToken);
-                if (existingDeploymentId is null)
-                {
-                    return PromotionFailure(
-                        request,
-                        production.RuntimeBaseUrl,
-                        "deployment_receipt_missing",
-                        "The active production bundle has no durable deployment receipt.",
-                        bundle: stagedBundle);
-                }
-
-                var existingActivation = await CreateActivationIfRequestedAsync(
-                    production,
-                    request.OwnerEmail,
-                    cancellationToken);
-                return PromotionSuccess(
-                    request,
-                    production.RuntimeBaseUrl,
-                    stagedBundle,
-                    existingDeploymentId,
-                    existingActivation,
-                    acceptedExisting: true,
-                    promotionReceiptIssuer.Issue(request, existingDeploymentId));
-            }
-
-            if (!MatchesExpectedBase(activeProduction, request))
-            {
-                return PromotionFailure(
-                    request,
-                    production.RuntimeBaseUrl,
-                    "stale_base",
-                    "Production has changed since this staging proposal was created. Restage the proposal before applying.");
-            }
-
-            var lifecycleAuthorization = RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(request);
-            var lifecyclePrivilege = ValidateLifecyclePrivilegePromotion(
-                activeProduction,
-                stagedBundle,
-                request,
-                options.Value.LifecycleMachineAttestationSecret,
-                options.Value.LifecycleSupervisorAttestationSecret);
-            if (!lifecyclePrivilege.IsValid)
-            {
-                return PromotionFailure(
-                    request,
-                    production.RuntimeBaseUrl,
-                    lifecyclePrivilege.FailureCode!,
-                    lifecyclePrivilege.SafeError!,
-                    bundle: stagedBundle);
-            }
-
-            var migrationPlan = planner.PlanMigration(activeProduction, stagedBundle);
-            var deployment = await runtimeDatabase.ApplyBundleDeploymentAsync(
-                production,
-                stagedBundle,
-                migrationPlan,
-                "production",
-                migrationPlan.IsBlocked ? "failed" : "production",
-                activate: !migrationPlan.IsBlocked,
-                message: migrationPlan.IsBlocked
-                    ? "Runtime broker production promotion migration plan was blocked."
-                    : "Runtime broker promoted the generated bundle to production.",
-                cancellationToken,
-                lifecycleAuthorization);
-            if (migrationPlan.IsBlocked || deployment.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
-            {
-                var failureCode = deployment.FailureCode ?? "deployment_failed";
-                var safeError = deployment.SafeError ?? (failureCode == "backup_failed"
-                    ? "Production promotion was blocked because the required database backup failed."
-                    : "Customer production promotion failed.");
-                return PromotionFailure(
-                    request,
-                    production.RuntimeBaseUrl,
-                    failureCode,
-                    safeError,
-                    deployment.DeploymentId.ToString(),
-                    stagedBundle);
-            }
-
-            var activation = await CreateActivationIfRequestedAsync(
-                production,
-                request.OwnerEmail,
-                cancellationToken);
-            return PromotionSuccess(
-                request,
-                production.RuntimeBaseUrl,
-                stagedBundle,
-                deployment.DeploymentId.ToString(),
-                activation,
-                acceptedExisting: false,
-                promotionReceiptIssuer.Issue(request, deployment.DeploymentId.ToString()));
-        }
-        catch (RuntimeDeploymentBrokerValidationException exception)
-        {
-            return PromotionFailure(request, null, "invalid_request", exception.Message);
-        }
-        catch (TenantDeploymentLockException)
-        {
-            return PromotionFailure(request, null, "deployment_locked", "Customer production promotion is already in progress.");
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            logger.LogWarning(
-                exception,
-                "Runtime deployment broker production operation {OperationId} failed for generation project {GenerationProjectId}.",
-                request.OperationId,
-                request.GenerationProjectId);
-            return PromotionFailure(request, null, "deployment_failed", "Customer production promotion failed.");
+            return ResetFailure(request, "reset_failed", "Customer ERP could not be reset safely.");
         }
     }
 
@@ -693,7 +530,7 @@ public sealed class RuntimeDeploymentBrokerService(
         if (tests.Count == 0)
         {
             throw new RuntimeDeploymentBrokerValidationException(
-                "Generated staging acceptance tests are required before customer review.");
+                "Generated ERP acceptance tests are required before customer review.");
         }
 
         foreach (var test in tests)
@@ -706,7 +543,7 @@ public sealed class RuntimeDeploymentBrokerService(
                 test.Assertions.Any(assertion => !SupportedTestAssertions.Contains(assertion.Type)))
             {
                 throw new RuntimeDeploymentBrokerValidationException(
-                    "Generated staging acceptance tests contain unsupported or incomplete typed operations.");
+                    "Generated ERP acceptance tests contain unsupported or incomplete typed operations.");
             }
 
             foreach (var step in test.Steps)
@@ -716,7 +553,7 @@ public sealed class RuntimeDeploymentBrokerService(
                     BundleAcceptanceExpectedOutcomeContract.IsSuccess(step))
                 {
                     throw new RuntimeDeploymentBrokerValidationException(
-                        $"Generated staging v3 reject_task step '{step.Id}' must expect workflow_rejected with code '{BundleAcceptanceExpectedOutcomeCodes.WorkflowTaskRejected}' and an exact approval-task target.");
+                        $"Generated ERP v3 reject_task step '{step.Id}' must expect workflow_rejected with code '{BundleAcceptanceExpectedOutcomeCodes.WorkflowTaskRejected}' and an exact approval-task target.");
                 }
 
                 if (step.Type.Equals("start_workflow_action", StringComparison.OrdinalIgnoreCase) &&
@@ -738,7 +575,7 @@ public sealed class RuntimeDeploymentBrokerService(
                     !string.Equals(startStep.Record?.Ref, step.Record?.Ref, StringComparison.OrdinalIgnoreCase))
                 {
                     throw new RuntimeDeploymentBrokerValidationException(
-                        "Generated staging approval and rejection steps must reference the exact preceding workflow start for the same record.");
+                        "Generated ERP approval and rejection steps must reference the exact preceding workflow start for the same record.");
                 }
 
 
@@ -764,7 +601,7 @@ public sealed class RuntimeDeploymentBrokerService(
                             assertion.Status.Equals("pending", StringComparison.OrdinalIgnoreCase)))
                     {
                         throw new RuntimeDeploymentBrokerValidationException(
-                            $"Generated staging v3 reject_task step '{step.Id}' requires an exact pending task assertion for expected target '{step.Expected.Target}' at its immediately preceding checkpoint.");
+                            $"Generated ERP v3 reject_task step '{step.Id}' requires an exact pending task assertion for expected target '{step.Expected.Target}' at its immediately preceding checkpoint.");
                     }
                 }
             }
@@ -790,7 +627,7 @@ public sealed class RuntimeDeploymentBrokerService(
                     checkpointIndex < startIndex)
                 {
                     throw new RuntimeDeploymentBrokerValidationException(
-                        "Generated staging notification_exists assertions require exact v3 entity, record ref, workflow ref, notification step, and causal after_step bindings.");
+                        "Generated ERP notification_exists assertions require exact v3 entity, record ref, workflow ref, notification step, and causal after_step bindings.");
                 }
             }
 
@@ -812,7 +649,7 @@ public sealed class RuntimeDeploymentBrokerService(
                     string.IsNullOrWhiteSpace(start.Action))
                 {
                     throw new RuntimeDeploymentBrokerValidationException(
-                        "Generated staging workflow_instance_count assertions require exact v3 entity, record ref, workflow id, non-negative count, an empty workflow_ref, and their exact start_workflow_action as after_step.");
+                        "Generated ERP workflow_instance_count assertions require exact v3 entity, record ref, workflow id, non-negative count, an empty workflow_ref, and their exact start_workflow_action as after_step.");
                 }
             }
         }
@@ -897,7 +734,7 @@ public sealed class RuntimeDeploymentBrokerService(
                         step.Id.Equals(rejection.Expected.Target, StringComparison.Ordinal)))
                 {
                     throw new RuntimeDeploymentBrokerValidationException(
-                        $"Generated staging v3 reject_task step '{rejection.Id}' expected target '{rejection.Expected.Target}' must be an exact approval step in its uniquely referenced compiled rejection workflow.");
+                        $"Generated ERP v3 reject_task step '{rejection.Id}' expected target '{rejection.Expected.Target}' must be an exact approval step in its uniquely referenced compiled rejection workflow.");
                 }
 
                 var rejectionProofError = BundleAcceptanceWorkflowRejectionProofPolicy.FindUnsupportedReason(
@@ -937,57 +774,9 @@ public sealed class RuntimeDeploymentBrokerService(
     }
 
     private static TenantEnvironmentKind ParseEnvironment(string value) =>
-        value.Equals("production", StringComparison.OrdinalIgnoreCase)
-            ? TenantEnvironmentKind.Production
-            : value.Equals("staging", StringComparison.OrdinalIgnoreCase)
-                ? TenantEnvironmentKind.Staging
-                : throw new RuntimeDeploymentBrokerValidationException(
-                    "Activation environment must be staging or production.");
-
-    private static bool MatchesExpectedBase(
-        CompiledBundle? active,
-        RuntimeProductionPromotionBrokerRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.ExpectedBaseBundleVersion) &&
-            string.IsNullOrWhiteSpace(request.ExpectedBaseBundleHash))
-        {
-            return true;
-        }
-
-        if (active is null)
-        {
-            return string.IsNullOrWhiteSpace(request.ExpectedBaseBundleVersion) &&
-                   string.Equals(
-                       request.ExpectedBaseBundleHash,
-                       RuntimeLifecyclePrivilegePromotionRules.NoActiveProductionBundleHash,
-                       StringComparison.OrdinalIgnoreCase);
-        }
-
-        return (string.IsNullOrWhiteSpace(request.ExpectedBaseBundleVersion) ||
-                string.Equals(active.Version, request.ExpectedBaseBundleVersion, StringComparison.Ordinal)) &&
-               (string.IsNullOrWhiteSpace(request.ExpectedBaseBundleHash) ||
-                string.Equals(active.BundleHash, request.ExpectedBaseBundleHash, StringComparison.OrdinalIgnoreCase));
-    }
-
-    internal static RuntimeLifecyclePrivilegeAttestationValidationResult ValidateLifecyclePrivilegePromotion(
-        CompiledBundle? activeProduction,
-        CompiledBundle stagedCandidate,
-        RuntimeProductionPromotionBrokerRequest request,
-        string? lifecycleMachineAttestationSecret,
-        string? lifecycleSupervisorAttestationSecret,
-        TimeProvider? timeProvider = null)
-    {
-        var policy = new RuntimeLifecycleProductionActivationPolicy(
-            lifecycleMachineAttestationSecret,
-            lifecycleSupervisorAttestationSecret,
-            timeProvider);
-        return policy.Validate(
-            activeProduction,
-            stagedCandidate,
-            RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(request),
-            request.ProductionTarget.TenantStableId,
-            RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(request.ProductionTarget));
-    }
+        value.Equals("erp", StringComparison.OrdinalIgnoreCase)
+            ? TenantEnvironmentKind.Erp
+            : throw new RuntimeDeploymentBrokerValidationException("Environment must be erp.");
 
     private static bool SameBundle(CompiledBundle left, CompiledBundle right) =>
         string.Equals(left.BundleId, right.BundleId, StringComparison.Ordinal) &&
@@ -1010,8 +799,8 @@ public sealed class RuntimeDeploymentBrokerService(
         value is { Length: 64 } && value.All(character =>
             character is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
 
-    private static RuntimeStagingDeploymentBrokerResponse StagingSuccess(
-        RuntimeStagingDeploymentBrokerRequest request,
+    private static RuntimeErpDeploymentBrokerResponse DeploymentSuccess(
+        RuntimeErpDeploymentBrokerRequest request,
         string runtimeUrl,
         CompiledBundle compiled,
         string testSuiteHash,
@@ -1035,8 +824,8 @@ public sealed class RuntimeDeploymentBrokerService(
             activation,
             acceptedExisting);
 
-    private static RuntimeStagingDeploymentBrokerResponse StagingFailure(
-        RuntimeStagingDeploymentBrokerRequest request,
+    private static RuntimeErpDeploymentBrokerResponse DeploymentFailure(
+        RuntimeErpDeploymentBrokerRequest request,
         string? runtimeUrl,
         CompiledBundle? compiled,
         string failureCode,
@@ -1060,8 +849,8 @@ public sealed class RuntimeDeploymentBrokerService(
             FailureCode: failureCode,
             SafeError: safeError);
 
-    private static RuntimeStagingResetBrokerResponse ResetFailure(
-        RuntimeStagingResetBrokerRequest request,
+    private static RuntimeErpResetBrokerResponse ResetFailure(
+        RuntimeErpResetBrokerRequest request,
         string failureCode,
         string safeError) =>
         new(
@@ -1069,52 +858,6 @@ public sealed class RuntimeDeploymentBrokerService(
             "reset_failed",
             request.OperationId,
             request.Target,
-            FailureCode: failureCode,
-            SafeError: safeError);
-
-    private static RuntimeProductionPromotionBrokerResponse PromotionSuccess(
-        RuntimeProductionPromotionBrokerRequest request,
-        string runtimeUrl,
-        CompiledBundle bundle,
-        string? deploymentId,
-        RuntimeDeploymentActivation? activation,
-        bool acceptedExisting,
-        RuntimeProductionPromotionReceipt promotionReceipt) =>
-        new(
-            true,
-            "ready",
-            request.OperationId,
-            request.StagingTarget,
-            request.ProductionTarget,
-            runtimeUrl,
-            bundle.BundleId,
-            bundle.Version,
-            bundle.BundleHash,
-            request.TestSuiteHash,
-            deploymentId,
-            activation,
-            acceptedExisting,
-            PromotionReceipt: promotionReceipt);
-
-    private static RuntimeProductionPromotionBrokerResponse PromotionFailure(
-        RuntimeProductionPromotionBrokerRequest request,
-        string? runtimeUrl,
-        string failureCode,
-        string safeError,
-        string? deploymentId = null,
-        CompiledBundle? bundle = null) =>
-        new(
-            false,
-            failureCode == "stale_base" ? "blocked_stale_base" : "failed",
-            request.OperationId,
-            request.StagingTarget,
-            request.ProductionTarget,
-            runtimeUrl,
-            bundle?.BundleId ?? request.BundleId,
-            bundle?.Version ?? request.BundleVersion,
-            bundle?.BundleHash ?? request.BundleHash,
-            request.TestSuiteHash,
-            deploymentId,
             FailureCode: failureCode,
             SafeError: safeError);
 

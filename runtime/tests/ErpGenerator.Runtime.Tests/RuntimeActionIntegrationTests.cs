@@ -21,8 +21,8 @@ public sealed class RuntimeActionIntegrationTests
 
         try
         {
-            var acme = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeDatabase, TenantEnvironmentKind.Production);
-            var beta = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaDatabase, TenantEnvironmentKind.Production);
+            var acme = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", acmeDatabase, TenantEnvironmentKind.Erp);
+            var beta = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaDatabase, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -39,12 +39,12 @@ public sealed class RuntimeActionIntegrationTests
             };
             var readonlyUser = new RuntimeUserContext(2, "readonly@acme.test", "readonly") { Roles = ["readonly"] };
 
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acme, v3, planner.PlanMigration(null, v3), "production", "production", activate: true, "v3 promoted");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(beta, v3, planner.PlanMigration(null, v3), "production", "production", activate: true, "beta v3 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acme, v3, planner.PlanMigration(null, v3), "erp", "erp", activate: true, "v3 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(beta, v3, planner.PlanMigration(null, v3), "erp", "erp", activate: true, "beta v3 promoted");
             var v4Plan = planner.PlanMigration(await runtimeDatabase.ReadActiveCompiledBundleAsync(acme), v4);
             v4Plan.RiskLevel.Should().Be("safe");
             v4Plan.Operations.Should().Contain(operation => operation.Type == "add_action" && operation.Field == "create_invoice_draft");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(acme, v4, v4Plan, "production", "production", activate: true, "v4 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(acme, v4, v4Plan, "erp", "erp", activate: true, "v4 promoted");
 
             var metadataV4 = await runtimeDatabase.ReadMetadataAsync(acme);
             metadataV4.BundleVersion.Should().Be("0.4.0");

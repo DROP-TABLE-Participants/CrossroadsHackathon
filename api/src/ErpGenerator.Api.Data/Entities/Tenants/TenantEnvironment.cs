@@ -7,7 +7,7 @@ public sealed class TenantEnvironment : ControlPlaneEntity
 {
     public Guid TenantId { get; set; }
     public Tenant Tenant { get; set; } = null!;
-    [MaxLength(24)] public string Environment { get; set; } = "staging";
+    [MaxLength(24)] public string Environment { get; set; } = "erp";
     [MaxLength(253)] public string Host { get; set; } = string.Empty;
     [MaxLength(63)] public string DatabaseName { get; set; } = string.Empty;
     [MaxLength(200)] public string? CredentialSecretReference { get; set; }

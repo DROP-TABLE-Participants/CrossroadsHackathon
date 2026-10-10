@@ -158,7 +158,7 @@ public sealed class PostgresTenantDatabaseProvisioner(IOptions<RuntimeDatabaseOp
             stableId = Regex.Replace(tenant.DatabaseName.ToLowerInvariant(), "[^a-z0-9]", string.Empty);
         }
 
-        var suffix = tenant.Environment == TenantEnvironmentKind.Production ? "prod" : "staging";
+        var suffix = tenant.Environment == TenantEnvironmentKind.Erp ? "prod" : "erp";
         var shortId = stableId.Length > 14 ? stableId[..14] : stableId;
         var userName = $"{prefix}_{shortId}_{suffix}";
         return userName.Length <= 63 ? userName : userName[..63];

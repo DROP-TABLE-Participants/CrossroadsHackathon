@@ -148,7 +148,7 @@ public sealed class GenerationProjectService(
             throw new InvalidOperationException("Finish your current generation before starting another ERP.");
 
         if (input is not null)
-            project.DeployToCustomerStaging = input.DeployToCustomerStaging;
+            project.DeployToRuntime = input.DeployToRuntime;
 
         var active = project.GenerationRuns
             .OrderByDescending(value => value.CreatedAt)
@@ -311,8 +311,7 @@ public sealed class GenerationProjectService(
             .Select(value => GeneratedSummary(value.ResultJson!))
             .FirstOrDefault();
         var deployments = run.BundleVersions.SelectMany(value => value.Deployments).ToArray();
-        var staging = MapEnvironment(deployments, "staging");
-        var production = MapProductionEnvironment(deployments, staging);
+        var erp = MapEnvironment(deployments, "erp");
         return new GenerationRunViewModel(
             run.Id,
             status,
@@ -339,8 +338,7 @@ public sealed class GenerationProjectService(
             run.HeartbeatAt,
             run.StartedAt,
             run.CompletedAt,
-            staging,
-            production,
+            erp,
             generated,
             run.Stages.OrderBy(value => value.Sequence).Select(value => new GenerationStageViewModel(
                 value.Id, value.StageKey, value.Status, value.Summary)).ToArray(),
@@ -370,10 +368,8 @@ public sealed class GenerationProjectService(
             .OrderByDescending(value => value.CreatedAt).FirstOrDefault();
         if (deployment is null) return null;
         var environment = deployment.Tenant.Environments.SingleOrDefault(value => value.Environment == environmentName);
-        var canPromote = environmentName == "staging" && deployment.Status == "ready" &&
-                         deployment.TestsStatus == "passed" &&
-                         IsSha256(deployment.TestSuiteHash) &&
-                         IsSha256(deployment.DeployedBundleHash);
+        var ready = deployment.Status == "ready" && deployment.TestsStatus == "passed" &&
+                    IsSha256(deployment.TestSuiteHash) && IsSha256(deployment.DeployedBundleHash);
         var ownerActivation = environment?.OwnerActivations
             .OrderByDescending(value => value.UpdatedAt)
             .FirstOrDefault();
@@ -389,8 +385,7 @@ public sealed class GenerationProjectService(
             ownerActivation?.Email);
         return new GenerationEnvironmentViewModel(
             deployment.Status,
-            environment?.RuntimeUrl,
-            environmentName == "production" ? environment?.RuntimeUrl : null,
+            ready ? environment?.RuntimeUrl : null,
             environmentName,
             deployment.RuntimeDeploymentId,
             deployment.DeployedBundleVersion,
@@ -398,31 +393,12 @@ public sealed class GenerationProjectService(
             deployment.Status == "ready" ? deployment.UpdatedAt : null,
             deployment.FailureMessage,
             deployment.TestsStatus,
-            canPromote,
-            environmentName == "staging" && !canPromote ? "Staging acceptance tests must pass before production promotion." : null,
+
             activation);
     }
 
     private static bool IsSha256(string? value) =>
         value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
-    private static GenerationEnvironmentViewModel? MapProductionEnvironment(
-        IReadOnlyList<Deployment> deployments,
-        GenerationEnvironmentViewModel? staging)
-    {
-        var current = MapEnvironment(deployments, "production");
-        if (current is not null)
-            return current with
-            {
-                CanPromote = current.Status != "ready" && staging?.CanPromote == true,
-                PromoteDisabledReason = staging?.CanPromote == true ? null : "Staging acceptance tests must pass before production promotion."
-            };
-        return staging?.CanPromote == true
-            ? new GenerationEnvironmentViewModel(
-                "not_started", null, null, "production", null, null, null,
-                null, null, null, true, null, null)
-            : null;
-    }
 
     private static GeneratedErpSummaryViewModel? GeneratedSummary(string json)
     {

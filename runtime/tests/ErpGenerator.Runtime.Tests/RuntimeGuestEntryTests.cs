@@ -30,7 +30,7 @@ public sealed class RuntimeGuestEntryTests
                 stored.Should().HaveLength(64).And.NotBe(ticket);
             }
             (await database.ConsumeGuestEntryAsync(tenant with { Host = "someone-else.localhost" }, ticket)).Should().BeNull();
-            (await database.ConsumeGuestEntryAsync(tenant with { Environment = TenantEnvironmentKind.Production }, ticket)).Should().BeNull();
+            (await database.ConsumeGuestEntryAsync(tenant with { Environment = (TenantEnvironmentKind)99 }, ticket)).Should().BeNull();
             (await database.ConsumeGuestEntryAsync(tenant with { TenantStableId = "another-tenant" }, ticket)).Should().BeNull();
             var user = await database.ConsumeGuestEntryAsync(tenant, ticket);
             user.Should().NotBeNull();

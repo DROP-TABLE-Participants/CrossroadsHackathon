@@ -49,7 +49,7 @@ public sealed partial class RuntimeDatabase
         CancellationToken cancellationToken = default)
     {
         var plan = new ErpBundleMigrationPlanner().PlanMigration(null, bundle);
-        var status = tenant.Environment == TenantEnvironmentKind.Production ? "production" : "staged";
+        var status = "deployed";
         await ApplyBundleDeploymentAsync(
             tenant,
             bundle,
@@ -72,12 +72,12 @@ public sealed partial class RuntimeDatabase
         CancellationToken cancellationToken = default,
         RuntimeLifecyclePrivilegePromotionAuthorization? productionAuthorization = null)
     {
-        var productionActivation = IsProductionActivation(tenant, activate);
+        var productionActivation = IsErpActivation(tenant, activate);
         var normalizedEnvironment = tenant.Environment.ToString().ToLowerInvariant();
         var authoritativeStatus = activate
-            ? tenant.Environment == TenantEnvironmentKind.Production ? "production" : "staged"
+            ? "deployed"
             : status;
-        var operation = productionActivation ? "promote" : "deploy";
+        var operation = "deploy";
         var deploymentLock = await deploymentLocks.AcquireOrThrowAsync(tenant, normalizedEnvironment, operation, cancellationToken);
         logger?.LogInformation(
             "Runtime deployment {Operation} started for tenant {TenantId} environment {Environment}; bundle {BundleId} {BundleVersion} {BundleHash}; lock {LockId}.",
@@ -100,7 +100,7 @@ public sealed partial class RuntimeDatabase
                 plan = new ErpBundleMigrationPlanner().PlanMigration(actualActive, bundle);
                 if (productionActivation)
                 {
-                    EnsureProductionActivationAuthorized(tenant, actualActive, bundle, productionAuthorization);
+                    EnsureErpActivationAuthorized(tenant, actualActive, bundle, productionAuthorization);
                 }
             }
 
@@ -226,7 +226,11 @@ public sealed partial class RuntimeDatabase
                 cancellationToken);
         }
 
-        if (IsProductionActivation(tenant, activate))
+        var activeBeforeDeployment = IsErpActivation(tenant, activate)
+            ? await ReadActiveCompiledBundleUnderLockAsync(tenant, cancellationToken)
+            : null;
+        if (activeBeforeDeployment is not null &&
+            !string.Equals(activeBeforeDeployment.BundleHash, bundle.BundleHash, StringComparison.OrdinalIgnoreCase))
         {
             logger?.LogInformation(
                 "Pre-promotion backup requested for tenant {TenantId} environment {Environment}; bundle {BundleId} {BundleVersion} {BundleHash}.",
@@ -291,9 +295,9 @@ public sealed partial class RuntimeDatabase
 
         await EnsureBundleVersionIdentityCompatibleAsync(connection, transaction, bundle, cancellationToken);
 
-        if (IsProductionActivation(tenant, activate))
+        if (IsErpActivation(tenant, activate))
         {
-            EnsureProductionActivationAuthorized(tenant, actualActive, bundle, productionAuthorization);
+            EnsureErpActivationAuthorized(tenant, actualActive, bundle, productionAuthorization);
             await ConsumeLifecyclePrivilegeEvidenceAsync(
                 connection,
                 transaction,
@@ -479,11 +483,11 @@ public sealed partial class RuntimeDatabase
         return new RuntimeBundleDeploymentResult(bundleVersionId, planId, deploymentId, bundle.BundleId, bundle.Version, bundle.BundleHash, "failed", plan, "backup_failed");
     }
 
-    private static bool IsProductionActivation(
+    private static bool IsErpActivation(
         ResolvedTenantEnvironment tenant,
         bool activate) =>
         activate &&
-        tenant.Environment == TenantEnvironmentKind.Production;
+        tenant.Environment == TenantEnvironmentKind.Erp;
 
     public async Task<RuntimeRollbackResult> RollbackActiveBundleAsync(
         ResolvedTenantEnvironment tenant,
@@ -579,17 +583,17 @@ public sealed partial class RuntimeDatabase
 
         if (active.PreviousBundleVersionId is null)
         {
-            throw new InvalidOperationException("No previous production bundle is available for rollback.");
+            throw new InvalidOperationException("No previous ERP bundle is available for rollback.");
         }
 
         var previousBundle = await ReadBundleByIdAsync(connection, transaction, active.PreviousBundleVersionId.Value, cancellationToken)
             ?? throw new InvalidOperationException("Previous bundle artifact was not found.");
 
-        if (tenant.Environment == TenantEnvironmentKind.Production)
+        if (tenant.Environment == TenantEnvironmentKind.Erp)
         {
             var currentBundle = await ReadBundleByIdAsync(connection, transaction, active.BundleVersionId, cancellationToken)
                 ?? throw new InvalidOperationException("Current bundle artifact was not found.");
-            EnsureProductionActivationAuthorized(tenant, currentBundle, previousBundle, productionAuthorization);
+            EnsureErpActivationAuthorized(tenant, currentBundle, previousBundle, productionAuthorization);
             await ConsumeLifecyclePrivilegeEvidenceAsync(
                 connection,
                 transaction,
@@ -606,7 +610,7 @@ public sealed partial class RuntimeDatabase
 
         await ExecuteBundleStatementsAsync(tenant, connection, transaction, previousBundle, cancellationToken);
         await UpdateBundleVersionStatusAsync(connection, transaction, active.BundleVersionId, "rolled_back", cancellationToken);
-        await UpdateBundleVersionStatusAsync(connection, transaction, active.PreviousBundleVersionId.Value, "production", cancellationToken);
+        await UpdateBundleVersionStatusAsync(connection, transaction, active.PreviousBundleVersionId.Value, "deployed", cancellationToken);
         await UpsertActiveBundleAsync(
             connection,
             transaction,

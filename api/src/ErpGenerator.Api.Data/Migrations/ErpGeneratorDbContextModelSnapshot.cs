@@ -260,21 +260,6 @@ namespace ErpGenerator.Api.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
 
-                    b.Property<string>("PromotionReceiptId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("PromotionReceiptJson")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PromotionReceiptPayloadHash")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("PromotionReceiptSignature")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
                     b.Property<string>("RuntimeDeploymentId")
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
@@ -305,9 +290,6 @@ namespace ErpGenerator.Api.Data.Migrations
                     b.HasIndex("ErpBundleVersionId");
 
                     b.HasIndex("OperationId")
-                        .IsUnique();
-
-                    b.HasIndex("PromotionReceiptId")
                         .IsUnique();
 
                     b.HasIndex("TenantId");
@@ -874,7 +856,7 @@ namespace ErpGenerator.Api.Data.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("DeployToCustomerStaging")
+                    b.Property<bool>("DeployToRuntime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);

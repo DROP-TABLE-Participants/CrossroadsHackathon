@@ -4,7 +4,7 @@ using ErpGenerator.Api.Shared.Tenants;
 
 namespace ErpGenerator.Api.Tests;
 
-public sealed class GeneratedStagingDeploymentQueueTests
+public sealed class GeneratedErpDeploymentQueueTests
 {
     [Fact]
     public async Task Completed_generated_bundle_is_queued_for_customer_staging_once()
@@ -25,7 +25,7 @@ public sealed class GeneratedStagingDeploymentQueueTests
             CompanyName = "Dandelion Chocolate",
             Goal = "Replace paper processes",
             Status = "generated",
-            DeployToCustomerStaging = true
+            DeployToRuntime = true
         };
         var run = new GenerationRun
         {
@@ -52,12 +52,12 @@ public sealed class GeneratedStagingDeploymentQueueTests
         dbContext.AddRange(customer, project);
         await dbContext.SaveChangesAsync();
 
-        var queue = new GeneratedStagingDeploymentQueue(
+        var queue = new GeneratedErpDeploymentQueue(
             dbContext,
             Options.Create(new RuntimeAddressOptions
             {
                 Scheme = "http",
-                StagingPublicHostSuffix = "staging.localhost:5057"
+                PublicHostSuffix = "staging.localhost:5057"
             }));
 
         Assert.True(await queue.TryQueueNextAsync(CancellationToken.None));
@@ -71,14 +71,14 @@ public sealed class GeneratedStagingDeploymentQueueTests
         var tenant = Assert.IsType<Tenant>(savedProject.Tenant);
         Assert.Equal("dandelion-chocolate", tenant.Slug);
         var staging = Assert.Single(tenant.Environments);
-        Assert.Equal("staging", staging.Environment);
+        Assert.Equal("erp", staging.Environment);
         Assert.Equal("dandelion-chocolate.staging.localhost", staging.Host);
         Assert.Equal("http://dandelion-chocolate.staging.localhost:5057", staging.RuntimeUrl);
-        Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "staging"), staging.DatabaseName);
+        Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "erp"), staging.DatabaseName);
         Assert.Equal("pending_deployment", staging.Status);
 
         var deployment = Assert.Single(await dbContext.Deployments.ToListAsync());
-        Assert.Equal("staging", deployment.Environment);
+        Assert.Equal("erp", deployment.Environment);
         Assert.Equal("pending", deployment.Status);
         Assert.Equal(bundle.Id, deployment.ErpBundleVersionId);
         Assert.Equal(tenant.Id, deployment.TenantId);
@@ -103,7 +103,7 @@ public sealed class GeneratedStagingDeploymentQueueTests
             CompanyName = "Dandelion Chocolate",
             Goal = "Replace paper processes",
             Status = "generated",
-            DeployToCustomerStaging = false
+            DeployToRuntime = false
         };
         var run = new GenerationRun
         {
@@ -128,7 +128,7 @@ public sealed class GeneratedStagingDeploymentQueueTests
         dbContext.AddRange(customer, project);
         await dbContext.SaveChangesAsync();
 
-        var queue = new GeneratedStagingDeploymentQueue(
+        var queue = new GeneratedErpDeploymentQueue(
             dbContext,
             Options.Create(new RuntimeAddressOptions()));
 

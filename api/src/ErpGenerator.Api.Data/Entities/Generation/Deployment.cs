@@ -10,7 +10,7 @@ public sealed class Deployment : ControlPlaneEntity
     public Tenant Tenant { get; set; } = null!;
     public Guid ErpBundleVersionId { get; set; }
     public ErpBundleVersion ErpBundleVersion { get; set; } = null!;
-    [MaxLength(24)] public string Environment { get; set; } = "staging";
+    [MaxLength(24)] public string Environment { get; set; } = "erp";
     [MaxLength(32)] public string Status { get; set; } = "pending";
     [MaxLength(160)] public string OperationId { get; set; } = string.Empty;
     [MaxLength(160)] public string? RuntimeDeploymentId { get; set; }
@@ -19,10 +19,6 @@ public sealed class Deployment : ControlPlaneEntity
     [MaxLength(64)] public string? DeployedBundleHash { get; set; }
     [MaxLength(64)] public string? TestSuiteHash { get; set; }
     [MaxLength(64)] public string? TestsStatus { get; set; }
-    [MaxLength(64)] public string? PromotionReceiptId { get; set; }
-    [MaxLength(64)] public string? PromotionReceiptPayloadHash { get; set; }
-    [MaxLength(64)] public string? PromotionReceiptSignature { get; set; }
-    public string? PromotionReceiptJson { get; set; }
     [MaxLength(160)] public string? LeaseOwner { get; set; }
     public Guid? LeaseId { get; set; }
     public DateTimeOffset? LeaseExpiresAt { get; set; }

@@ -273,7 +273,7 @@ public sealed class RuntimeUserRecordLinkIntegrationTests
                 "user-links",
                 "user-links.erpgenerator.example",
                 databaseName,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             await runtimeDatabase.ApplyCompiledBundleAsync(
                 tenant,

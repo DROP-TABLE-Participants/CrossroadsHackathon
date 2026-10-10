@@ -20,7 +20,7 @@ public sealed class TenantDatabaseConnectionFactoryTests
             "stable-id",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_123e4567_staging",
             null,
             "http://acme.erpgenerator.example");
@@ -43,7 +43,7 @@ public sealed class TenantDatabaseConnectionFactoryTests
             "stable-id",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_123e4567_staging",
             "Host=db.example;Database=tenant_db;Username=runtime",
             "http://acme.erpgenerator.example");
@@ -63,7 +63,7 @@ public sealed class TenantDatabaseConnectionFactoryTests
             "stable-id",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_123e4567_staging",
             null,
             "http://acme.erpgenerator.example");
@@ -89,7 +89,7 @@ public sealed class TenantDatabaseConnectionFactoryTests
             "stable-id",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_123e4567_staging",
             "postgresql://runtime:secret@db.example:5433/external_tenant",
             "http://acme.erpgenerator.example");
@@ -116,7 +116,7 @@ public sealed class TenantDatabaseConnectionFactoryTests
             "stable-id",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_123e4567_staging",
             null,
             "http://acme.erpgenerator.example");

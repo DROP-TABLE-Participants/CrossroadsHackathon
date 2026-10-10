@@ -8,7 +8,7 @@ internal static class RuntimeTestTenant
         string slug,
         string host,
         string databaseName,
-        TenantEnvironmentKind environment = TenantEnvironmentKind.Staging) => new(
+        TenantEnvironmentKind environment = TenantEnvironmentKind.Erp) => new(
         slug,
         $"{slug}-stable-id",
         slug,
@@ -16,5 +16,6 @@ internal static class RuntimeTestTenant
         environment,
         databaseName,
         null,
-        $"http://{host}");
+        $"http://{host}",
+        Status: "ready");
 }

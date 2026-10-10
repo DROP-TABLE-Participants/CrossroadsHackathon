@@ -384,7 +384,7 @@ namespace ErpGenerator.Api.Data.Migrations
                     OwnerEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
                     OwnerRoleTitle = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: true),
                     GenerateWithAssumptions = table.Column<bool>(type: "boolean", nullable: false),
-                    DeployToCustomerStaging = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    DeployToRuntime = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     GenerationRequestedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     Status = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -1305,10 +1305,6 @@ namespace ErpGenerator.Api.Data.Migrations
                     DeployedBundleHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     TestSuiteHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     TestsStatus = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
-                    PromotionReceiptId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
-                    PromotionReceiptPayloadHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
-                    PromotionReceiptSignature = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
-                    PromotionReceiptJson = table.Column<string>(type: "text", nullable: true),
                     LeaseOwner = table.Column<string>(type: "character varying(160)", maxLength: 160, nullable: true),
                     LeaseId = table.Column<Guid>(type: "uuid", nullable: true),
                     LeaseExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -1387,13 +1383,6 @@ namespace ErpGenerator.Api.Data.Migrations
                 schema: "control_plane",
                 table: "deployments",
                 column: "OperationId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_deployments_PromotionReceiptId",
-                schema: "control_plane",
-                table: "deployments",
-                column: "PromotionReceiptId",
                 unique: true);
 
             migrationBuilder.CreateIndex(

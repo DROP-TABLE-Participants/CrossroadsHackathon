@@ -103,9 +103,9 @@ public sealed class RuntimeDeploymentBrokerAuthorizationTests
 
     private static HttpRequestMessage ResetRequest(string idempotencyKey = OperationId)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/internal/deployment-broker/staging/reset")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/internal/deployment-broker/erp/reset")
         {
-            Content = JsonContent.Create(new RuntimeStagingResetBrokerRequest(
+            Content = JsonContent.Create(new RuntimeErpResetBrokerRequest(
                 OperationId,
                 "run-1",
                 "project-1",
@@ -120,19 +120,19 @@ public sealed class RuntimeDeploymentBrokerAuthorizationTests
             "tenant-1",
             "stable-tenant-1",
             "acme-staging.erpgenerator.example",
-            "staging",
+            "erp",
             "erp_tenant_stabletenant1_staging");
 
     private static string HttpRuntimeHeader() => RuntimeDeploymentBrokerAuth.HeaderName;
 
     private sealed class CapturingBroker : IRuntimeDeploymentBrokerService
     {
-        public List<RuntimeStagingResetBrokerRequest> ResetRequests { get; } = [];
+        public List<RuntimeErpResetBrokerRequest> ResetRequests { get; } = [];
 
-        public Task<RuntimeStagingResetBrokerResponse> ResetStagingAsync(RuntimeStagingResetBrokerRequest request, CancellationToken cancellationToken = default)
+        public Task<RuntimeErpResetBrokerResponse> ResetAsync(RuntimeErpResetBrokerRequest request, CancellationToken cancellationToken = default)
         {
             ResetRequests.Add(request);
-            return Task.FromResult(new RuntimeStagingResetBrokerResponse(
+            return Task.FromResult(new RuntimeErpResetBrokerResponse(
                 true,
                 "reset",
                 request.OperationId,
@@ -140,9 +140,8 @@ public sealed class RuntimeDeploymentBrokerAuthorizationTests
                 "https://acme-staging.erpgenerator.example"));
         }
 
-        public Task<RuntimeStagingDeploymentBrokerResponse> DeployStagingAsync(RuntimeStagingDeploymentBrokerRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<RuntimeErpDeploymentBrokerResponse> DeployAsync(RuntimeErpDeploymentBrokerRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
-        public Task<RuntimeProductionPromotionBrokerResponse> PromoteProductionAsync(RuntimeProductionPromotionBrokerRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
         public Task<RuntimeOwnerActivationBrokerResponse> CreateOwnerActivationAsync(RuntimeOwnerActivationBrokerRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }

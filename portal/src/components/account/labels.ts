@@ -52,16 +52,12 @@ export type AccountLabels = {
   demoBundle: string
   generatedErp: string
   generatedErpReady: string
-  stagingReady: string
-  createStagingEnvironment: string
   createTenant: string
   creatingTenant: string
   refreshTenants: string
   runtime: string
   activation: string
   deployment: string
-  staging: string
-  production: string
   activeBundle: string
   stagedBundle: string
   deploymentHistory: string
@@ -229,25 +225,12 @@ export type AccountLabels = {
   connectingDataSource: string
   connectOpened: string
   noConnectedSources: string
-  stagingReview: string
-  productionPromotion: string
-  productionReady: string
-  productionNotPromoted: string
-  productionNotReady: string
-  promotionUnavailableReason: string
-  promoteProduction: string
-  promotingProduction: string
-  openProductionErp: string
-  openStagingErp: string
-  openStagingHelper: string
   runtimeActivationNotice: string
   ownerActivation: string
   activationPending: string
   activationActivated: string
   activationExpired: string
   activationNotCreated: string
-  activateStagingOwner: string
-  activateProductionOwner: string
   regenerateActivationLink: string
   copyActivationLink: string
   activationLinkReady: string
@@ -266,23 +249,16 @@ export type AccountLabels = {
   changeProposals: string
   acceptProposal: string
   rejectProposal: string
-  stagingChange: string
+  preparingErp: string
   stagedForReview: string
-  productionUnchanged: string
-  applyProduction: string
-  applyingProduction: string
-  appliedToProduction: string
-  productionApplyFailed: string
-  productionChangedRestage: string
-  productionApplyWarning: string
-  stagingFailed: string
+  erpPreparationFailed: string
   acceptedNotApplied: string
   unsupportedRuntimeNeed: string
   noFeedback: string
   loadingAccount: string
   accountSettings: string
   demoAndSupport: string
-  afterProduction: string
+  afterErpReady: string
   primaryAction: string
   manageConnectors: string
   addDataSource: string
@@ -306,8 +282,6 @@ export type AccountLabels = {
   heroStepGoLive: string
   feedbackLockedHint: string
   feedbackEmptyDescription: string
-  applyToProductionQuestion: string
-  promoteConfirmDescription: string
   cancel: string
   evidenceExplainer: string
   contradictionExplainer: string
@@ -370,16 +344,12 @@ export function getLabels(locale: Locale): AccountLabels {
       demoBundle: 'Демо IT services ERP',
       generatedErp: 'Генериран ERP',
       generatedErpReady: 'Генериран ERP е готов',
-      stagingReady: 'Стейджинг ERP е готов',
-      createStagingEnvironment: 'Създай стейджинг среда',
       createTenant: 'Създай ERP среда',
       creatingTenant: 'Създаване...',
       refreshTenants: 'Обнови',
       runtime: 'ERP',
       activation: 'Активация',
       deployment: 'Деплоймънт',
-      staging: 'Стейджинг',
-      production: 'Продукция',
       activeBundle: 'Активна версия',
       stagedBundle: 'Стейджната версия',
       deploymentHistory: 'История',
@@ -552,8 +522,7 @@ export function getLabels(locale: Locale): AccountLabels {
         cancellation_requested: 'Спира безопасно',
         failed: 'Спряно',
         cancelled: 'Отказано',
-        staging_ready: 'Готово за преглед',
-        production_ready: 'На линия',
+        erp_ready: 'Готово за преглед',
         completed: 'Готово',
       } as Record<string, string>)[status] || 'В ход',
       sourceRecords: 'Записи',
@@ -565,25 +534,12 @@ export function getLabels(locale: Locale): AccountLabels {
       connectingDataSource: 'Свързване...',
       connectOpened: 'Прозорецът за свързване е отворен. Източникът ще се появи след потвърждение.',
       noConnectedSources: 'Няма свързани документи.',
-      stagingReview: 'Стейджинг ERP преглед',
-      productionPromotion: 'Продукционен ERP',
-      productionReady: 'Продукционен ERP е готов',
-      productionNotPromoted: 'Все още не е промотиран',
-      productionNotReady: 'Не е готов за промотиране',
-      promotionUnavailableReason: 'Причина',
-      promoteProduction: 'Промотирай към продукция',
-      promotingProduction: 'Промотиране...',
-      openProductionErp: 'Отвори продукционен ERP',
-      openStagingErp: 'Отвори за преглед',
-      openStagingHelper: 'Отворете ERP за преглед, преди да го пуснете на живо.',
       runtimeActivationNotice: 'ERP използва отделни runtime акаунти. Активирайте owner акаунта преди вход.',
       ownerActivation: 'Owner активация',
       activationPending: 'Чака активация',
       activationActivated: 'Активирана',
       activationExpired: 'Изтекла',
       activationNotCreated: 'Линк не е генериран',
-      activateStagingOwner: 'Активирай staging owner',
-      activateProductionOwner: 'Активирай production owner',
       regenerateActivationLink: 'Генерирай нов линк',
       copyActivationLink: 'Копирай линк',
       activationLinkReady: 'Активационният линк е готов. Използвайте го сега или генерирайте нов при нужда.',
@@ -604,23 +560,16 @@ export function getLabels(locale: Locale): AccountLabels {
       changeProposals: 'Предложени промени',
       acceptProposal: 'Приеми',
       rejectProposal: 'Отхвърли',
-      stagingChange: 'Стейджва се...',
+      preparingErp: 'Подготвяме и проверяваме ERP...',
       stagedForReview: 'Стейджнато за преглед',
-      productionUnchanged: 'Продукцията е непроменена',
-      applyProduction: 'Приложи в продукция',
-      applyingProduction: 'Прилага се...',
-      appliedToProduction: 'Приложено в продукция',
-      productionApplyFailed: 'Прилагането в продукция не успя',
-      productionChangedRestage: 'Продукцията е променена. Автономното повторно стейджване е на опашка. Прегледайте новия staging резултат и потвърдете продукцията отново.',
-      productionApplyWarning: 'Това ще обнови продукционния ERP. Първо ще бъде създаден backup.',
-      stagingFailed: 'Стейджването не успя',
+      erpPreparationFailed: 'Подготовката на ERP е неуспешна',
       acceptedNotApplied: 'Всичко, което приемете, се тества първо върху копие. Реалният ви ERP се променя само след ваше потвърждение.',
       unsupportedRuntimeNeed: 'Нужна е runtime възможност',
       noFeedback: 'Още никой не е изпратил обратна връзка.',
       loadingAccount: 'Зареждане на акаунта...',
       accountSettings: 'Настройки на акаунта',
       demoAndSupport: 'Демо и поддръжка',
-      afterProduction: 'След продукционно внедряване',
+      afterErpReady: 'След подготовката на ERP',
       primaryAction: 'Основно действие',
       manageConnectors: 'Добавете или управлявайте конектори',
       addDataSource: 'Добави източник на данни',
@@ -645,8 +594,6 @@ export function getLabels(locale: Locale): AccountLabels {
       feedbackLockedHint: 'Създайте първата си ERP система, за да използвате това',
       feedbackEmptyDescription:
         'След като вашата ERP система заработи, ERP Generator следи как екипът ви я използва и предлага подобрения тук за ваш преглед.',
-      applyToProductionQuestion: 'Прилагане в продукция?',
-      promoteConfirmDescription: 'Прегледаният стейджинг ERP ще бъде внедрен като продукционен ERP.',
       cancel: 'Отказ',
       evidenceExplainer: 'Не намерихме достатъчно използваема фирмена информация от свързаните източници. Добавете доказателство или отговорете на въпроса, за да продължим.',
       contradictionExplainer: 'Открихме противоречива информация за този процес. Отговорете на въпроса или добавете бележка за решение, за да продължим.',
@@ -656,7 +603,7 @@ export function getLabels(locale: Locale): AccountLabels {
   return {
     eyebrow: 'ERP workspace',
     title: 'Build your ERP from real evidence',
-    description: 'Connect your systems. ERP Generator asks only what remains, generates and tests your ERP, and prepares it for staging review.',
+    description: 'Connect your systems. ERP Generator asks only what remains, generates and tests your ERP, and prepares it for use.',
     profileTitle: 'Profile',
     demoTitle: 'Demo',
     name: 'Name',
@@ -707,16 +654,12 @@ export function getLabels(locale: Locale): AccountLabels {
     demoBundle: 'Demo IT services ERP',
     generatedErp: 'Generated ERP',
     generatedErpReady: 'Generated ERP ready',
-    stagingReady: 'Staging ERP ready',
-    createStagingEnvironment: 'Create staging environment',
     createTenant: 'Create ERP environment',
     creatingTenant: 'Creating...',
     refreshTenants: 'Refresh',
     runtime: 'ERP',
     activation: 'Activation',
     deployment: 'Deployment',
-    staging: 'Staging',
-    production: 'Production',
     activeBundle: 'Active version',
     stagedBundle: 'Staged version',
     deploymentHistory: 'History',
@@ -889,8 +832,7 @@ export function getLabels(locale: Locale): AccountLabels {
       cancellation_requested: 'Stopping safely',
       failed: 'Stopped',
       cancelled: 'Cancelled',
-      staging_ready: 'Ready for your review',
-      production_ready: 'Live',
+      erp_ready: 'Ready for your review',
       completed: 'Done',
     } as Record<string, string>)[status] || 'In progress',
     sourceRecords: 'Records',
@@ -902,25 +844,12 @@ export function getLabels(locale: Locale): AccountLabels {
     connectingDataSource: 'Connecting...',
     connectOpened: 'Connector window opened. The source will appear after it is confirmed.',
     noConnectedSources: 'No connected documents yet.',
-    stagingReview: 'Staging ERP review',
-    productionPromotion: 'Production ERP',
-    productionReady: 'Production ERP ready',
-    productionNotPromoted: 'Not promoted yet',
-    productionNotReady: 'Not ready for promotion',
-    promotionUnavailableReason: 'Reason',
-    promoteProduction: 'Promote to production',
-    promotingProduction: 'Promoting...',
-    openProductionErp: 'Open production ERP',
-    openStagingErp: 'Open for review',
-    openStagingHelper: 'Open your ERP to review it before it goes live.',
     runtimeActivationNotice: 'Your ERP uses separate runtime accounts. Activate the owner account before signing in.',
     ownerActivation: 'Owner activation',
     activationPending: 'Pending activation',
     activationActivated: 'Activated',
     activationExpired: 'Expired',
     activationNotCreated: 'No link generated',
-    activateStagingOwner: 'Activate staging owner',
-    activateProductionOwner: 'Activate production owner',
     regenerateActivationLink: 'Regenerate link',
     copyActivationLink: 'Copy link',
     activationLinkReady: 'Activation link ready. Use it now or regenerate it later if it is lost.',
@@ -931,7 +860,7 @@ export function getLabels(locale: Locale): AccountLabels {
     recentFeedback: 'Recent feedback',
     usageObservations: 'What ERP Generator noticed',
     feedbackPageIntro:
-      'Once your team is using your ERP, their feedback and any improvements ERP Generator suggests appear here. Nothing reaches production without your approval.',
+      'Once your team is using your ERP, their feedback and any improvements ERP Generator suggests appear here. ',
     feedbackNothingYet: 'Nothing to review yet',
     feedbackNothingYetHelper:
       'When your team starts working in your ERP, what they tell you — and what ERP Generator notices on its own — shows up here.',
@@ -941,23 +870,16 @@ export function getLabels(locale: Locale): AccountLabels {
     changeProposals: 'Suggested changes',
     acceptProposal: 'Accept',
     rejectProposal: 'Reject',
-    stagingChange: 'Staging...',
+    preparingErp: 'Preparing and testing your ERP...',
     stagedForReview: 'Staged for review',
-    productionUnchanged: 'Production unchanged',
-    applyProduction: 'Apply to production',
-    applyingProduction: 'Applying...',
-    appliedToProduction: 'Applied to production',
-    productionApplyFailed: 'Production apply failed',
-    productionChangedRestage: 'Production changed. Autonomous restaging is queued. Review the new staged result and explicitly confirm production again.',
-    productionApplyWarning: 'This will update the production ERP. A backup will be created first.',
-    stagingFailed: 'Staging failed',
+    erpPreparationFailed: 'ERP preparation failed',
     acceptedNotApplied: 'Anything you accept is tested on a copy first. Your live ERP only changes when you confirm.',
     unsupportedRuntimeNeed: 'Runtime support needed',
     noFeedback: 'No one has sent feedback yet.',
     loadingAccount: 'Loading account...',
     accountSettings: 'Account settings',
     demoAndSupport: 'Demo and support',
-    afterProduction: 'After production deployment',
+    afterErpReady: 'After your ERP is ready',
     primaryAction: 'Primary action',
     manageConnectors: 'Add or manage connectors',
     addDataSource: 'Add a data source',
@@ -982,8 +904,6 @@ export function getLabels(locale: Locale): AccountLabels {
     feedbackLockedHint: 'Create your first ERP to use this',
     feedbackEmptyDescription:
       'Once your ERP is live, ERP Generator watches how your team actually uses it and proposes improvements here for you to review.',
-    applyToProductionQuestion: 'Apply to production?',
-    promoteConfirmDescription: 'The reviewed staging ERP will be deployed as your live production ERP.',
     cancel: 'Cancel',
     evidenceExplainer: 'We could not find enough usable company information from the connected data sources. Add evidence or answer the requested question to continue.',
     contradictionExplainer: 'We found conflicting information about this workflow. Answer the question or add a resolution note to continue.',

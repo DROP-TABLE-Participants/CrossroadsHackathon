@@ -19,7 +19,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_{Guid.NewGuid():N}"[..40];
-        var tenant = RuntimeTestTenant.Create("lock", "lock.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("lock", "lock.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -27,16 +27,16 @@ public sealed class TenantDeploymentLockTests
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var locks = CreateLockService(factory);
 
-            var first = await locks.TryAcquireAsync(tenant, "staging", "deploy");
+            var first = await locks.TryAcquireAsync(tenant, "erp", "deploy");
             first.Acquired.Should().BeTrue();
 
-            var second = await locks.TryAcquireAsync(tenant, "staging", "deploy");
+            var second = await locks.TryAcquireAsync(tenant, "erp", "deploy");
             second.Acquired.Should().BeFalse();
             second.Message.Should().Be("Another deployment operation is already in progress for this tenant environment.");
 
             await locks.ReleaseAsync(first.Handle!);
 
-            var third = await locks.TryAcquireAsync(tenant, "staging", "deploy");
+            var third = await locks.TryAcquireAsync(tenant, "erp", "deploy");
             third.Acquired.Should().BeTrue();
             await locks.ReleaseAsync(third.Handle!);
 
@@ -54,17 +54,17 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_exp_{Guid.NewGuid():N}"[..44];
-        var tenant = RuntimeTestTenant.Create("lock-expired", "lock-expired.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("lock-expired", "lock-expired.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
         {
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var locks = CreateLockService(factory);
-            var stale = await locks.AcquireOrThrowAsync(tenant, "staging", "deploy");
+            var stale = await locks.AcquireOrThrowAsync(tenant, "erp", "deploy");
             await ExpireLockAsync(factory, tenant, stale.LockId);
 
-            var replacement = await locks.TryAcquireAsync(tenant, "staging", "deploy");
+            var replacement = await locks.TryAcquireAsync(tenant, "erp", "deploy");
 
             replacement.Acquired.Should().BeTrue();
             (await LockStatusAsync(factory, tenant, stale.LockId)).Should().Be("expired");
@@ -83,7 +83,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_con_{Guid.NewGuid():N}"[..44];
-        var tenant = RuntimeTestTenant.Create("lock-concurrent", "lock-concurrent.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("lock-concurrent", "lock-concurrent.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -92,8 +92,8 @@ public sealed class TenantDeploymentLockTests
             var locks = CreateLockService(factory);
 
             var attempts = await Task.WhenAll(
-                locks.TryAcquireAsync(tenant, "staging", "deploy"),
-                locks.TryAcquireAsync(tenant, "staging", "deploy"));
+                locks.TryAcquireAsync(tenant, "erp", "deploy"),
+                locks.TryAcquireAsync(tenant, "erp", "deploy"));
 
             attempts.Count(attempt => attempt.Acquired).Should().Be(1);
             attempts.Count(attempt => !attempt.Acquired).Should().Be(1);
@@ -117,7 +117,7 @@ public sealed class TenantDeploymentLockTests
             "lock-fence",
             "lock-fence.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Staging);
+            TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         TenantDeploymentLockHandle? replacement = null;
@@ -125,7 +125,7 @@ public sealed class TenantDeploymentLockTests
         {
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var locks = CreateLockService(factory);
-            var original = await locks.AcquireOrThrowAsync(tenant, "staging", "deploy");
+            var original = await locks.AcquireOrThrowAsync(tenant, "erp", "deploy");
             await using var connection = new NpgsqlConnection(
                 factory.CreateConnectionString(tenant, TenantDatabaseConnectionPurpose.Provisioning));
             await connection.OpenAsync();
@@ -140,7 +140,7 @@ public sealed class TenantDeploymentLockTests
                 (await expire.ExecuteNonQueryAsync()).Should().Be(1);
             }
 
-            var replacementAttempt = locks.TryAcquireAsync(tenant, "staging", "deploy");
+            var replacementAttempt = locks.TryAcquireAsync(tenant, "erp", "deploy");
             await Task.Delay(200);
             replacementAttempt.IsCompleted.Should().BeFalse(
                 "the exact lease row must remain locked through the authoritative transaction");
@@ -169,7 +169,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_prom_{Guid.NewGuid():N}"[..45];
-        var tenant = RuntimeTestTenant.Create("lock-promote", "lock-promote.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("lock-promote", "lock-promote.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -180,17 +180,17 @@ public sealed class TenantDeploymentLockTests
             var planner = new ErpBundleMigrationPlanner();
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
 
-            var held = await locks.AcquireOrThrowAsync(tenant, "production", "promote");
+            var held = await locks.AcquireOrThrowAsync(tenant, "erp", "promote");
             var plan = planner.PlanMigration(await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant), v2);
 
             var act = async () => await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 plan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
 
@@ -216,7 +216,7 @@ public sealed class TenantDeploymentLockTests
             "lock-truth",
             "lock-truth.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Production);
+            TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -231,17 +231,17 @@ public sealed class TenantDeploymentLockTests
                 tenant,
                 v1,
                 planner.PlanMigration(null, v1),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "v1 promoted");
-            var held = await locks.AcquireOrThrowAsync(tenant, "production", "promote");
+            var held = await locks.AcquireOrThrowAsync(tenant, "erp", "promote");
 
             var act = async () => await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 planner.PlanMigration(v1, v2),
-                environment: "staging",
+                environment: "erp",
                 status: "staged",
                 activate: true,
                 message: "must still use production lock");
@@ -265,7 +265,7 @@ public sealed class TenantDeploymentLockTests
             "lock-staging-truth",
             "lock-staging-truth.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Staging);
+            TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -280,18 +280,18 @@ public sealed class TenantDeploymentLockTests
                 tenant,
                 v1,
                 planner.PlanMigration(null, v1),
-                "staging",
+                "erp",
                 "staged",
                 true,
                 "v1 staged");
-            var held = await locks.AcquireOrThrowAsync(tenant, "staging", "deploy");
+            var held = await locks.AcquireOrThrowAsync(tenant, "erp", "deploy");
 
             var act = async () => await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 planner.PlanMigration(v1, v2),
-                environment: "production",
-                status: "production",
+                environment: "erp",
+                status: "erp",
                 activate: true,
                 message: "must still use staging lock");
 
@@ -314,7 +314,7 @@ public sealed class TenantDeploymentLockTests
             "lock-lease",
             "lock-lease.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Production);
+            TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         var backup = new PausingBackupService();
@@ -330,8 +330,8 @@ public sealed class TenantDeploymentLockTests
                 tenant,
                 v1,
                 planner.PlanMigration(null, v1),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v1 promoted");
 
@@ -345,14 +345,14 @@ public sealed class TenantDeploymentLockTests
                 tenant,
                 v2,
                 planner.PlanMigration(v1, v2),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
             await backup.Started.WaitAsync(TimeSpan.FromSeconds(10));
 
             await ExpireHeldLockAsync(factory, tenant);
-            replacement = await locks.AcquireOrThrowAsync(tenant, "production", "promote");
+            replacement = await locks.AcquireOrThrowAsync(tenant, "erp", "promote");
             backup.Continue();
 
             var act = async () => await firstAttempt;
@@ -380,7 +380,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_stage_{Guid.NewGuid():N}"[..46];
-        var tenant = RuntimeTestTenant.Create("lock-stage", "lock-stage.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("lock-stage", "lock-stage.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -390,14 +390,14 @@ public sealed class TenantDeploymentLockTests
             var planner = new ErpBundleMigrationPlanner();
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = ChangeEntityTableName(await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml"), "project", "bad-table-name");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "staging", "staged", activate: true, "v1 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "erp", "staged", activate: true, "v1 staged");
             var plan = SafeV2Plan(v1, v2);
 
             var result = await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 plan,
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "v2 staged");
@@ -422,7 +422,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_fail_prom_{Guid.NewGuid():N}"[..51];
-        var tenant = RuntimeTestTenant.Create("lock-fail-promote", "lock-fail-promote.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("lock-fail-promote", "lock-fail-promote.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -432,15 +432,15 @@ public sealed class TenantDeploymentLockTests
             var planner = new ErpBundleMigrationPlanner();
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = ChangeEntityTableName(await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml"), "project", "bad-table-name");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
             var plan = SafeV2Plan(v1, v2);
 
             var result = await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 plan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
 
@@ -463,7 +463,7 @@ public sealed class TenantDeploymentLockTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var databaseName = $"erp_tenant_lock_rb_{Guid.NewGuid():N}"[..42];
-        var tenant = RuntimeTestTenant.Create("lock-rollback", "lock-rollback.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("lock-rollback", "lock-rollback.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
         try
@@ -472,14 +472,14 @@ public sealed class TenantDeploymentLockTests
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, new ErpBundleMigrationPlanner().PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, new ErpBundleMigrationPlanner().PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
             var actualPlan = new ErpBundleMigrationPlanner().PlanMigration(v1, v2);
             await runtimeDatabase.ApplyBundleDeploymentAsync(
                 tenant,
                 v2,
                 actualPlan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
             await MarkLatestAppliedPlanNonRollbackableAsync(factory, tenant);

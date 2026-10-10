@@ -105,7 +105,7 @@ public sealed class TefteroBundleTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("teftero", "teftero.erpgenerator.example", database, TenantEnvironmentKind.Staging);
+            var tenant = RuntimeTestTenant.Create("teftero", "teftero.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -122,7 +122,7 @@ public sealed class TefteroBundleTests
                 tenant,
                 compiled,
                 plan,
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "teftero v1 staged");

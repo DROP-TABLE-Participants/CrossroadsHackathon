@@ -11,13 +11,21 @@ describe('portal API allowlist', () => {
     expect(isAllowedPortalApiRoute('POST', ['customers', 'refresh'])).toBe(true)
     expect(isAllowedPortalApiRoute('GET', ['customers', 'generation-projects'])).toBe(true)
     expect(isAllowedPortalApiRoute('DELETE', ['customers', 'generation-projects', 'd70f70ae-1373-46b7-b840-68356d011249'])).toBe(true)
-    expect(isAllowedPortalApiRoute('POST', ['customers', 'generation-runs', 'd70f70ae-1373-46b7-b840-68356d011249', 'promote-production'])).toBe(true)
+    expect(isAllowedPortalApiRoute('POST', ['customers', 'generation-runs', 'd70f70ae-1373-46b7-b840-68356d011249', 'open'])).toBe(true)
     expect(isAllowedPortalApiRoute('POST', ['customers', 'generation-projects', 'd70f70ae-1373-46b7-b840-68356d011249', 'input-sources', 'reconcile'])).toBe(true)
     expect(isAllowedPortalApiRoute('GET', ['customers', 'erp-feedback'])).toBe(true)
     const invite = 'Abcdefghijklmnopqrstuvwxyz123456'
     expect(isAllowedPortalApiRoute('POST', ['interviews', invite, 'messages'])).toBe(true)
     expect(isAllowedPortalApiRoute('POST', ['interviews', invite, 'assistant-response'])).toBe(true)
     expect(isAllowedPortalApiRoute('POST', ['interviews', invite, 'voice-token'])).toBe(true)
+  })
+
+  it('denies removed Runtime environment and promotion routes', () => {
+    const run = ['customers', 'generation-runs', 'd70f70ae-1373-46b7-b840-68356d011249']
+    expect(isAllowedPortalApiRoute('POST', [...run, 'promote-production'])).toBe(false)
+    for (const environment of ['staging', 'production']) {
+      expect(isAllowedPortalApiRoute('POST', [...run, 'environments', environment, 'open'])).toBe(false)
+    }
   })
 
   it('allows only POST for the signed Nango webhook ingress', () => {

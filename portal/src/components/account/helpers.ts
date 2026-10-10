@@ -195,7 +195,7 @@ export function hasUnresolvedBlockingPendingWork(run?: GenerationRunSummary) {
 export function discoveryJourneyStep(project: GenerationProjectSummary) {
   const latestRun = project.generationRuns?.[0]
 
-  if (latestRun?.production?.status === 'ready' || latestRun?.staging?.status === 'ready' || latestRun?.generatedErp) {
+  if (latestRun?.erp?.status === 'ready' || latestRun?.generatedErp) {
     return 3
   }
 

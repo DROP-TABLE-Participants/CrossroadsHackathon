@@ -584,7 +584,7 @@ public sealed class LifecyclePolicyCompilerTests
             [
                 new ErpModule
                 {
-                    Id = "production",
+                    Id = "erp",
                     Name = "Production",
                     Entities =
                     [

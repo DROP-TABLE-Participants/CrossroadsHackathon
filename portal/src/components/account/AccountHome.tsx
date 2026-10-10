@@ -57,7 +57,7 @@ export function AccountHome({ locale }: { locale: Locale }) {
       (project.generationRuns || [])
         .filter((run) =>
           Boolean(run.generatedErp) &&
-          ['completed', 'staging_ready', 'production_ready'].includes(run.status))
+          ['completed', 'erp_ready'].includes(run.status))
         .map((run) => ({
           id: `generated:${run.id}`,
           runId: run.id,
@@ -66,11 +66,7 @@ export function AccountHome({ locale }: { locale: Locale }) {
           entityCount: run.generatedErp?.entities.length || 0,
           workflowCount: run.generatedErp?.workflows.length || 0,
           reportCount: run.generatedErp?.reports.length || 0,
-          status: run.production?.status === 'ready'
-            ? 'deployed_production'
-            : run.staging?.status === 'ready'
-              ? 'deployed_staging'
-              : 'compiled',
+          status: run.erp?.status === 'ready' ? 'ready' : 'compiled',
         })),
     )
   }, [projects])

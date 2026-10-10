@@ -62,16 +62,10 @@ public static class DeploymentRoutes
                 return Results.BadRequest(new { message = "Host is required.", requestId = RequestId(httpContext) });
             }
 
-            var targetEnvironment = ParseDeploymentEnvironment(request.Environment) ?? TenantEnvironmentKind.Staging;
-            if (targetEnvironment == TenantEnvironmentKind.Production)
-            {
-                return Results.BadRequest(new
-                {
-                    message = "The sample deploy route is staging-only; use the production deployment broker for promotion.",
-                    requestId = RequestId(httpContext)
-                });
-            }
-
+            if (!string.IsNullOrWhiteSpace(request.Environment) &&
+                !request.Environment.Equals("erp", StringComparison.OrdinalIgnoreCase))
+                return Results.BadRequest(new { message = "Environment must be erp.", requestId = RequestId(httpContext) });
+            var targetEnvironment = TenantEnvironmentKind.Erp;
             var tenant = await controlPlane.ResolveTenantEnvironmentAsync(host, targetEnvironment, cancellationToken);
             if (tenant is null)
             {
@@ -89,7 +83,7 @@ public static class DeploymentRoutes
             var bundlePath = Path.GetFullPath(ResolveSampleBundlePath(environment.ContentRootPath, request.Version));
             var bundle = await loader.LoadPathAsync(bundlePath, cancellationToken);
             var compiled = compiler.Compile(bundle);
-            var productionTenant = await controlPlane.ResolveTenantEnvironmentAsync(host, TenantEnvironmentKind.Production, cancellationToken);
+            var productionTenant = tenant;
             var activeProductionBundle = productionTenant is null
                 ? null
                 : await runtimeDatabase.ReadActiveCompiledBundleAsync(productionTenant, cancellationToken);
@@ -260,171 +254,6 @@ public static class DeploymentRoutes
             });
         });
 
-        app.MapPost("/internal/deploy/sample/promote", async (
-            HttpContext httpContext,
-            DeploySampleRequest request,
-            IConfiguration configuration,
-            IWebHostEnvironment environment,
-            IControlPlaneClient controlPlane,
-            ITenantProvisioningService provisioner,
-            IRuntimeDatabaseService runtimeDatabase,
-            ErpBundleYamlLoader loader,
-            ErpBundleCompiler compiler,
-            ErpBundleMigrationPlanner planner,
-            IRuntimeBundleTestService bundleTests,
-            CancellationToken cancellationToken) =>
-        {
-            if (!IsInternalRequest(httpContext, configuration))
-            {
-                return Results.Unauthorized();
-            }
-
-            var host = string.IsNullOrWhiteSpace(request.Host) ? httpContext.Request.Host.Value : request.Host.Trim();
-            if (string.IsNullOrWhiteSpace(host))
-            {
-                return Results.BadRequest(new { message = "Host is required.", requestId = RequestId(httpContext) });
-            }
-
-            var stagingTenant = await controlPlane.ResolveTenantEnvironmentAsync(host, TenantEnvironmentKind.Staging, cancellationToken);
-            var productionTenant = await controlPlane.ResolveTenantEnvironmentAsync(host, TenantEnvironmentKind.Production, cancellationToken);
-            if (stagingTenant is null || productionTenant is null)
-            {
-                return Results.NotFound(new
-                {
-                    message = "Tenant staging and production environments must both exist before promotion.",
-                    requestId = RequestId(httpContext)
-                });
-            }
-
-            var bundlePath = Path.GetFullPath(ResolveSampleBundlePath(environment.ContentRootPath, request.Version));
-            var bundle = await loader.LoadPathAsync(bundlePath, cancellationToken);
-            var compiled = compiler.Compile(bundle);
-            var stagedBundle = await runtimeDatabase.ReadCompiledBundleByVersionAsync(stagingTenant, compiled.Version, cancellationToken);
-            if (stagedBundle is null || stagedBundle.BundleHash != compiled.BundleHash)
-            {
-                return Results.Conflict(new
-                {
-                    message = $"Bundle {compiled.Version} must be staged before promotion.",
-                    requestId = RequestId(httpContext)
-                });
-            }
-
-            if (Directory.Exists(Path.Combine(bundlePath, "tests")))
-            {
-                var acceptanceTests = await loader.LoadAcceptanceTestsFromDirectoryAsync(bundlePath, cancellationToken);
-                var testSuiteHash = BundleAcceptanceTestContractHasher.Verify(acceptanceTests).SuiteHash;
-                if (!await bundleTests.HasPassingResultAsync(
-                        stagingTenant,
-                        compiled.Version,
-                        compiled.BundleHash,
-                        testSuiteHash,
-                        cancellationToken))
-                {
-                    await controlPlane.RecordDeploymentEventAsync(
-                        new DeploymentEventCreate(host, "production", "deploy-blocked", "Promotion blocked because bundle acceptance tests have not passed."),
-                        cancellationToken);
-                    return Results.Conflict(new
-                    {
-                        message = $"Bundle {compiled.Version} must pass staging acceptance tests before promotion.",
-                        requestId = RequestId(httpContext)
-                    });
-                }
-            }
-
-            var activeProductionBundle = await runtimeDatabase.ReadActiveCompiledBundleAsync(productionTenant, cancellationToken);
-            var plan = planner.PlanMigration(activeProductionBundle, compiled);
-            await provisioner.ProvisionAsync(productionTenant, cancellationToken);
-            RuntimeBundleDeploymentResult deployment;
-            try
-            {
-                deployment = await runtimeDatabase.ApplyBundleDeploymentAsync(
-                    productionTenant,
-                    compiled,
-                    plan,
-                    "production",
-                    plan.IsBlocked ? "failed" : "production",
-                    activate: !plan.IsBlocked,
-                    message: plan.IsBlocked ? "Promotion blocked by migration plan." : "Sample ERP Bundle promoted to production.",
-                    cancellationToken);
-            }
-            catch (TenantDeploymentLockException ex)
-            {
-                return DeploymentLocked(httpContext, ex);
-            }
-
-            if (plan.IsBlocked || deployment.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
-            {
-                var failureMessage = plan.IsBlocked
-                    ? "Promotion blocked by migration plan."
-                    : deployment.FailureCode?.StartsWith("lifecycle_attestation_", StringComparison.Ordinal) == true
-                        ? "Promotion blocked by the production lifecycle privilege policy."
-                        : "Promotion blocked because the required production backup failed.";
-                var eventType = plan.IsBlocked
-                    ? "deploy-failed"
-                    : deployment.FailureCode?.StartsWith("lifecycle_attestation_", StringComparison.Ordinal) == true
-                        ? "deploy-blocked"
-                        : "backup-failed";
-                await controlPlane.RecordDeploymentEventAsync(
-                    new DeploymentEventCreate(host, "production", eventType, failureMessage, string.Join("; ", plan.BlockedReasons)),
-                    cancellationToken);
-                await controlPlane.UpdateDeploymentStatusAsync(
-                    new DeploymentStatusUpdate(host, "production", "failed", failureMessage, productionTenant.RuntimeBaseUrl, BundleId: compiled.BundleId, BundleVersion: compiled.Version, BundleHash: compiled.BundleHash),
-                    cancellationToken);
-                return Results.Conflict(new
-                {
-                    deployment.Status,
-                    requestId = RequestId(httpContext),
-                    deployment.BundleVersionId,
-                    deployment.MigrationPlanId,
-                    deployment.DeploymentId,
-                    plan
-                });
-            }
-
-            string? activationUrl = null;
-            if (!string.IsNullOrWhiteSpace(request.OwnerEmail))
-            {
-                var activationToken = await runtimeDatabase.CreateActivationTokenAsync(
-                    productionTenant,
-                    request.OwnerEmail,
-                    TimeSpan.FromDays(7),
-                    cancellationToken);
-                activationUrl = BuildActivationUrl(productionTenant.RuntimeBaseUrl, activationToken);
-            }
-
-            await controlPlane.UpdateDeploymentStatusAsync(
-                new DeploymentStatusUpdate(
-                    host,
-                    "production",
-                    "production",
-                    "Sample ERP Bundle promoted to production.",
-                    productionTenant.RuntimeBaseUrl,
-                    activationUrl,
-                    compiled.BundleId,
-                    compiled.Version,
-                    compiled.BundleHash),
-                cancellationToken);
-            await controlPlane.RecordDeploymentEventAsync(
-                new DeploymentEventCreate(host, "production", "deploy-finished", "Sample ERP production promotion finished."),
-                cancellationToken);
-
-            return Results.Ok(new
-            {
-                tenant = productionTenant.TenantSlug,
-                productionTenant.Environment,
-                compiled.BundleId,
-                compiled.Version,
-                compiled.BundleHash,
-                deployment.BundleVersionId,
-                deployment.MigrationPlanId,
-                deployment.DeploymentId,
-                deployment.Status,
-                runtimeUrl = productionTenant.RuntimeBaseUrl,
-                activationUrl,
-                plan
-            });
-        });
-
         app.MapPost("/internal/deploy/sample/rollback", async (
             HttpContext httpContext,
             DeploySampleRequest request,
@@ -444,30 +273,30 @@ public static class DeploymentRoutes
                 return Results.BadRequest(new { message = "Host is required.", requestId = RequestId(httpContext) });
             }
 
-            var productionTenant = await controlPlane.ResolveTenantEnvironmentAsync(host, TenantEnvironmentKind.Production, cancellationToken);
-            if (productionTenant is null)
+            var runtimeTenant = await controlPlane.ResolveTenantEnvironmentAsync(host, TenantEnvironmentKind.Erp, cancellationToken);
+            if (runtimeTenant is null)
             {
                 return Results.NotFound(new
                 {
-                    message = "Tenant production environment is not registered in the control plane.",
+                    message = "Tenant ERP environment is not registered in the control plane.",
                     requestId = RequestId(httpContext)
                 });
             }
 
             try
             {
-                var rollback = await runtimeDatabase.RollbackActiveBundleAsync(productionTenant, cancellationToken);
+                var rollback = await runtimeDatabase.RollbackActiveBundleAsync(runtimeTenant, cancellationToken);
                 await controlPlane.UpdateDeploymentStatusAsync(
-                    new DeploymentStatusUpdate(host, "production", "rolled_back", $"Rolled back from {rollback.FromVersion} to {rollback.ToVersion}.", productionTenant.RuntimeBaseUrl, BundleVersion: rollback.ToVersion, BundleHash: rollback.BundleHash),
+                    new DeploymentStatusUpdate(host, "erp", "rolled_back", $"Rolled back from {rollback.FromVersion} to {rollback.ToVersion}.", runtimeTenant.RuntimeBaseUrl, BundleVersion: rollback.ToVersion, BundleHash: rollback.BundleHash),
                     cancellationToken);
                 await controlPlane.RecordDeploymentEventAsync(
-                    new DeploymentEventCreate(host, "production", "rollback-finished", $"Rolled back from {rollback.FromVersion} to {rollback.ToVersion}."),
+                    new DeploymentEventCreate(host, "erp", "rollback-finished", $"Rolled back from {rollback.FromVersion} to {rollback.ToVersion}."),
                     cancellationToken);
 
                 return Results.Ok(new
                 {
-                    tenant = productionTenant.TenantSlug,
-                    productionTenant.Environment,
+                    tenant = runtimeTenant.TenantSlug,
+                    runtimeTenant.Environment,
                     rollback.DeploymentId,
                     rollback.FromVersion,
                     rollback.ToVersion,
@@ -481,7 +310,7 @@ public static class DeploymentRoutes
             catch (InvalidOperationException ex)
             {
                 await controlPlane.RecordDeploymentEventAsync(
-                    new DeploymentEventCreate(host, "production", "rollback-failed", ex.Message),
+                    new DeploymentEventCreate(host, "erp", "rollback-failed", ex.Message),
                     cancellationToken);
                 return Results.Conflict(new { message = ex.Message, requestId = RequestId(httpContext) });
             }

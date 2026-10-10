@@ -256,7 +256,7 @@ internal static class RuntimeSettingsRenderer
         IReadOnlyList<RuntimeBundleDeploymentHistoryItem> history)
     {
         var deploymentRows = history.Count == 0
-            ? $"""<tr><td colspan="7">{RuntimeUi.EmptyState("No deployments yet", "Deploy a bundle to staging, promote it, or roll back to populate this history.", "package")}</td></tr>"""
+            ? $"""<tr><td colspan="7">{RuntimeUi.EmptyState("No deployments yet", "ERP deployments appear here after preparation.", "package")}</td></tr>"""
             : string.Join("", history.Select(item =>
             {
                 var operations = item.Operations.Count == 0

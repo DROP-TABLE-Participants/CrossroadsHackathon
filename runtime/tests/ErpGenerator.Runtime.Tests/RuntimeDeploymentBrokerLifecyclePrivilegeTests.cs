@@ -69,7 +69,7 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
                     RuntimeLifecyclePrivilegeSupervisorDecision.Approve,
                     Now))
             .IsValid.Should().BeTrue();
-        request.ExpectedBaseBundleHash.Should().Be(RuntimeLifecyclePrivilegePromotionRules.NoActiveProductionBundleHash);
+        request.BaseBundleHash.Should().Be(RuntimeLifecyclePrivilegePromotionRules.NoActiveProductionBundleHash);
         RuntimeLifecyclePrivilegePromotionRules.FindWidening(null, candidate)
             .Should().Contain(change => change.Kind == "direct_authority");
     }
@@ -532,14 +532,10 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
 
         var crossTenant = signed with
         {
-            ProductionTarget = signed.ProductionTarget with
-            {
-                TenantStableId = "stable-2",
-                DatabaseName = "erp_tenant_stable_2_production"
-            }
+            ProductionEnvironmentIdentity = "wrong-target"
         };
         var wrongSuite = signed with { TestSuiteHash = new string('9', 64) };
-        var wrongApply = signed with { LifecyclePrivilegeApplyIdentity = "apply-2" };
+        var wrongApply = signed with { ApplyIdentity = "apply-2" };
 
         Validate(active, candidate, crossTenant).FailureCode.Should().Be("lifecycle_attestation_lineage_mismatch");
         Validate(active, candidate, wrongSuite).FailureCode.Should().Be("lifecycle_attestation_lineage_mismatch");
@@ -559,14 +555,14 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
             Now);
         var tampered = signed with
         {
-            LifecyclePrivilegeMachineAttestation = signed.LifecyclePrivilegeMachineAttestation! with
+            MachineAttestation = signed.MachineAttestation! with
             {
                 ControllerReceipt = new string('0', 64)
             }
         };
         var malformed = signed with
         {
-            LifecyclePrivilegeMachineAttestation = signed.LifecyclePrivilegeMachineAttestation! with
+            MachineAttestation = signed.MachineAttestation! with
             {
                 PolicyVersion = null!,
                 Changes = [null!]
@@ -604,7 +600,7 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
             RuntimeLifecyclePrivilegeMachineStatus.Passed,
             RuntimeLifecyclePrivilegeSupervisorDecision.Approve,
             Now);
-        var authorization = RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(signed);
+        var authorization = signed;
         var policy = new RuntimeLifecycleProductionActivationPolicy(
             "change-me-machine-secret-change-me-machine-secret",
             "change-me-supervisor-secret-change-me-supervisor-secret",
@@ -633,7 +629,7 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
         policy.Validate(
                 active,
                 candidate,
-                RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(signed))
+                signed)
             .FailureCode.Should().Be("lifecycle_attestation_invalid");
     }
 
@@ -656,16 +652,10 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
     internal static RuntimeLifecyclePrivilegeAttestationValidationResult Validate(
         CompiledBundle? active,
         CompiledBundle candidate,
-        RuntimeProductionPromotionBrokerRequest request) =>
-        RuntimeDeploymentBrokerService.ValidateLifecyclePrivilegePromotion(
-            active,
-            candidate,
-            request,
-            MachineSecret,
-            SupervisorSecret,
-            new FixedTimeProvider(Now));
+        RuntimeLifecyclePrivilegePromotionAuthorization request) =>
+        new RuntimeLifecycleProductionActivationPolicy(MachineSecret, SupervisorSecret, new FixedTimeProvider(Now)).Validate(active, candidate, request, "stable-1", RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(Target("erp")));
 
-    internal static RuntimeProductionPromotionBrokerRequest AttestedRequest(
+    internal static RuntimeLifecyclePrivilegePromotionAuthorization AttestedRequest(
         CompiledBundle? active,
         CompiledBundle candidate,
         RuntimeLifecyclePrivilegeMachineStatus status,
@@ -677,9 +667,9 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
         string reviewId = "supervisor-1")
     {
         var request = Request(active, candidate);
-        var envelope = RuntimeLifecyclePrivilegePromotionAuthorization.FromBrokerRequest(request) with
+        var envelope = request with
         {
-            BaseBundleHash = attestedBaseHash ?? request.ExpectedBaseBundleHash!,
+            BaseBundleHash = attestedBaseHash ?? request.BaseBundleHash!,
             CandidateBundleHash = attestedCandidateHash ?? candidate.BundleHash
         };
         using var authority = new RuntimeLifecyclePrivilegeAttestationAuthority(
@@ -700,33 +690,31 @@ public sealed class RuntimeDeploymentBrokerLifecyclePrivilegeTests
             timestamp);
         return request with
         {
-            LifecyclePrivilegeMachineAttestation = machine,
-            LifecyclePrivilegeSupervisorAttestation = supervisor
+            MachineAttestation = machine,
+            SupervisorAttestation = supervisor
         };
     }
 
-    internal static RuntimeProductionPromotionBrokerRequest Request(
+    internal static RuntimeLifecyclePrivilegePromotionAuthorization Request(
         CompiledBundle? active,
         CompiledBundle candidate) =>
         new(
             "operation-1",
             "run-1",
             "project-1",
-            Target("staging"),
-            Target("production"),
-            candidate.BundleId,
-            candidate.Version,
-            candidate.BundleHash,
+            "stable-1",
+            RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(Target("erp")),
+            RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(Target("erp")),
             new string('d', 64),
-            active?.Version,
+            "apply-1",
             active?.BundleHash ?? RuntimeLifecyclePrivilegePromotionRules.NoActiveProductionBundleHash,
-            LifecyclePrivilegeApplyIdentity: "apply-1");
+            candidate.BundleHash);
 
     internal static RuntimeDeploymentTarget Target(string environment) =>
         new(
             "tenant-1",
             "stable-1",
-            environment == "staging" ? "acme-staging.erpgenerator.test" : "acme.erpgenerator.test",
+            environment == "erp" ? "acme-staging.erpgenerator.test" : "acme.erpgenerator.test",
             environment,
             $"erp_tenant_stable_1_{environment}");
 

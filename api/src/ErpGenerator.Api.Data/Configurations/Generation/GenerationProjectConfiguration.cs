@@ -12,7 +12,7 @@ public sealed class GenerationProjectConfiguration : ControlPlaneEntityConfigura
         base.Configure(builder);
         builder.ToTable("generation_projects");
         builder.HasIndex(value => value.GenerationRequestedAt);
-        builder.Property(value => value.DeployToCustomerStaging).HasDefaultValue(true);
+        builder.Property(value => value.DeployToRuntime).HasDefaultValue(true);
         builder.HasOne(value => value.Customer).WithMany(value => value.GenerationProjects).HasForeignKey(value => value.CustomerId).OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -21,9 +21,10 @@ public static class RuntimeRouteHelpers
             host = httpContext.Request.Host.Value;
         }
 
-        return string.IsNullOrWhiteSpace(host)
+        var tenant = string.IsNullOrWhiteSpace(host)
             ? null
             : await controlPlane.ResolveTenantAsync(host, cancellationToken);
+        return tenant?.Status == "ready" ? tenant : null;
     }
 
     public static async Task<RuntimeRouteContext> ResolveAuthenticatedRuntimeAsync(
@@ -749,10 +750,9 @@ public static class RuntimeRouteHelpers
             return null;
         }
 
-        return value.Equals("production", StringComparison.OrdinalIgnoreCase) ||
-               value.Equals("prod", StringComparison.OrdinalIgnoreCase)
-            ? TenantEnvironmentKind.Production
-            : TenantEnvironmentKind.Staging;
+        return value.Equals("erp", StringComparison.OrdinalIgnoreCase)
+            ? TenantEnvironmentKind.Erp
+            : throw new ArgumentException("Environment must be erp.", nameof(value));
     }
 
     public static string ResolveSampleBundlePath(string contentRootPath, string? version)

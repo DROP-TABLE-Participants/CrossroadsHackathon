@@ -116,7 +116,7 @@ const en: AuthCopy = {
       },
       {
         title: 'A working ERP, generated',
-        caption: 'Typed, tested, and deployed to staging for your review before going live.',
+        caption: 'Typed, tested, and ready for you to use.',
       },
       {
         title: 'It keeps improving',
@@ -192,7 +192,7 @@ const bg: AuthCopy = {
       },
       {
         title: 'Работеща ERP система',
-        caption: 'Типизирана, тествана и внедрена в staging за преглед, преди да влезе в продукция.',
+        caption: 'Типизирана, тествана и готова за работа.',
       },
       {
         title: 'Непрекъснато подобрение',

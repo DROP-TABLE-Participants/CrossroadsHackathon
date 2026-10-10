@@ -20,8 +20,7 @@ public sealed class PostgresRuntimeDeploymentLineageTests
         var context = scope.ServiceProvider.GetRequiredService<ErpGeneratorDbContext>();
         var processor = new RuntimeDeploymentProcessor(
             context,
-            runtime,
-            new UnusedReceiptVerifier());
+            runtime);
 
         Assert.True(await processor.TryProcessNextAsync(
             "deployment-worker",
@@ -52,8 +51,7 @@ public sealed class PostgresRuntimeDeploymentLineageTests
         var context = scope.ServiceProvider.GetRequiredService<ErpGeneratorDbContext>();
         var processor = new RuntimeDeploymentProcessor(
             context,
-            runtime,
-            new UnusedReceiptVerifier());
+            runtime);
 
         Assert.True(await processor.TryProcessNextAsync(
             "deployment-worker",
@@ -93,11 +91,11 @@ public sealed class PostgresRuntimeDeploymentLineageTests
         {
             Tenant = tenant,
             TenantId = tenant.Id,
-            Environment = "staging",
+            Environment = "erp",
             Host = "lineage.staging.localhost",
             DatabaseName = TenantDatabaseNamePolicy.BuildExpected(
                 tenant.StableId,
-                "staging"),
+                "erp"),
             Status = "pending_deployment"
         };
         tenant.Environments.Add(environment);
@@ -153,7 +151,7 @@ public sealed class PostgresRuntimeDeploymentLineageTests
             TenantId = tenant.Id,
             ErpBundleVersion = bundle,
             ErpBundleVersionId = bundle.Id,
-            Environment = "staging",
+            Environment = "erp",
             Status = "pending",
             OperationId = Guid.NewGuid().ToString("N")
         };
@@ -191,16 +189,6 @@ public sealed class PostgresRuntimeDeploymentLineageTests
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
-        public Task<RuntimeProductionPromotionViewModel> PromoteProductionAsync(
-            RuntimeProductionPromotionInputModel input,
-            CancellationToken cancellationToken) =>
-            throw new NotSupportedException();
     }
 
-    private sealed class UnusedReceiptVerifier
-        : IRuntimePromotionReceiptVerifier
-    {
-        public bool IsConfigured => false;
-        public bool Verify(string? payloadHash, string? signature) => false;
-    }
 }

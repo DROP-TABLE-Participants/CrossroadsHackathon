@@ -60,7 +60,6 @@ public static class DependencyInjection
             configuration["RuntimeDeploymentBroker:LifecycleSupervisorAttestationSecret"]));
         services.AddSingleton<RuntimeDeploymentBrokerAuth>();
         services.AddSingleton<IRuntimeDeploymentBrokerAuth>(provider => provider.GetRequiredService<RuntimeDeploymentBrokerAuth>());
-        services.AddSingleton<RuntimeProductionPromotionReceiptIssuer>();
         services.AddSingleton<IRuntimeDeploymentBrokerService, RuntimeDeploymentBrokerService>();
         services.AddSingleton<CanonicalBundleDeploymentService>();
         services.AddSingleton<ICanonicalBundleDeploymentService>(provider => provider.GetRequiredService<CanonicalBundleDeploymentService>());

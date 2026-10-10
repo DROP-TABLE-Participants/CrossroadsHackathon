@@ -11,7 +11,7 @@ public sealed class RuntimeDeploymentClient(
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public Task<CuratedRuntimeDeploymentViewModel> DeployCuratedAsync(CuratedRuntimeDeploymentInputModel input, CancellationToken cancellationToken) =>
-        SendAsync<CuratedRuntimeDeploymentInputModel, CuratedRuntimeDeploymentViewModel>("/internal/deployment-broker/staging/deploy-curated", input.OperationId, input, cancellationToken);
+        SendAsync<CuratedRuntimeDeploymentInputModel, CuratedRuntimeDeploymentViewModel>("/internal/deployment-broker/erp/deploy-curated", input.OperationId, input, cancellationToken);
     public Task<RuntimeGuestEntryViewModel> CreateGuestEntryAsync(RuntimeGuestEntryInputModel input, CancellationToken cancellationToken) =>
         SendAsync<RuntimeGuestEntryInputModel, RuntimeGuestEntryViewModel>("/internal/deployment-broker/guest-entry", input.OperationId, input, cancellationToken);
 
@@ -19,19 +19,13 @@ public sealed class RuntimeDeploymentClient(
         CanonicalRuntimeDeploymentInputModel input,
         CancellationToken cancellationToken) =>
         SendAsync<CanonicalRuntimeDeploymentInputModel, CanonicalRuntimeDeploymentViewModel>(
-            "/internal/deployment-broker/staging/deploy-canonical", input.OperationId, input, cancellationToken);
+            "/internal/deployment-broker/erp/deploy-canonical", input.OperationId, input, cancellationToken);
 
     public Task<RuntimeOwnerActivationViewModel> CreateActivationAsync(
         RuntimeOwnerActivationInputModel input,
         CancellationToken cancellationToken) =>
         SendAsync<RuntimeOwnerActivationInputModel, RuntimeOwnerActivationViewModel>(
             "/internal/deployment-broker/owner-activation", input.OperationId, input, cancellationToken);
-
-    public Task<RuntimeProductionPromotionViewModel> PromoteProductionAsync(
-        RuntimeProductionPromotionInputModel input,
-        CancellationToken cancellationToken) =>
-        SendAsync<RuntimeProductionPromotionInputModel, RuntimeProductionPromotionViewModel>(
-            "/internal/deployment-broker/production/promote", input.OperationId, input, cancellationToken);
 
     private async Task<TResponse> SendAsync<TRequest, TResponse>(
         string path,

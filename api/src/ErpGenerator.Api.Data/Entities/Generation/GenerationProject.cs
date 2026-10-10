@@ -20,7 +20,7 @@ public sealed class GenerationProject : ControlPlaneEntity
     [MaxLength(320)] public string? OwnerEmail { get; set; }
     [MaxLength(120)] public string? OwnerRoleTitle { get; set; }
     public bool GenerateWithAssumptions { get; set; }
-    public bool DeployToCustomerStaging { get; set; } = true;
+    public bool DeployToRuntime { get; set; } = true;
     public DateTimeOffset? GenerationRequestedAt { get; set; }
     [MaxLength(32)] public string Status { get; set; } = "draft";
     public ICollection<GenerationProjectInputDocument> InputDocuments { get; set; } = [];

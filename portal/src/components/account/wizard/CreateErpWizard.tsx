@@ -73,7 +73,7 @@ export function CreateErpWizard({ locale }: { locale: Locale }) {
     setBusy(true); setError('')
     try {
       const created = await save()
-      const response = await fetch(`/api/customers/generation-projects/${created.id}/start-generation`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deployToCustomerStaging: true }) })
+      const response = await fetch(`/api/customers/generation-projects/${created.id}/start-generation`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deployToRuntime: true }) })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.message || (bg ? 'Генерирането не започна. Доказателствата са запазени.' : 'Generation could not start. Your evidence is saved.'))
       window.localStorage.removeItem(key + (template ? '-dandelion' : ''))

@@ -15,7 +15,7 @@ public sealed class RuntimeDeploymentWorker(
             try
             {
                 using var scope = scopeFactory.CreateScope();
-                var queue = scope.ServiceProvider.GetRequiredService<IGeneratedStagingDeploymentQueue>();
+                var queue = scope.ServiceProvider.GetRequiredService<IGeneratedErpDeploymentQueue>();
                 if (await queue.TryQueueNextAsync(stoppingToken))
                     continue;
                 var processor = scope.ServiceProvider.GetRequiredService<IRuntimeDeploymentProcessor>();

@@ -5,7 +5,7 @@ using ErpGenerator.Runtime.Data.Databases.Backups;
 using ErpGenerator.Runtime.Data.Databases.DeploymentLocks;
 using ErpGenerator.Runtime.Data.Databases;
 using ErpGenerator.Runtime.Data.Databases.Scheduling;
-using ErpGenerator.Runtime.Data.Databases.Staging;
+using ErpGenerator.Runtime.Data.Databases.Preparation;
 
 namespace ErpGenerator.Runtime.Data;
 
@@ -58,8 +58,8 @@ public static class DependencyInjection
                     provider.GetRequiredService<ITenantDatabaseCredentialStore>())
                 : new NoOpTenantDatabaseProvisioner();
         });
-        services.AddSingleton<ITenantStagingOperationFence, PostgresTenantStagingOperationFence>();
-        services.AddSingleton<ITenantStagingDatabaseResetter, PostgresTenantStagingDatabaseResetter>();
+        services.AddSingleton<ITenantPreparationOperationFence, PostgresTenantPreparationOperationFence>();
+        services.AddSingleton<ITenantPreparationDatabaseResetter, PostgresTenantPreparationDatabaseResetter>();
 
         return services;
     }

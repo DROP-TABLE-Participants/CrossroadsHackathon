@@ -9,14 +9,14 @@ using ErpGenerator.Runtime.Shared.Deployment;
 using ErpGenerator.Runtime.Shared.Tenants;
 using ErpGenerator.Runtime.Services.ControlPlane;
 using ErpGenerator.Runtime.Data.Databases;
-using ErpGenerator.Runtime.Data.Databases.Staging;
+using ErpGenerator.Runtime.Data.Databases.Preparation;
 
 namespace ErpGenerator.Runtime.Services.DeploymentBroker;
 
 public sealed class CanonicalBundleDeploymentService(
     IControlPlaneClient controlPlane,
     ITenantDatabaseProvisioner provisioner,
-    ITenantStagingOperationFence stagingFence,
+    ITenantPreparationOperationFence preparationFence,
     RuntimeDatabase runtimeDatabase,
     RuntimeBundleTestRunner bundleTests,
     ErpBundleCompiler compiler,
@@ -41,12 +41,12 @@ public sealed class CanonicalBundleDeploymentService(
             ValidateRequest(request);
             var tenant = await controlPlane.ResolveTenantEnvironmentAsync(
                 request.Target.Host,
-                TenantEnvironmentKind.Staging,
-                cancellationToken) ?? throw new InvalidOperationException("The staging tenant could not be resolved.");
+                TenantEnvironmentKind.Erp,
+                cancellationToken) ?? throw new InvalidOperationException("The ERP tenant could not be resolved.");
             ValidateTarget(request.Target, tenant);
 
             var compiled = compiler.Compile(Map(request));
-            await using var operationFence = await stagingFence.AcquireAsync(tenant, cancellationToken);
+            await using var operationFence = await preparationFence.AcquireAsync(tenant, cancellationToken);
             await provisioner.ProvisionAsync(tenant, cancellationToken);
             var active = await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant, cancellationToken);
             var plan = migrationPlanner.PlanMigration(active, compiled);
@@ -57,13 +57,13 @@ public sealed class CanonicalBundleDeploymentService(
                 tenant,
                 compiled,
                 plan,
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 message: "Canonical generated ERP deployed by ErpGenerator.Api.",
                 cancellationToken);
             if (deployment.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
-                return Failure(request, deployment.FailureCode ?? "deployment_failed", "The generated ERP could not be deployed to staging.");
+                return Failure(request, deployment.FailureCode ?? "deployment_failed", "The generated ERP could not be deployed to ERP.");
 
             var acceptanceTests = BuildAcceptanceTests(request.Bundle);
             var testRun = await bundleTests.RunAsync(
@@ -96,15 +96,15 @@ public sealed class CanonicalBundleDeploymentService(
         {
             logger.LogWarning(
                 exception,
-                "Canonical staging deployment {OperationId} failed bundle validation: {ValidationErrors}",
+                "Canonical ERP deployment {OperationId} failed bundle validation: {ValidationErrors}",
                 request.OperationId,
                 string.Join(" | ", exception.Errors));
             return Failure(request, "bundle_validation_failed", "The generated ERP bundle did not pass runtime validation.");
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogWarning(exception, "Canonical staging deployment {OperationId} failed.", request.OperationId);
-            return Failure(request, "deployment_failed", "The generated ERP could not be deployed to staging.");
+            logger.LogWarning(exception, "Canonical ERP deployment {OperationId} failed.", request.OperationId);
+            return Failure(request, "deployment_failed", "The generated ERP could not be deployed to ERP.");
         }
     }
 
@@ -463,7 +463,7 @@ public sealed class CanonicalBundleDeploymentService(
 
     private static void ValidateTarget(RuntimeDeploymentTarget target, ResolvedTenantEnvironment tenant)
     {
-        if (target.Environment != "staging" || target.TenantId != tenant.TenantId ||
+        if (target.Environment != "erp" || target.TenantId != tenant.TenantId ||
             target.TenantStableId != tenant.TenantStableId || target.DatabaseName != tenant.DatabaseName ||
             !target.Host.Equals(tenant.Host, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Deployment target lineage no longer matches the control plane.");

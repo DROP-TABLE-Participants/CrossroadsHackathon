@@ -26,7 +26,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "acme",
                 "acme.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -43,7 +43,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 tenant,
                 compiled,
                 new ErpBundleMigrationPlanner().PlanMigration(null, compiled),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "explicit null evidence");
@@ -144,9 +144,9 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
 
         try
         {
-            var staging = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", stagingDatabase, TenantEnvironmentKind.Staging);
-            var production = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", productionDatabase, TenantEnvironmentKind.Production);
-            var beta = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaDatabase, TenantEnvironmentKind.Staging);
+            var staging = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", stagingDatabase, TenantEnvironmentKind.Erp);
+            var production = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", productionDatabase, TenantEnvironmentKind.Erp);
+            var beta = RuntimeTestTenant.Create("beta", "beta.erpgenerator.example", betaDatabase, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -161,8 +161,8 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
             var compiled = await RuntimeBundleTestHelper.CompileItServicesV4FolderAsync();
             var plan = planner.PlanMigration(null, compiled);
 
-            await runtimeDatabase.ApplyBundleDeploymentAsync(staging, compiled, plan, "staging", "staged", activate: true, "folder v4 staged");
-            await runtimeDatabase.ApplyBundleDeploymentAsync(beta, compiled, plan, "staging", "staged", activate: true, "beta folder v4 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(staging, compiled, plan, "erp", "staged", activate: true, "folder v4 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(beta, compiled, plan, "erp", "staged", activate: true, "beta folder v4 staged");
 
             var seed = await loader.LoadSeedFromDirectoryAsync(folder, "demo");
             seed.Should().NotBeNull();
@@ -226,7 +226,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
             audit.Should().Contain(@event => @event.EventType == "bundle_tests.completed");
 
             var productionPlan = planner.PlanMigration(null, compiled);
-            await runtimeDatabase.ApplyBundleDeploymentAsync(production, compiled, productionPlan, "production", "production", activate: true, "folder v4 promoted after tests");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(production, compiled, productionPlan, "erp", "erp", activate: true, "folder v4 promoted after tests");
             var productionMetadata = await runtimeDatabase.ReadMetadataAsync(production);
             productionMetadata.BundleVersion.Should().Be("0.4.0");
             productionMetadata.Actions.Should().Contain(action => action.GetProperty("Key").GetString() == "create_invoice_draft");
@@ -250,7 +250,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Staging);
+            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -264,7 +264,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 new RuntimeReportStore(factory));
             var loader = new ErpBundleYamlLoader();
             var compiled = await RuntimeBundleTestHelper.CompileItServicesV4FolderAsync();
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, compiled, new ErpBundleMigrationPlanner().PlanMigration(null, compiled), "staging", "staged", activate: true, "folder v4 staged");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, compiled, new ErpBundleMigrationPlanner().PlanMigration(null, compiled), "erp", "staged", activate: true, "folder v4 staged");
             var seed = await loader.LoadSeedFromDirectoryAsync(RuntimeBundleTestHelper.FindItServicesV4Folder(), "demo");
             var failingTest = new BundleAcceptanceTestDocument
             {
@@ -306,7 +306,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Staging);
+            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -324,7 +324,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 tenant,
                 compiled,
                 new ErpBundleMigrationPlanner().PlanMigration(null, compiled),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "folder v4 staged");
@@ -394,7 +394,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Staging);
+            var tenant = RuntimeTestTenant.Create("acme", "acme.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -502,7 +502,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-outcomes",
                 "accept-outcomes.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -587,7 +587,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-v3",
                 "accept-v3.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -806,7 +806,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-notice",
                 "accept-notice.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -966,7 +966,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-reject-audit",
                 "accept-reject-audit.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -1136,7 +1136,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-actor-identity",
                 "accept-actor-identity.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -1318,7 +1318,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-actor-bind",
                 "accept-actor-bind.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -1596,7 +1596,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-exact-reports",
                 "accept-exact-reports.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -1935,7 +1935,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-digest",
                 "accept-digest.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2135,7 +2135,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-report-kinds",
                 "accept-report-kinds.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2497,7 +2497,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-report-ref-kind",
                 "accept-report-ref-kind.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2614,7 +2614,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-exact-count",
                 "accept-exact-count.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2749,7 +2749,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-report-limit",
                 "accept-report-limit.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2872,7 +2872,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-nonpristine",
                 "accept-nonpristine.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -2976,7 +2976,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-v2-nonpristine",
                 "accept-v2-nonpristine.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3047,7 +3047,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-cancel",
                 "accept-cancel.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3140,7 +3140,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-concurrent",
                 "accept-concurrent.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3254,7 +3254,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-store-fail",
                 "accept-store-fail.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3351,7 +3351,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-audit-fail",
                 "accept-audit-fail.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3430,7 +3430,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-rerun",
                 "accept-rerun.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3497,7 +3497,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-seed-key",
                 "accept-seed-key.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3566,7 +3566,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-entity-id",
                 "accept-entity-id.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3681,7 +3681,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-actor-roles",
                 "accept-actor-roles.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3767,7 +3767,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-workflow-evidence",
                 "accept-workflow-evidence.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3882,7 +3882,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-v2-workflow",
                 "accept-v2-workflow.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -3993,7 +3993,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-v3-isolation",
                 "accept-v3-isolation.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -4192,7 +4192,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-actor-value",
                 "accept-actor-value.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -4494,7 +4494,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-task-assignment",
                 "accept-task-assignment.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -4624,7 +4624,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-relation-assignment",
                 "accept-relation-assignment.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -4725,7 +4725,7 @@ public sealed class RuntimeBundleAcceptanceIntegrationTests
                 "accept-task-assignment-bad",
                 "accept-task-assignment-bad.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);

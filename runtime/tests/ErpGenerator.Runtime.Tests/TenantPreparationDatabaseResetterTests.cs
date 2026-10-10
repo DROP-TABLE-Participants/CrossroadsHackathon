@@ -2,32 +2,31 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using ErpGenerator.Runtime.Shared.Tenants;
 using ErpGenerator.Runtime.Data.Databases;
-using ErpGenerator.Runtime.Data.Databases.Staging;
+using ErpGenerator.Runtime.Data.Databases.Preparation;
 
 namespace ErpGenerator.Runtime.Tests;
 
-public sealed class TenantStagingDatabaseResetterTests
+public sealed class TenantPreparationDatabaseResetterTests
 {
     [Fact]
-    public async Task Production_is_rejected_before_any_database_execution()
+    public async Task Unknown_environment_is_rejected_before_any_database_execution()
     {
         var execution = new CapturingResetExecution();
         var lockExecution = new CapturingLockExecution();
         var stableId = "123e4567-e89b-12d3-a456-426614174000";
-        var tenant = Tenant(stableId, TenantEnvironmentKind.Production, "erp_tenant_123e4567e89b12d3a45642661417_prod");
+        var tenant = Tenant(stableId, (TenantEnvironmentKind)99, "erp_tenant_123e4567e89b12d3a45642661417_erp");
         var resetter = Resetter(execution, lockExecution);
 
         var act = () => resetter.ResetAsync(tenant);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Only a tenant staging database can use the staging operation fence.");
+            .WithMessage("Only a tenant ERP database can use the preparation operation fence.");
         lockExecution.Calls.Should().Be(0);
         execution.Calls.Should().Be(0);
     }
 
     [Theory]
     [InlineData("erp_tenant_other_staging")]
-    [InlineData("erp_tenant_123e4567e89b12d3a45642661417_prod")]
     [InlineData("ERP_TENANT_123E4567E89B12D3A45642661417_STAGING")]
     [InlineData("erp_tenant_123e4567e89b12d3a45642661417_staging;drop database postgres")]
     public async Task Database_name_must_exactly_match_immutable_stable_id(string databaseName)
@@ -36,13 +35,13 @@ public sealed class TenantStagingDatabaseResetterTests
         var lockExecution = new CapturingLockExecution();
         var tenant = Tenant(
             "123e4567-e89b-12d3-a456-426614174000",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             databaseName);
 
         var act = () => Resetter(execution, lockExecution).ResetAsync(tenant);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Tenant staging database identity does not match its immutable stable id.");
+            .WithMessage("Tenant ERP database identity does not match its immutable stable id.");
         lockExecution.Calls.Should().Be(0);
         execution.Calls.Should().Be(0);
     }
@@ -58,8 +57,8 @@ public sealed class TenantStagingDatabaseResetterTests
             AutoProvisionDatabases = false,
             AdminConnectionString = "Host=localhost;Database=postgres;Username=postgres;Password=secret"
         });
-        var fence = new PostgresTenantStagingOperationFence(options, lockExecution);
-        var resetter = new PostgresTenantStagingDatabaseResetter(
+        var fence = new PostgresTenantPreparationOperationFence(options, lockExecution);
+        var resetter = new PostgresTenantPreparationDatabaseResetter(
             options,
             new NoOpTenantDatabaseProvisioner(),
             new InMemoryTenantDatabaseCredentialStore(),
@@ -69,7 +68,7 @@ public sealed class TenantStagingDatabaseResetterTests
         var act = () => resetter.ResetAsync(tenant);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Automatic tenant database provisioning is required for staging lifecycle operations.");
+            .WithMessage("Automatic tenant database provisioning is required for ERP preparation operations.");
         lockExecution.Calls.Should().Be(0);
         execution.Calls.Should().Be(0);
     }
@@ -85,8 +84,8 @@ public sealed class TenantStagingDatabaseResetterTests
             AutoProvisionDatabases = true,
             AdminConnectionString = " "
         });
-        var fence = new PostgresTenantStagingOperationFence(options, lockExecution);
-        var resetter = new PostgresTenantStagingDatabaseResetter(
+        var fence = new PostgresTenantPreparationOperationFence(options, lockExecution);
+        var resetter = new PostgresTenantPreparationDatabaseResetter(
             options,
             new NoOpTenantDatabaseProvisioner(),
             new InMemoryTenantDatabaseCredentialStore(),
@@ -96,7 +95,7 @@ public sealed class TenantStagingDatabaseResetterTests
         var act = () => resetter.ResetAsync(tenant);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("An administrative database connection is required for staging lifecycle operations.");
+            .WithMessage("An administrative database connection is required for ERP preparation operations.");
         lockExecution.Calls.Should().Be(0);
         execution.Calls.Should().Be(0);
     }
@@ -115,7 +114,7 @@ public sealed class TenantStagingDatabaseResetterTests
         execution.Tenant.Should().Be(tenant);
         result.Status.Should().Be("reset");
         result.ToString().ToLowerInvariant().Should().NotContain("password");
-        typeof(TenantStagingDatabaseResetResult).GetProperties()
+        typeof(TenantPreparationDatabaseResetResult).GetProperties()
             .Select(property => property.Name)
             .Should().NotContain(name => name.Contains("connection", StringComparison.OrdinalIgnoreCase) ||
                 name.Contains("credential", StringComparison.OrdinalIgnoreCase) ||
@@ -129,15 +128,15 @@ public sealed class TenantStagingDatabaseResetterTests
     {
         TenantDatabaseNamePolicy.BuildExpected(
                 "123e4567-e89b-12d3-a456-426614174000",
-                TenantEnvironmentKind.Staging)
-            .Should().Be("erp_tenant_123e4567e89b12d3a45642661417_staging");
+                TenantEnvironmentKind.Erp)
+            .Should().Be("erp_tenant_123e4567e89b12d3a45642661417_erp");
         TenantDatabaseNamePolicy.BuildExpected(
                 "123e4567-e89b-12d3-a456-426614174000",
-                TenantEnvironmentKind.Production)
-            .Should().Be("erp_tenant_123e4567e89b12d3a45642661417_prod");
+                TenantEnvironmentKind.Erp)
+            .Should().Be("erp_tenant_123e4567e89b12d3a45642661417_erp");
     }
 
-    private static PostgresTenantStagingDatabaseResetter Resetter(
+    private static PostgresTenantPreparationDatabaseResetter Resetter(
         CapturingResetExecution execution,
         CapturingLockExecution lockExecution)
     {
@@ -146,11 +145,11 @@ public sealed class TenantStagingDatabaseResetterTests
                 AutoProvisionDatabases = true,
                 AdminConnectionString = "Host=localhost;Database=postgres;Username=postgres;Password=secret"
             });
-        return new PostgresTenantStagingDatabaseResetter(
+        return new PostgresTenantPreparationDatabaseResetter(
             options,
             new NoOpTenantDatabaseProvisioner(),
             new InMemoryTenantDatabaseCredentialStore(),
-            new PostgresTenantStagingOperationFence(options, lockExecution),
+            new PostgresTenantPreparationOperationFence(options, lockExecution),
             execution);
     }
 
@@ -159,8 +158,8 @@ public sealed class TenantStagingDatabaseResetterTests
         const string stableId = "123e4567-e89b-12d3-a456-426614174000";
         return Tenant(
             stableId,
-            TenantEnvironmentKind.Staging,
-            TenantDatabaseNamePolicy.BuildExpected(stableId, TenantEnvironmentKind.Staging));
+            TenantEnvironmentKind.Erp,
+            TenantDatabaseNamePolicy.BuildExpected(stableId, TenantEnvironmentKind.Erp));
     }
 
     private static ResolvedTenantEnvironment Tenant(
@@ -171,13 +170,13 @@ public sealed class TenantStagingDatabaseResetterTests
             "tenant-1",
             stableId,
             "acme",
-            environment == TenantEnvironmentKind.Staging ? "staging.acme.erpgenerator.example" : "acme.erpgenerator.example",
+            environment == TenantEnvironmentKind.Erp ? "staging.acme.erpgenerator.example" : "acme.erpgenerator.example",
             environment,
             databaseName,
             null,
             "https://staging.acme.erpgenerator.example");
 
-    private sealed class CapturingResetExecution : ITenantStagingDatabaseResetExecution
+    private sealed class CapturingResetExecution : ITenantPreparationDatabaseResetExecution
     {
         public int Calls { get; private set; }
         public ResolvedTenantEnvironment? Tenant { get; private set; }
@@ -195,7 +194,7 @@ public sealed class TenantStagingDatabaseResetterTests
         }
     }
 
-    private sealed class CapturingLockExecution : ITenantStagingAdvisoryLockExecution
+    private sealed class CapturingLockExecution : ITenantPreparationAdvisoryLockExecution
     {
         public int Calls { get; private set; }
 

@@ -10,22 +10,13 @@ namespace ErpGenerator.Api.WebHost.Controllers;
 [Route("api/customers/generation-runs/{runId:guid}")]
 public sealed class RuntimeLifecycleController(IRuntimeLifecycleService lifecycle) : ControllerBase
 {
-    [HttpPost("promote-production")]
-    public async Task<ActionResult<GenerationRunActionViewModel>> PromoteProduction(
-        Guid runId,
-        PromoteProductionInputModel input,
-        CancellationToken cancellationToken) =>
-        Ok(await lifecycle.RequestProductionPromotionAsync(
-            User.RequireCustomerId(), runId, input.Confirm, cancellationToken));
-
-    [HttpPost("environments/{environment}/activation-link")]
+    [HttpPost("activation-link")]
     public async Task<ActionResult<object>> ActivationLink(
         Guid runId,
-        string environment,
         CancellationToken cancellationToken)
     {
         var activation = await lifecycle.CreateActivationLinkAsync(
-            User.RequireCustomerId(), runId, environment, cancellationToken);
+            User.RequireCustomerId(), runId, cancellationToken);
         return Ok(new { activation });
     }
 }

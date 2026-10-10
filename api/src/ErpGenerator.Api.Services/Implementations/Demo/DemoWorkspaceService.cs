@@ -60,13 +60,13 @@ public sealed class DemoWorkspaceService(ErpGeneratorDbContext db, UserManager<C
         return await projects.CreateAsync(customerId, new("Dandelion Chocolate — customized", "Generate a fresh chocolate manufacturing ERP from this knowledge pack and the visitor's selected requirements. Keep explicit questions and assumptions when evidence is incomplete.", "hybrid", Industry: "Chocolate manufacturing", CompanyType: "Manufacturer", Description: description), ct);
     }
 
-    public async Task<RuntimeGuestEntryViewModel> OpenAsync(Guid customerId, Guid? demoId, string? host, Guid? runId, string environment, CancellationToken ct)
+    public async Task<RuntimeGuestEntryViewModel> OpenAsync(Guid customerId, Guid? demoId, string? host, Guid? runId, CancellationToken ct)
     {
-        var query = db.TenantEnvironments.Include(v => v.Tenant).Where(v => v.Tenant.OwnerId == customerId && v.Tenant.Status == "active" && v.Status == "ready");
+        var query = db.TenantEnvironments.Include(v => v.Tenant).Where(v => v.Tenant.OwnerId == customerId && v.Tenant.Status == "active" && v.Status == "ready" && v.Environment == "erp");
         if (demoId is { } id)
             query = query.Where(v => db.DemoInstances.Any(d => d.Id == id && d.TenantId == v.TenantId && d.CustomerId == customerId && d.Status == "assigned"));
         else if (runId is { } generatedId)
-            query = query.Where(v => v.Environment == environment && db.Deployments.Any(d => d.TenantId == v.TenantId && d.Environment == v.Environment && d.Status == "ready" && d.ErpBundleVersion.GenerationRunId == generatedId && d.ErpBundleVersion.GenerationRun.GenerationProject.CustomerId == customerId));
+            query = query.Where(v => v.Environment == "erp" && db.Deployments.Any(d => d.TenantId == v.TenantId && d.Environment == v.Environment && d.Status == "ready" && d.ErpBundleVersion.GenerationRunId == generatedId && d.ErpBundleVersion.GenerationRun.GenerationProject.CustomerId == customerId));
         else if (!string.IsNullOrWhiteSpace(host)) query = query.Where(v => v.Host == host);
         else throw new ArgumentException("Select an ERP from your workspace.");
         var target = await query.SingleOrDefaultAsync(ct) ?? throw new KeyNotFoundException("This ERP is not available in your workspace.");
@@ -112,7 +112,7 @@ public sealed class DemoWorkspaceService(ErpGeneratorDbContext db, UserManager<C
         }
         await db.Entry(instance).Reference(v => v.Tenant).LoadAsync(ct);
         await db.Entry(instance.Tenant).Collection(v => v.Environments).LoadAsync(ct);
-        var target = instance.Tenant.Environments.Single(v => v.Environment == "staging");
+        var target = instance.Tenant.Environments.Single(v => v.Environment == "erp");
         try
         {
             var files = new List<CuratedRuntimeFile>();
@@ -126,7 +126,7 @@ public sealed class DemoWorkspaceService(ErpGeneratorDbContext db, UserManager<C
             var receipt = await runtime.DeployCuratedAsync(new(operationId, instance.Id.ToString(), instance.Id.ToString(), requestedTarget, files), ct);
             instance.DeploymentReceiptJson = JsonSerializer.Serialize(receipt);
             if (!receipt.Success || receipt.OperationId != operationId || receipt.Target != requestedTarget ||
-                receipt.TestsStatus != "passed" || receipt.TestsBundleHash != receipt.BundleHash || receipt.TestsBundleVersion != receipt.BundleVersion || string.IsNullOrEmpty(receipt.TestSuiteHash))
+                receipt.Status != "ready" || receipt.TestsStatus != "passed" || receipt.TestsBundleHash != receipt.BundleHash || receipt.TestsBundleVersion != receipt.BundleVersion || string.IsNullOrEmpty(receipt.TestSuiteHash))
                 throw new InvalidOperationException(receipt.SafeError ?? "The demo did not pass its manufacturing acceptance tests.");
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             if (instance.CustomerId is { } customerId) await CustomerLockAsync(customerId, ct);
@@ -162,9 +162,9 @@ public sealed class DemoWorkspaceService(ErpGeneratorDbContext db, UserManager<C
     {
         var stableId = Guid.NewGuid().ToString("N");
         var tenant = new Tenant { StableId = stableId, Slug = "demo-" + stableId, CompanyName = "Dandelion Chocolate", OwnerId = ownerId, SetupStatus = "ready" };
-        var authority = tenant.Slug + "." + addresses.Value.StagingPublicHostSuffix.TrimStart('.');
-        var database = TenantDatabaseNamePolicy.BuildExpected(stableId, "staging");
-        tenant.Environments.Add(new() { Environment = "staging", Host = authority.Split(':')[0], DatabaseName = database, CredentialSecretReference = $"tenant-db:{stableId}:staging:{database}", RuntimeUrl = addresses.Value.Scheme + "://" + authority, Status = "pending_deployment" });
+        var authority = tenant.Slug + "." + addresses.Value.PublicHostSuffix.TrimStart('.');
+        var database = TenantDatabaseNamePolicy.BuildExpected(stableId, "erp");
+        tenant.Environments.Add(new() { Environment = "erp", Host = authority.Split(':')[0], DatabaseName = database, CredentialSecretReference = $"tenant-db:{stableId}:erp:{database}", RuntimeUrl = addresses.Value.Scheme + "://" + authority, Status = "pending_deployment" });
         var instance = new DemoInstance { CustomerId = customerId, Tenant = tenant, ReplacesId = replacesId, TemplateVersion = Version };
         db.DemoInstances.Add(instance);
         await db.SaveChangesAsync(ct);

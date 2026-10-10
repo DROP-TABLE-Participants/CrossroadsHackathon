@@ -155,7 +155,7 @@ export function DiscoveryPrimaryActionCopy({ locale }: { locale: Locale }) {
     : {
         eyebrow: 'Next step',
         title: 'Let ERP Generator build your ERP',
-        description: 'GO starts discovery, asks only what the evidence cannot answer, and generates a tested ERP in staging.',
+        description: 'GO starts discovery, asks only what the evidence cannot answer, and generates a tested ERP.',
       }
 
   return (

@@ -233,7 +233,7 @@ public sealed class RuntimeRelatedRecordActionGuardIntegrationTests
                 prefix,
                 $"{prefix}.erpgenerator.test",
                 databaseName,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var compiled = new ErpBundleCompiler().Compile(RelatedRecordActionGuardTestBundle.Create());

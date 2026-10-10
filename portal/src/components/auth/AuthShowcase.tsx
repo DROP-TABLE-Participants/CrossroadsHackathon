@@ -87,7 +87,7 @@ export function AuthShowcase({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">Acme Manufacturing</p>
-                <p className="truncate text-xs text-muted-foreground">Production ERP</p>
+                <p className="truncate text-xs text-muted-foreground">Ready ERP</p>
               </div>
               <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
                 <span className="auth-dot size-1.5 rounded-full bg-success" />

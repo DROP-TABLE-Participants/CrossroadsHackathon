@@ -39,26 +39,10 @@ public static class RuntimeConfigurationValidator
         RequireSecret(configuration, "RuntimeDeploymentBroker:Secret", minLength: 16, errors);
         RequireSecret(configuration, "RuntimeDeploymentBroker:LifecycleMachineAttestationSecret", minLength: 32, errors);
         RequireSecret(configuration, "RuntimeDeploymentBroker:LifecycleSupervisorAttestationSecret", minLength: 32, errors);
-        RequireSecret(configuration, "RuntimeDeploymentBroker:PromotionReceiptSigningKey", minLength: 32, errors);
         RequireDistinctValues(
             configuration,
             "RuntimeDeploymentBroker:LifecycleMachineAttestationSecret",
             "RuntimeDeploymentBroker:LifecycleSupervisorAttestationSecret",
-            errors);
-        RequireDistinctValues(
-            configuration,
-            "RuntimeDeploymentBroker:Secret",
-            "RuntimeDeploymentBroker:PromotionReceiptSigningKey",
-            errors);
-        RequireDistinctValues(
-            configuration,
-            "RuntimeDeploymentBroker:LifecycleMachineAttestationSecret",
-            "RuntimeDeploymentBroker:PromotionReceiptSigningKey",
-            errors);
-        RequireDistinctValues(
-            configuration,
-            "RuntimeDeploymentBroker:LifecycleSupervisorAttestationSecret",
-            "RuntimeDeploymentBroker:PromotionReceiptSigningKey",
             errors);
         RequireLifecycleVerifierKeyStrength(configuration, errors);
         RequireSecret(configuration, "Runtime:SessionSecret", minLength: 32, errors);

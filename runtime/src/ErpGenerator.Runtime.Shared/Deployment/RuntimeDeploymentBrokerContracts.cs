@@ -14,8 +14,8 @@ public static class RuntimeDeploymentBrokerLimits
 
 public static class RuntimeDeploymentBrokerFailureCodes
 {
-    public const string StagingPreflightTemporarilyUnavailable =
-        "staging_preflight_temporarily_unavailable";
+    public const string ErpPreflightTemporarilyUnavailable =
+        "erp_preflight_temporarily_unavailable";
 }
 
 public sealed record RuntimeDeploymentTarget(
@@ -42,7 +42,7 @@ public sealed record RuntimeDeploymentActivation(
     string Email,
     DateTimeOffset ExpiresAt);
 
-public sealed record RuntimeStagingDeploymentBrokerRequest(
+public sealed record RuntimeErpDeploymentBrokerRequest(
     string OperationId,
     string RunId,
     string GenerationProjectId,
@@ -50,7 +50,7 @@ public sealed record RuntimeStagingDeploymentBrokerRequest(
     RuntimeDeploymentArtifact Artifact,
     string? OwnerEmail = null);
 
-public sealed record RuntimeStagingDeploymentBrokerResponse(
+public sealed record RuntimeErpDeploymentBrokerResponse(
     bool Success,
     string Status,
     string OperationId,
@@ -69,13 +69,13 @@ public sealed record RuntimeStagingDeploymentBrokerResponse(
     string? FailureCode = null,
     string? SafeError = null);
 
-public sealed record RuntimeStagingResetBrokerRequest(
+public sealed record RuntimeErpResetBrokerRequest(
     string OperationId,
     string RunId,
     string GenerationProjectId,
     RuntimeDeploymentTarget Target);
 
-public sealed record RuntimeStagingResetBrokerResponse(
+public sealed record RuntimeErpResetBrokerResponse(
     bool Success,
     string Status,
     string OperationId,
@@ -84,41 +84,6 @@ public sealed record RuntimeStagingResetBrokerResponse(
     bool AcceptedExisting = false,
     string? FailureCode = null,
     string? SafeError = null);
-
-public sealed record RuntimeProductionPromotionBrokerRequest(
-    string OperationId,
-    string RunId,
-    string GenerationProjectId,
-    RuntimeDeploymentTarget StagingTarget,
-    RuntimeDeploymentTarget ProductionTarget,
-    string BundleId,
-    string BundleVersion,
-    string BundleHash,
-    string TestSuiteHash,
-    string? ExpectedBaseBundleVersion = null,
-    string? ExpectedBaseBundleHash = null,
-    string? OwnerEmail = null,
-    RuntimeLifecyclePrivilegeMachineAttestation? LifecyclePrivilegeMachineAttestation = null,
-    RuntimeLifecyclePrivilegeSupervisorAttestation? LifecyclePrivilegeSupervisorAttestation = null,
-    string? LifecyclePrivilegeApplyIdentity = null);
-
-public sealed record RuntimeProductionPromotionBrokerResponse(
-    bool Success,
-    string Status,
-    string OperationId,
-    RuntimeDeploymentTarget StagingTarget,
-    RuntimeDeploymentTarget ProductionTarget,
-    string? RuntimeUrl = null,
-    string? BundleId = null,
-    string? BundleVersion = null,
-    string? BundleHash = null,
-    string? TestSuiteHash = null,
-    string? DeploymentId = null,
-    RuntimeDeploymentActivation? Activation = null,
-    bool AcceptedExisting = false,
-    string? FailureCode = null,
-    string? SafeError = null,
-    RuntimeProductionPromotionReceipt? PromotionReceipt = null);
 
 public sealed record RuntimeOwnerActivationBrokerRequest(
     string OperationId,

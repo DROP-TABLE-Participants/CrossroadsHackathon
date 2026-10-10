@@ -6,22 +6,22 @@ using Microsoft.Extensions.Options;
 using Npgsql;
 using ErpGenerator.Runtime.Shared.Tenants;
 
-namespace ErpGenerator.Runtime.Data.Databases.Staging;
+namespace ErpGenerator.Runtime.Data.Databases.Preparation;
 
-public sealed class PostgresTenantStagingOperationFence : ITenantStagingOperationFence
+public sealed class PostgresTenantPreparationOperationFence : ITenantPreparationOperationFence
 {
     private static readonly Regex DatabaseNamePattern = new("^[a-z][a-z0-9_]{2,62}$", RegexOptions.Compiled);
     private readonly RuntimeDatabaseOptions options;
-    private readonly ITenantStagingAdvisoryLockExecution execution;
+    private readonly ITenantPreparationAdvisoryLockExecution execution;
 
-    public PostgresTenantStagingOperationFence(IOptions<RuntimeDatabaseOptions> options)
-        : this(options, new PostgresTenantStagingAdvisoryLockExecution())
+    public PostgresTenantPreparationOperationFence(IOptions<RuntimeDatabaseOptions> options)
+        : this(options, new PostgresTenantPreparationAdvisoryLockExecution())
     {
     }
 
-    internal PostgresTenantStagingOperationFence(
+    internal PostgresTenantPreparationOperationFence(
         IOptions<RuntimeDatabaseOptions> options,
-        ITenantStagingAdvisoryLockExecution execution)
+        ITenantPreparationAdvisoryLockExecution execution)
     {
         this.options = options.Value;
         this.execution = execution;
@@ -32,40 +32,37 @@ public sealed class PostgresTenantStagingOperationFence : ITenantStagingOperatio
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(tenant);
-        if (tenant.Environment != TenantEnvironmentKind.Staging)
+        if (tenant.Environment != TenantEnvironmentKind.Erp)
         {
-            throw new InvalidOperationException("Only a tenant staging database can use the staging operation fence.");
+            throw new InvalidOperationException("Only a tenant ERP database can use the preparation operation fence.");
         }
 
-        var expectedDatabaseName = TenantDatabaseNamePolicy.BuildExpected(
-            tenant.TenantStableId,
-            TenantEnvironmentKind.Staging);
         if (!DatabaseNamePattern.IsMatch(tenant.DatabaseName) ||
-            !string.Equals(tenant.DatabaseName, expectedDatabaseName, StringComparison.Ordinal))
+            !TenantDatabaseNamePolicy.IsExpected(tenant.TenantStableId, tenant.DatabaseName))
         {
-            throw new InvalidOperationException("Tenant staging database identity does not match its immutable stable id.");
+            throw new InvalidOperationException("Tenant ERP database identity does not match its immutable stable id.");
         }
 
         if (!options.AutoProvisionDatabases)
         {
-            throw new InvalidOperationException("Automatic tenant database provisioning is required for staging lifecycle operations.");
+            throw new InvalidOperationException("Automatic tenant database provisioning is required for ERP preparation operations.");
         }
 
         if (string.IsNullOrWhiteSpace(options.AdminConnectionString))
         {
-            throw new InvalidOperationException("An administrative database connection is required for staging lifecycle operations.");
+            throw new InvalidOperationException("An administrative database connection is required for ERP preparation operations.");
         }
 
         var normalizedAdminConnectionString = PostgresConnectionString.Normalize(options.AdminConnectionString);
         var adminBuilder = new NpgsqlConnectionStringBuilder(normalizedAdminConnectionString);
-        if (string.Equals(adminBuilder.Database, expectedDatabaseName, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(adminBuilder.Database, tenant.DatabaseName, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("The administrative database cannot be the staging lifecycle target.");
+            throw new InvalidOperationException("The administrative database cannot be the ERP preparation target.");
         }
 
         return await execution.AcquireAsync(
             normalizedAdminConnectionString,
-            AdvisoryLockKey(expectedDatabaseName),
+            AdvisoryLockKey(tenant.DatabaseName),
             cancellationToken);
     }
 
@@ -76,7 +73,7 @@ public sealed class PostgresTenantStagingOperationFence : ITenantStagingOperatio
     }
 }
 
-internal interface ITenantStagingAdvisoryLockExecution
+internal interface ITenantPreparationAdvisoryLockExecution
 {
     Task<IAsyncDisposable> AcquireAsync(
         string adminConnectionString,
@@ -84,7 +81,7 @@ internal interface ITenantStagingAdvisoryLockExecution
         CancellationToken cancellationToken);
 }
 
-internal sealed class PostgresTenantStagingAdvisoryLockExecution : ITenantStagingAdvisoryLockExecution
+internal sealed class PostgresTenantPreparationAdvisoryLockExecution : ITenantPreparationAdvisoryLockExecution
 {
     public async Task<IAsyncDisposable> AcquireAsync(
         string adminConnectionString,
@@ -100,10 +97,10 @@ internal sealed class PostgresTenantStagingAdvisoryLockExecution : ITenantStagin
             command.Parameters.AddWithValue("lockKey", advisoryLockKey);
             if (await command.ExecuteScalarAsync(cancellationToken) is not true)
             {
-                throw new TenantStagingOperationConflictException();
+                throw new TenantPreparationOperationConflictException();
             }
 
-            return new PostgresTenantStagingOperationFenceHandle(connection, advisoryLockKey);
+            return new PostgresTenantPreparationOperationFenceHandle(connection, advisoryLockKey);
         }
         catch
         {
@@ -113,7 +110,7 @@ internal sealed class PostgresTenantStagingAdvisoryLockExecution : ITenantStagin
     }
 }
 
-internal sealed class PostgresTenantStagingOperationFenceHandle(
+internal sealed class PostgresTenantPreparationOperationFenceHandle(
     NpgsqlConnection connection,
     long advisoryLockKey) : IAsyncDisposable
 {
@@ -144,4 +141,3 @@ internal sealed class PostgresTenantStagingOperationFenceHandle(
         await connection.DisposeAsync();
     }
 }
-

@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using ErpGenerator.Api.Shared.Generation;
 using ErpGenerator.Api.Shared.Tenants;
 
@@ -9,80 +8,14 @@ namespace ErpGenerator.Api.Services.Implementations.Tenants;
 
 public sealed class RuntimeLifecycleService(
     ErpGeneratorDbContext dbContext,
-    IGenerationProjectService projects,
-    IRuntimeDeploymentClient runtime,
-    IOptions<RuntimeAddressOptions> runtimeAddresses) : IRuntimeLifecycleService
+    IRuntimeDeploymentClient runtime) : IRuntimeLifecycleService
 {
-    public async Task<GenerationRunActionViewModel> RequestProductionPromotionAsync(
-        Guid customerId,
-        Guid runId,
-        bool confirm,
-        CancellationToken cancellationToken)
-    {
-        if (!confirm) throw new ArgumentException("Production promotion requires explicit confirmation.");
-        var bundle = await dbContext.ErpBundleVersions
-            .Include(value => value.GenerationRun).ThenInclude(value => value.GenerationProject).ThenInclude(value => value.Customer)
-            .Include(value => value.Deployments).ThenInclude(value => value.Tenant).ThenInclude(value => value.Environments)
-            .Where(value => value.GenerationRunId == runId && value.GenerationRun.GenerationProject.CustomerId == customerId)
-            .OrderByDescending(value => value.Version)
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new KeyNotFoundException("Generated ERP bundle was not found.");
-        var stagingDeployment = bundle.Deployments.Where(value => value.Environment == "staging")
-            .OrderByDescending(value => value.CreatedAt).FirstOrDefault()
-            ?? throw new InvalidOperationException("Deploy the ERP to staging before production promotion.");
-        if (stagingDeployment.Status != "ready" || stagingDeployment.TestsStatus != "passed" ||
-            string.IsNullOrWhiteSpace(stagingDeployment.TestSuiteHash) ||
-            !IsSha256(stagingDeployment.DeployedBundleHash))
-            throw new InvalidOperationException("Staging acceptance tests must pass before production promotion.");
-
-        var tenant = stagingDeployment.Tenant;
-        var production = tenant.Environments.SingleOrDefault(value => value.Environment == "production");
-        if (production is null)
-        {
-            var suffix = runtimeAddresses.Value.ProductionPublicHostSuffix.TrimStart('.');
-            var authority = $"{tenant.Slug}.{suffix}";
-            var databaseName = TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "production");
-            production = new TenantEnvironment
-            {
-                TenantId = tenant.Id,
-                Environment = "production",
-                Host = authority.Split(':')[0].ToLowerInvariant(),
-                DatabaseName = databaseName,
-                CredentialSecretReference = $"tenant-db:{tenant.StableId}:production:{databaseName}",
-                RuntimeUrl = $"{runtimeAddresses.Value.Scheme}://{authority}",
-                Status = "pending_promotion"
-            };
-            tenant.Environments.Add(production);
-            dbContext.TenantEnvironments.Add(production);
-        }
-
-        var operationId = OperationId("production", tenant.StableId, bundle.ContentHash);
-        var deployment = await dbContext.Deployments.SingleOrDefaultAsync(
-            value => value.OperationId == operationId, cancellationToken);
-        if (deployment is null)
-        {
-            deployment = new Deployment
-            {
-                TenantId = tenant.Id,
-                ErpBundleVersionId = bundle.Id,
-                Environment = "production",
-                Status = "pending_promotion",
-                OperationId = operationId
-            };
-            dbContext.Deployments.Add(deployment);
-        }
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return new GenerationRunActionViewModel(await ReloadRunAsync(customerId, bundle.GenerationRun.GenerationProjectId, runId, cancellationToken));
-    }
-
     public async Task<OneTimeActivationLinkViewModel> CreateActivationLinkAsync(
         Guid customerId,
         Guid runId,
-        string environment,
         CancellationToken cancellationToken)
     {
-        var normalizedEnvironment = environment.Trim().ToLowerInvariant();
-        if (normalizedEnvironment is not ("staging" or "production"))
-            throw new ArgumentException("Environment must be staging or production.");
+        const string normalizedEnvironment = "erp";
         var deployment = await dbContext.Deployments
             .Include(value => value.Tenant).ThenInclude(value => value.Environments)
             .Include(value => value.ErpBundleVersion).ThenInclude(value => value.GenerationRun)
@@ -123,14 +56,6 @@ public sealed class RuntimeLifecycleService(
         return new OneTimeActivationLinkViewModel(
             normalizedEnvironment, "pending", result.Activation.Url,
             result.Activation.Email, result.Activation.ExpiresAt);
-    }
-
-    private async Task<GenerationRunViewModel> ReloadRunAsync(
-        Guid customerId, Guid projectId, Guid runId, CancellationToken cancellationToken)
-    {
-        var project = await projects.GetAsync(customerId, projectId, cancellationToken)
-            ?? throw new KeyNotFoundException("Generation project was not found.");
-        return project.GenerationRuns.Single(value => value.Id == runId);
     }
 
     private static string OperationId(params string[] values)

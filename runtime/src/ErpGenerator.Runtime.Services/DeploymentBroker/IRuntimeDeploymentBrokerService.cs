@@ -4,19 +4,15 @@ namespace ErpGenerator.Runtime.Services.DeploymentBroker;
 
 public interface IRuntimeDeploymentBrokerService
 {
-    Task<RuntimeStagingDeploymentBrokerResponse> DeployCuratedAsync(RuntimeCuratedDeploymentRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    Task<RuntimeErpDeploymentBrokerResponse> DeployCuratedAsync(RuntimeCuratedDeploymentRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     Task<RuntimeGuestEntryResponse> CreateGuestEntryAsync(RuntimeGuestEntryRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
-    Task<RuntimeStagingDeploymentBrokerResponse> DeployStagingAsync(
-        RuntimeStagingDeploymentBrokerRequest request,
+    Task<RuntimeErpDeploymentBrokerResponse> DeployAsync(
+        RuntimeErpDeploymentBrokerRequest request,
         CancellationToken cancellationToken = default);
 
-    Task<RuntimeStagingResetBrokerResponse> ResetStagingAsync(
-        RuntimeStagingResetBrokerRequest request,
-        CancellationToken cancellationToken = default);
-
-    Task<RuntimeProductionPromotionBrokerResponse> PromoteProductionAsync(
-        RuntimeProductionPromotionBrokerRequest request,
+    Task<RuntimeErpResetBrokerResponse> ResetAsync(
+        RuntimeErpResetBrokerRequest request,
         CancellationToken cancellationToken = default);
 
     Task<RuntimeOwnerActivationBrokerResponse> CreateOwnerActivationAsync(

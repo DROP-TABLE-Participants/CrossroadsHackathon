@@ -35,11 +35,11 @@ platform administration login or bootstrap requirement.
 
 ## Generation behavior
 
-One compact durable pipeline first assesses whether the supplied evidence is sufficient. If important facts are missing, it creates pending evidence requests or interviews and waits. Only then does it generate a typed ERP Bundle with executable acceptance tests. The bundle cannot contain raw SQL and Runtime performs compilation and staging validation before production promotion.
+One compact durable pipeline first assesses whether the supplied evidence is sufficient. If important facts are missing, it creates pending evidence requests or interviews and waits. Only then does it generate a typed ERP Bundle with executable acceptance tests. The bundle cannot contain raw SQL and Runtime performs compilation and acceptance validation before the ERP can be opened.
 
 Each model call is bound to the exact request hash. Retrying unchanged input reuses the durable result, while an interview answer, customer resolution, document, or connected-source update creates a new evidence snapshot and therefore a new discovery assessment. A resumed run never reuses a completed call against different evidence.
 
-Production promotion completes only when API verifies Runtime's canonical receipt payload and its HMAC signature. `RuntimeBroker__PromotionReceiptVerificationKey` must match Runtime's `RuntimeDeploymentBroker__PromotionReceiptSigningKey`; this key is not reused for broker authentication or lifecycle attestations.
+Each tenant has one ERP environment, configured by `Runtime__PublicHostSuffix`. There is no separate staging environment or production promotion. Runtime broker authentication and tenant-local identity remain enforced.
 
 The former multi-agent implementation is intentionally not carried forward. Specialized agents can be rebuilt later behind the same service contracts.
 

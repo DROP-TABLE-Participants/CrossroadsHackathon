@@ -169,56 +169,6 @@ export function useErpFeedback({
     }
   }, [labels.acceptedNotApplied, openLogin, refreshErpFeedback, setTenantError, setTenantFeedback])
 
-  const applyChangeJobProduction = useCallback(async (jobId: string) => {
-    const hasSession = hasCustomerSessionHint()
-    if (!hasSession) {
-      openLogin()
-      return
-    }
-
-    const actionKey = `change-job-apply:${jobId}`
-    setErpFeedbackAction(actionKey)
-    setTenantError('')
-    setTenantFeedback('')
-    setErpFeedbackNotice('')
-
-    try {
-      const response = await fetch(`/api/customers/erp-change-jobs/${encodeURIComponent(jobId)}/apply-production`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ confirm: true }),
-      })
-      const data = await response.json().catch(() => ({}))
-
-      if (data?.job) {
-        setErpChangeJobs((current) => [data.job, ...current.filter((job) => job.id !== data.job.id)])
-      }
-
-      if (!response.ok) {
-        setTenantError(data?.message || data?.job?.productionSafeError || 'Unable to apply change to production.')
-        return
-      }
-
-      if (response.status === 202 && data?.automaticRestagingQueued === true) {
-        setErpFeedbackNotice(data?.message || labels.productionChangedRestage)
-        await refreshErpFeedback()
-        await refreshProjects()
-        return
-      }
-
-      setTenantFeedback(labels.appliedToProduction)
-      await refreshErpFeedback()
-      await refreshTenants()
-      await refreshProjects()
-    } catch {
-      setTenantError('Unable to apply change to production.')
-    } finally {
-      setErpFeedbackAction('')
-    }
-  }, [labels.appliedToProduction, labels.productionChangedRestage, openLogin, refreshErpFeedback, refreshProjects, refreshTenants, setTenantError, setTenantFeedback])
-
   return {
     erpFeedbackItems,
     setErpFeedbackItems,
@@ -234,6 +184,5 @@ export function useErpFeedback({
     refreshErpFeedback,
     dismissUsageObservation,
     reviewFeedbackProposal,
-    applyChangeJobProduction,
   }
 }

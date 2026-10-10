@@ -114,13 +114,12 @@ public sealed class ControlPlaneTenantDatabaseCredentialStore(
     }
 
     private static string ToControlPlaneEnvironment(TenantEnvironmentKind environment) =>
-        environment == TenantEnvironmentKind.Production ? "production" : "staging";
+        "erp";
 
     private static TenantEnvironmentKind ParseEnvironment(string value) =>
-        value.Equals("production", StringComparison.OrdinalIgnoreCase) ||
-        value.Equals("prod", StringComparison.OrdinalIgnoreCase)
-            ? TenantEnvironmentKind.Production
-            : TenantEnvironmentKind.Staging;
+        value.Equals("erp", StringComparison.OrdinalIgnoreCase)
+            ? TenantEnvironmentKind.Erp
+            : throw new InvalidOperationException("The control plane returned an unsupported ERP environment.");
 
     private sealed record StoreTenantDatabaseCredentialRequest(
         string TenantStableId,

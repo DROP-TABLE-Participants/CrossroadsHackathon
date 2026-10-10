@@ -22,7 +22,7 @@ public sealed class RuntimeWorkflowAvailabilityIntegrationTests
                 "workflow-availability",
                 "workflow-availability.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var bundle = Bundle();
             var compiler = new ErpBundleCompiler();

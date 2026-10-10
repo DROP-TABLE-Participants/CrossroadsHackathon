@@ -12,4 +12,5 @@ public sealed record RuntimeTenantEnvironmentViewModel(
     string? DatabaseConnectionString,
     string RuntimeBaseUrl,
     string DatabaseCredentialMode,
-    string? DatabaseCredentialSecretRef);
+    string? DatabaseCredentialSecretRef,
+    string Status);

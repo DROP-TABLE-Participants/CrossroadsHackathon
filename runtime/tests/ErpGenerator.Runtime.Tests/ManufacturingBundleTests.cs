@@ -112,7 +112,7 @@ public sealed class ManufacturingBundleTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("manufacturing", "manufacturing.erpgenerator.example", database, TenantEnvironmentKind.Staging);
+            var tenant = RuntimeTestTenant.Create("manufacturing", "manufacturing.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -129,7 +129,7 @@ public sealed class ManufacturingBundleTests
                 tenant,
                 compiled,
                 plan,
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "manufacturing v1 staged");
@@ -168,7 +168,7 @@ public sealed class ManufacturingBundleTests
 
         try
         {
-            var tenant = RuntimeTestTenant.Create("manufacturing", "manufacturing.erpgenerator.example", database, TenantEnvironmentKind.Production);
+            var tenant = RuntimeTestTenant.Create("manufacturing", "manufacturing.erpgenerator.example", database, TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -180,8 +180,8 @@ public sealed class ManufacturingBundleTests
                 tenant,
                 compiled,
                 plan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "manufacturing v1 promoted");
 

@@ -260,7 +260,7 @@ export function useGenerationProjects({ labels, openLogin, customer }: UseGenera
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          deployToCustomerStaging: true,
+          deployToRuntime: true,
         }),
       })
       const data = await response.json().catch(() => ({}))
@@ -495,63 +495,9 @@ export function useGenerationProjects({ labels, openLogin, customer }: UseGenera
     }
   }, [openLogin, pendingResolutionNotes, refreshProject])
 
-  const promoteProduction = useCallback(async (runId: string) => {
-    const hasSession = hasCustomerSessionHint()
-    if (!hasSession) {
-      openLogin()
-      return
-    }
-
-    const actionKey = `promote-production:${runId}`
-    setPendingAction(actionKey)
-    setProjectError('')
-    setProjectFeedback('')
-
-    try {
-      const response = await fetch(`/api/customers/generation-runs/${encodeURIComponent(runId)}/promote-production`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ confirm: true }),
-      })
-      const data = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        setProjectError(data?.message || 'Unable to promote ERP to production.')
-        return
-      }
-
-      if (data?.activation?.activationUrl) {
-        setActivationLinks((current) => ({
-          ...current,
-          [`${runId}:production`]: data.activation,
-        }))
-        setProjectFeedback(labels.activationLinkReady)
-      } else {
-        setProjectFeedback(data?.run?.production?.status === 'ready'
-          ? 'Production ERP is ready.'
-          : 'Production promotion started.')
-      }
-      if (data?.run?.id) {
-        setProjects((current) => current.map((project) => ({
-          ...project,
-          generationRuns: project.generationRuns?.map((run) =>
-            run.id === data.run.id ? data.run : run),
-        })))
-      } else {
-        await refreshProjects()
-      }
-    } catch {
-      setProjectError('Unable to promote ERP to production.')
-    } finally {
-      setPendingAction('')
-    }
-  }, [labels.activationLinkReady, openLogin, refreshProjects])
-
   const requestRuntimeActivationLink = useCallback(async (
     runId: string,
-    environment: 'staging' | 'production',
+    environment: 'erp',
   ) => {
     const hasSession = hasCustomerSessionHint()
     if (!hasSession) {
@@ -565,7 +511,7 @@ export function useGenerationProjects({ labels, openLogin, customer }: UseGenera
     setProjectFeedback('')
 
     try {
-      const response = await fetch(`/api/customers/generation-runs/${encodeURIComponent(runId)}/environments/${environment}/activation-link`, {
+      const response = await fetch(`/api/customers/generation-runs/${encodeURIComponent(runId)}/activation-link`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -901,7 +847,6 @@ export function useGenerationProjects({ labels, openLogin, customer }: UseGenera
     copyInterviewInvite,
     addPendingEvidenceDocument,
     resolvePendingWork,
-    promoteProduction,
     requestRuntimeActivationLink,
     connectNangoInputSource,
     reconcileInputSources,

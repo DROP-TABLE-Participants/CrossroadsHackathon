@@ -857,7 +857,7 @@ public sealed class RuntimeWorkflowStartGuardIntegrationTests
                 prefix,
                 $"{prefix}.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var compiled = new ErpBundleCompiler().Compile(Bundle());
             await new RuntimeDatabase(factory, new RuntimeSqlBuilder())

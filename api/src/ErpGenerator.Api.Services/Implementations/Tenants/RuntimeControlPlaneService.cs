@@ -24,7 +24,7 @@ public sealed class RuntimeControlPlaneService(
         var normalizedEnvironment = NormalizeEnvironment(environment);
         var query = dbContext.TenantEnvironments.AsNoTracking()
             .Include(value => value.Tenant)
-            .Where(value => value.Host == normalizedHost && value.Tenant.Status == "active");
+            .Where(value => value.Host == normalizedHost && value.Tenant.Status == "active" && value.Environment == "erp");
         if (normalizedEnvironment is not null)
             query = query.Where(value => value.Environment == normalizedEnvironment);
         var result = await query.SingleOrDefaultAsync(cancellationToken);
@@ -39,7 +39,7 @@ public sealed class RuntimeControlPlaneService(
         if (page < 1 || limit is < 1 or > 100) throw new ArgumentException("A valid bounded page is required.");
         var query = dbContext.TenantEnvironments.AsNoTracking()
             .Include(value => value.Tenant)
-            .Where(value => value.Status == "ready")
+            .Where(value => value.Status == "ready" && value.Environment == "erp" && value.Tenant.Status == "active")
             .OrderBy(value => value.Tenant.StableId).ThenBy(value => value.Environment);
         var rows = await query.Skip((page - 1) * limit).Take(limit + 1).ToListAsync(cancellationToken);
         var hasNextPage = rows.Count > limit;
@@ -223,7 +223,7 @@ public sealed class RuntimeControlPlaneService(
         return new RuntimeTenantEnvironmentViewModel(
             environment.TenantId.ToString(), environment.Tenant.StableId, environment.Tenant.Slug,
             environment.Host, environment.Environment, environment.DatabaseName, null, runtimeUrl,
-            "secret_ref", secretReference);
+            "secret_ref", secretReference, environment.Status);
     }
 
     private EncryptedPayload Encrypt(string secretReference, string plaintext)
@@ -261,10 +261,9 @@ public sealed class RuntimeControlPlaneService(
     private static string NormalizeHost(string value) => value.Trim().Split(':')[0].ToLowerInvariant();
     private static string? NormalizeEnvironment(string? value) => value?.Trim().ToLowerInvariant() switch
     {
-        "production" or "prod" => "production",
-        "staging" or "stage" => "staging",
+        "erp" => "erp",
         null or "" => null,
-        _ => throw new ArgumentException("Environment must be staging or production.")
+        _ => throw new ArgumentException("Environment must be erp.")
     };
     private static string Required(string? value, int max) =>
         string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("A required value is missing.") : Bounded(value, max)!;

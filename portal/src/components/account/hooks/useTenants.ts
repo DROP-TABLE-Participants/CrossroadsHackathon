@@ -108,7 +108,7 @@ export function useTenants({
       if (data?.deployment?.activation?.activationUrl && generatedBundle?.runId) {
         setActivationLinks((current) => ({
           ...current,
-          [`${generatedBundle.runId}:staging`]: data.deployment.activation,
+          [`${generatedBundle.runId}:erp`]: data.deployment.activation,
         }))
         setTenantFeedback(labels.activationLinkReady)
       } else {

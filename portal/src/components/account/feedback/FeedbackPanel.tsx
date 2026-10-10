@@ -191,7 +191,7 @@ export function FeedbackPanel({ labels, feedbackApi, tenantsApi, layout = 'colla
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-semibold">{labels.feedbackImprovements}</h1>
-            {/* Replaces "After production deployment" — a fragment that named a
+            {/* Replaces "After ERP preparation" — a fragment that named a
                 precondition instead of telling the owner what this page is for. */}
             <p className="max-w-2xl text-sm text-muted-foreground">{labels.feedbackPageIntro}</p>
           </div>
@@ -208,7 +208,7 @@ export function FeedbackPanel({ labels, feedbackApi, tenantsApi, layout = 'colla
         <summary className="flex cursor-pointer list-none items-center gap-2 p-4 [&::-webkit-details-marker]:hidden">
           <ClipboardList className="size-5 text-muted-foreground" aria-hidden="true" />
           <h3 className="text-base font-semibold">{labels.feedbackImprovements}</h3>
-          <span className="ml-auto text-xs text-muted-foreground">{labels.afterProduction}</span>
+          <span className="ml-auto text-xs text-muted-foreground">{labels.afterErpReady}</span>
         </summary>
         <div className="flex flex-col gap-4 border-t p-4">
           <div className="flex justify-end">{refreshButton}</div>

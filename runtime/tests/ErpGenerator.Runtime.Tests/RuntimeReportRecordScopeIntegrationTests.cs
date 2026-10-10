@@ -30,7 +30,7 @@ public sealed class RuntimeReportRecordScopeIntegrationTests
                 "report-scope",
                 "report-scope.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -210,7 +210,7 @@ public sealed class RuntimeReportRecordScopeIntegrationTests
                 "dashboard-scope",
                 "dashboard-scope.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -344,7 +344,7 @@ public sealed class RuntimeReportRecordScopeIntegrationTests
                 "report-scope-http",
                 "report-scope-http.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);

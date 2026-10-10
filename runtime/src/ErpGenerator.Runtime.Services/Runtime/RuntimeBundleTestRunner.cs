@@ -68,7 +68,7 @@ public sealed class RuntimeBundleTestRunner(
         IReadOnlyList<BundleAcceptanceTestDocument> tests,
         CancellationToken cancellationToken = default)
     {
-        if (tenant.Environment != TenantEnvironmentKind.Staging)
+        if (tenant.Environment != TenantEnvironmentKind.Erp)
         {
             throw new RuntimeBundleTestException("Bundle acceptance tests can run only against a staging tenant environment.");
         }

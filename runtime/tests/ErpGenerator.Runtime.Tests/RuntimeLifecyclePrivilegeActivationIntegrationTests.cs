@@ -20,7 +20,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 "lifecycle-guard",
                 "lifecycle-guard.erpgenerator.test",
                 databaseName,
-                TenantEnvironmentKind.Production);
+                TenantEnvironmentKind.Erp);
             var runtime = RuntimeDatabase(admin);
             var planner = new ErpBundleMigrationPlanner();
             var active = RuntimeDeploymentBrokerLifecyclePrivilegeTests.Bundle(
@@ -33,8 +33,8 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 active,
                 planner.PlanMigration(null, active),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "initial restrictive bundle");
 
@@ -42,7 +42,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 candidate,
                 planner.PlanMigration(active, candidate),
-                environment: "staging",
+                environment: "erp",
                 status: "staged",
                 activate: true,
                 message: "attempt caller-string bypass");
@@ -61,15 +61,15 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 candidate,
                 planner.PlanMigration(active, candidate),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "stale signed base",
                 productionAuthorization: staleAuthorization);
             stale.FailureCode.Should().Be("lifecycle_attestation_lineage_mismatch");
             (await runtime.ReadActiveCompiledBundleAsync(tenant))!.BundleHash.Should().Be(active.BundleHash);
             (await runtime.ReadDeploymentHistoryAsync(tenant)).Should().Contain(item =>
-                item.Status == "failed" && item.Environment == "production");
+                item.Status == "failed" && item.Environment == "erp");
         }
         finally
         {
@@ -89,7 +89,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 "lifecycle-replay",
                 "lifecycle-replay.erpgenerator.test",
                 databaseName,
-                TenantEnvironmentKind.Production);
+                TenantEnvironmentKind.Erp);
             var runtime = RuntimeDatabase(admin);
             var planner = new ErpBundleMigrationPlanner();
             var active = RuntimeDeploymentBrokerLifecyclePrivilegeTests.Bundle(
@@ -102,8 +102,8 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 active,
                 planner.PlanMigration(null, active),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "initial restrictive bundle");
             var authorization = Authorization(tenant, active, candidate, "apply-replay", "machine-replay", "review-replay");
@@ -112,12 +112,12 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 candidate,
                 planner.PlanMigration(active, candidate),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "authorized widening",
                 productionAuthorization: authorization);
-            promoted.Status.Should().Be("production");
+            promoted.Status.Should().Be("deployed");
 
             await runtime.RollbackActiveBundleAsync(tenant);
             (await runtime.ReadActiveCompiledBundleAsync(tenant))!.BundleHash.Should().Be(active.BundleHash);
@@ -126,8 +126,8 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 candidate,
                 planner.PlanMigration(active, candidate),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "replayed widening",
                 productionAuthorization: authorization);
@@ -154,7 +154,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 "lifecycle-rollback",
                 "lifecycle-rollback.erpgenerator.test",
                 databaseName,
-                TenantEnvironmentKind.Production);
+                TenantEnvironmentKind.Erp);
             var runtime = RuntimeDatabase(admin);
             var planner = new ErpBundleMigrationPlanner();
             var wider = RuntimeDeploymentBrokerLifecyclePrivilegeTests.Bundle(
@@ -174,8 +174,8 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 wider,
                 planner.PlanMigration(null, wider),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "authorized first direct bundle",
                 productionAuthorization: firstAuthorization);
@@ -183,8 +183,8 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
                 tenant,
                 restrictive,
                 planner.PlanMigration(wider, restrictive),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 true,
                 "restrict lifecycle");
 
@@ -220,7 +220,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
     {
         var productionIdentity = RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(
             tenant.TenantStableId,
-            "production",
+            "erp",
             tenant.DatabaseName);
         var envelope = new RuntimeLifecyclePrivilegePromotionAuthorization(
             $"operation-{applyIdentity}",
@@ -229,7 +229,7 @@ public sealed class RuntimeLifecyclePrivilegeActivationIntegrationTests
             tenant.TenantStableId,
             RuntimeLifecyclePrivilegePromotionAuthorization.ComputeEnvironmentIdentity(
                 tenant.TenantStableId,
-                "staging",
+                "erp",
                 $"{tenant.DatabaseName}_staging"),
             productionIdentity,
             new string('d', 64),

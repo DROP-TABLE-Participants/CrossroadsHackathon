@@ -4,11 +4,11 @@ using Npgsql;
 using ErpGenerator.Runtime.Shared.Compilation;
 using ErpGenerator.Runtime.Shared.Tenants;
 using ErpGenerator.Runtime.Data.Databases;
-using ErpGenerator.Runtime.Data.Databases.Staging;
+using ErpGenerator.Runtime.Data.Databases.Preparation;
 
 namespace ErpGenerator.Runtime.Tests;
 
-public sealed class TenantStagingDatabaseResetIntegrationTests
+public sealed class TenantPreparationDatabaseResetIntegrationTests
 {
     [PostgresFact]
     public async Task Held_cross_instance_fence_rejects_reset_and_same_bundle_can_be_deployed_after_reset()
@@ -16,13 +16,13 @@ public sealed class TenantStagingDatabaseResetIntegrationTests
         var adminConnectionString = TestPostgres.GetRequiredAdminConnectionString();
 
         var stableId = Guid.NewGuid().ToString("N");
-        var databaseName = TenantDatabaseNamePolicy.BuildExpected(stableId, TenantEnvironmentKind.Staging);
+        var databaseName = TenantDatabaseNamePolicy.BuildExpected(stableId, TenantEnvironmentKind.Erp);
         var tenant = new ResolvedTenantEnvironment(
             "tenant-reset",
             stableId,
             "reset-test",
             "staging.reset-test.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             databaseName,
             null,
             "https://staging.reset-test.erpgenerator.example");
@@ -36,8 +36,8 @@ public sealed class TenantStagingDatabaseResetIntegrationTests
         });
         var credentialStore = new InMemoryTenantDatabaseCredentialStore();
         var provisioner = new PostgresTenantDatabaseProvisioner(options, credentialStore);
-        var fence = new PostgresTenantStagingOperationFence(options);
-        var resetter = new PostgresTenantStagingDatabaseResetter(options, provisioner, credentialStore, fence);
+        var fence = new PostgresTenantPreparationOperationFence(options);
+        var resetter = new PostgresTenantPreparationDatabaseResetter(options, provisioner, credentialStore, fence);
 
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
         try
@@ -50,17 +50,17 @@ public sealed class TenantStagingDatabaseResetIntegrationTests
                 tenant,
                 compiled,
                 planner.PlanMigration(null, compiled),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "first staging deployment");
-            first.Status.Should().Be("staged");
+            first.Status.Should().Be("deployed");
 
             await using (await fence.AcquireAsync(tenant))
             {
                 var blocked = () => resetter.ResetAsync(tenant);
-                await blocked.Should().ThrowAsync<TenantStagingOperationConflictException>()
-                    .WithMessage("Another staging lifecycle operation is already in progress.");
+                await blocked.Should().ThrowAsync<TenantPreparationOperationConflictException>()
+                    .WithMessage("Another ERP preparation operation is already in progress.");
             }
 
             var reset = await resetter.ResetAsync(tenant);
@@ -71,11 +71,11 @@ public sealed class TenantStagingDatabaseResetIntegrationTests
                 tenant,
                 compiled,
                 planner.PlanMigration(null, compiled),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "same bundle after reset");
-            second.Status.Should().Be("staged");
+            second.Status.Should().Be("deployed");
             (await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant))!.BundleHash.Should().Be(compiled.BundleHash);
         }
         finally

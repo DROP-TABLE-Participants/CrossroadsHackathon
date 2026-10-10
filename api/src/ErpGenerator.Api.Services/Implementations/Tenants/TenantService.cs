@@ -49,16 +49,16 @@ public sealed class TenantService(
             CompanyName = companyName,
             Plan = string.IsNullOrWhiteSpace(input.Plan) ? "starter" : input.Plan.Trim().ToLowerInvariant()
         };
-        var publicSuffix = runtimeOptions.Value.StagingPublicHostSuffix.TrimStart('.');
+        var publicSuffix = runtimeOptions.Value.PublicHostSuffix.TrimStart('.');
         var publicAuthority = $"{slug}.{publicSuffix}";
         var host = publicAuthority.Split(':')[0].ToLowerInvariant();
-        var databaseName = TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "staging");
+        var databaseName = TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "erp");
         tenant.Environments.Add(new TenantEnvironment
         {
-            Environment = "staging",
+            Environment = "erp",
             Host = host,
             DatabaseName = databaseName,
-            CredentialSecretReference = $"tenant-db:{tenant.StableId}:staging:{databaseName}",
+            CredentialSecretReference = $"tenant-db:{tenant.StableId}:erp:{databaseName}",
             RuntimeUrl = $"{runtimeOptions.Value.Scheme}://{publicAuthority}",
             Status = bundle is null ? "pending_bundle" : "pending_deployment"
         });
@@ -70,9 +70,9 @@ public sealed class TenantService(
             {
                 Tenant = tenant,
                 ErpBundleVersion = bundle,
-                Environment = "staging",
+                Environment = "erp",
                 Status = "pending",
-                OperationId = $"staging:{tenant.StableId}:{bundle.ContentHash}"
+                OperationId = $"erp:{tenant.StableId}:{bundle.ContentHash}"
             });
         }
         await dbContext.SaveChangesAsync(cancellationToken);

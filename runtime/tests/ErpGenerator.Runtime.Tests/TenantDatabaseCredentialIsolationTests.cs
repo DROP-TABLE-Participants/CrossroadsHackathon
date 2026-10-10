@@ -16,7 +16,7 @@ public sealed class TenantDatabaseCredentialIsolationTests
 
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_cred_{suffix}";
-        var tenant = CreateTenant("cred", "cred.erpgenerator.example", databaseName, suffix, TenantEnvironmentKind.Staging);
+        var tenant = CreateTenant("cred", "cred.erpgenerator.example", databaseName, suffix, TenantEnvironmentKind.Erp);
         var context = CreateCredentialIsolationContext(adminConnectionString);
 
         try
@@ -74,8 +74,8 @@ public sealed class TenantDatabaseCredentialIsolationTests
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var acmeDatabase = $"erp_tenant_cred_acme_{suffix}";
         var betaDatabase = $"erp_tenant_cred_beta_{suffix}";
-        var acme = CreateTenant("acme", "acme.erpgenerator.example", acmeDatabase, $"acme{suffix}", TenantEnvironmentKind.Production);
-        var beta = CreateTenant("beta", "beta.erpgenerator.example", betaDatabase, $"beta{suffix}", TenantEnvironmentKind.Production);
+        var acme = CreateTenant("acme", "acme.erpgenerator.example", acmeDatabase, $"acme{suffix}", TenantEnvironmentKind.Erp);
+        var beta = CreateTenant("beta", "beta.erpgenerator.example", betaDatabase, $"beta{suffix}", TenantEnvironmentKind.Erp);
         var context = CreateCredentialIsolationContext(adminConnectionString);
 
         try
@@ -127,7 +127,7 @@ public sealed class TenantDatabaseCredentialIsolationTests
             "cred-accept.erpgenerator.example",
             databaseName,
             suffix,
-            TenantEnvironmentKind.Staging);
+            TenantEnvironmentKind.Erp);
         var context = CreateCredentialIsolationContext(adminConnectionString);
 
         try

@@ -89,7 +89,7 @@ public sealed class RuntimeObservabilityTests
                 "missing.erpgenerator.example",
                 OwnerEmail: null,
                 Version: "v4",
-                Environment: "staging"))
+                Environment: "erp"))
         };
         request.Headers.Add("x-erpgenerator-internal-secret", internalSecret);
         request.Headers.Add(RequestCorrelationOptions.DefaultHeaderName, requestId);
@@ -127,7 +127,7 @@ public sealed class RuntimeObservabilityTests
         var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await response.Content.ReadAsStringAsync()).Should().Contain("staging-only");
+        (await response.Content.ReadAsStringAsync()).Should().Contain("Environment must be erp.");
     }
 
     [Fact]

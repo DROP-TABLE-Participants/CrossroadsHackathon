@@ -192,10 +192,9 @@ public sealed class HttpControlPlaneClient(HttpClient httpClient, IOptions<Contr
     }
 
     private static TenantEnvironmentKind ParseEnvironment(string value) =>
-        value.Equals("production", StringComparison.OrdinalIgnoreCase) ||
-        value.Equals("prod", StringComparison.OrdinalIgnoreCase)
-            ? TenantEnvironmentKind.Production
-            : TenantEnvironmentKind.Staging;
+        value.Equals("erp", StringComparison.OrdinalIgnoreCase)
+            ? TenantEnvironmentKind.Erp
+            : throw new InvalidOperationException("The control plane returned an unsupported ERP environment.");
 
     private static ResolvedTenantEnvironment ToResolvedTenantEnvironment(
         ControlPlaneResolveResponse payload)
@@ -211,7 +210,7 @@ public sealed class HttpControlPlaneClient(HttpClient httpClient, IOptions<Contr
             string.IsNullOrWhiteSpace(payload.Host) ||
             string.IsNullOrWhiteSpace(payload.DatabaseName) ||
             string.IsNullOrWhiteSpace(payload.RuntimeBaseUrl) ||
-            payload.Environment is not ("staging" or "production") ||
+            payload.Environment != "erp" ||
             credentialMode is not ("legacy_connection_string" or "secret_ref") ||
             credentialMode == "legacy_connection_string" &&
             string.IsNullOrWhiteSpace(payload.DatabaseConnectionString) ||
@@ -232,7 +231,8 @@ public sealed class HttpControlPlaneClient(HttpClient httpClient, IOptions<Contr
             payload.DatabaseConnectionString,
             payload.RuntimeBaseUrl,
             credentialMode,
-            payload.DatabaseCredentialSecretRef);
+            payload.DatabaseCredentialSecretRef,
+            payload.Status);
     }
 
     private sealed record ControlPlaneResolveResponse(
@@ -245,7 +245,8 @@ public sealed class HttpControlPlaneClient(HttpClient httpClient, IOptions<Contr
         string? DatabaseConnectionString,
         string RuntimeBaseUrl,
         string? DatabaseCredentialMode = null,
-        string? DatabaseCredentialSecretRef = null);
+        string? DatabaseCredentialSecretRef = null,
+        string Status = "pending");
 
     private sealed record ControlPlaneScheduleTargetsResponse(
         int Page,

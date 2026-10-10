@@ -6,14 +6,13 @@ Shared .NET runtime/compiler for every generated ERP Generator ERP.
 
 - Runtime resolves a tenant from the request `Host` header and connects to that tenant environment's isolated database.
 - ErpGenerator.Api is the control plane and the only source for tenant/environment metadata, encrypted database credentials, canonical ERP Bundles, and deployment requests.
-- Runtime owns bundle validation, compilation, generated schema/metadata, tenant-local identity, staging acceptance tests, production promotion, and ERP execution.
+- Runtime owns bundle validation, compilation, generated schema/metadata, tenant-local identity, acceptance tests, and ERP execution.
 - Runtime does not own marketing, customer accounts, discovery interviews, ERP generation, Nango source ingestion, or agent orchestration.
 
-There is one shared Runtime service, not a service per tenant. Staging and production databases use immutable stable tenant IDs:
+There is one shared Runtime service. Each tenant has one ERP database using its immutable stable tenant ID:
 
 ```text
-erp_tenant_<stable_id>_staging
-erp_tenant_<stable_id>_prod
+erp_tenant_<stable_id>_erp
 ```
 
 Tenant-local sessions are host-scoped. Portal/API credentials never authenticate a tenant Runtime user, and Runtime does not set wildcard domain cookies.
@@ -30,7 +29,9 @@ This is one modular monolith. Project dependencies point inward from WebHost to 
 
 ## Deployment flow
 
-ErpGenerator.Api submits a canonical typed bundle to Runtime's private deployment broker. Runtime validates that it contains no raw SQL, compiles it, provisions the staging database, applies the generated plan, and runs the supplied executable acceptance tests. Production promotion requires the exact staged bundle and test-suite lineage. Runtime returns a deterministic signed promotion receipt, and API validates and stores it with the control-plane deployment record.
+ErpGenerator.Api submits a canonical typed bundle to Runtime's private deployment broker. Runtime validates that it contains no raw SQL, compiles it, provisions the ERP database, applies the generated plan, and runs the supplied executable acceptance tests. API records readiness only after tests pass against the exact bundle and test suite. Portal opens the ready ERP through an ownership-checked guest handoff.
+
+Existing databases retain their original stable-ID-derived names and hosts. They are not renamed or reseeded when switching to the single ERP environment.
 
 The customer-facing tenant runtime uses a wildcard ingress only to preserve the Host header. The deployment broker remains private inside the cluster.
 

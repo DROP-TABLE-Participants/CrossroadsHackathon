@@ -366,7 +366,7 @@ async function forward(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const opensRuntime = route === 'customers/runtime/open' || /^customers\/(demos\/[0-9a-f-]{36}|generation-runs\/[0-9a-f-]{36}\/environments\/(staging|production))\/open$/i.test(route)
+    const opensRuntime = route === 'customers/runtime/open' || /^customers\/(demos\/[0-9a-f-]{36}|generation-runs\/[0-9a-f-]{36})\/open$/i.test(route)
     let response: NextResponse
     if (upstream.ok && opensRuntime) {
       const entry = await upstream.json() as { ticket: string; entryUrl: string }

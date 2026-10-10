@@ -10,7 +10,4 @@ public interface IRuntimeDeploymentClient
     Task<RuntimeOwnerActivationViewModel> CreateActivationAsync(
         RuntimeOwnerActivationInputModel input,
         CancellationToken cancellationToken);
-    Task<RuntimeProductionPromotionViewModel> PromoteProductionAsync(
-        RuntimeProductionPromotionInputModel input,
-        CancellationToken cancellationToken);
 }

@@ -15,7 +15,7 @@ public static class DeploymentBrokerRoutes
 
     public static IEndpointRouteBuilder MapDeploymentBrokerRoutes(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/internal/deployment-broker/staging/deploy-curated", async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, IRuntimeDeploymentBrokerService broker, CancellationToken ct) =>
+        app.MapPost("/internal/deployment-broker/erp/deploy-curated", async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, IRuntimeDeploymentBrokerService broker, CancellationToken ct) =>
         {
             if (!auth.IsAuthorized(context.Request.Headers[RuntimeDeploymentBrokerAuth.HeaderName].FirstOrDefault())) return Results.Unauthorized();
             var request = await ReadBoundedRequestAsync<RuntimeCuratedDeploymentRequest>(context.Request, ct);
@@ -31,7 +31,7 @@ public static class DeploymentBrokerRoutes
             return Results.Ok(await broker.CreateGuestEntryAsync(request, ct));
         });
         app.MapPost(
-            "/internal/deployment-broker/staging/deploy",
+            "/internal/deployment-broker/erp/deploy",
             async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, IRuntimeDeploymentBrokerService broker, CancellationToken cancellationToken) =>
             {
                 if (!auth.IsAuthorized(context.Request.Headers[RuntimeDeploymentBrokerAuth.HeaderName].FirstOrDefault()))
@@ -39,18 +39,18 @@ public static class DeploymentBrokerRoutes
                     return Results.Unauthorized();
                 }
 
-                var request = await ReadBoundedRequestAsync<RuntimeStagingDeploymentBrokerRequest>(context.Request, cancellationToken);
+                var request = await ReadBoundedRequestAsync<RuntimeErpDeploymentBrokerRequest>(context.Request, cancellationToken);
                 if (request is null || request.Target is null || request.Artifact is null || !HasMatchingIdempotencyKey(context.Request, request.OperationId))
                 {
                     return InvalidRequest();
                 }
 
-                var response = await broker.DeployStagingAsync(request, cancellationToken);
+                var response = await broker.DeployAsync(request, cancellationToken);
                 return BrokerResult(response.Success, response);
             });
 
         app.MapPost(
-            "/internal/deployment-broker/staging/deploy-canonical",
+            "/internal/deployment-broker/erp/deploy-canonical",
             async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, ICanonicalBundleDeploymentService service, CancellationToken cancellationToken) =>
             {
                 if (!auth.IsAuthorized(context.Request.Headers[RuntimeDeploymentBrokerAuth.HeaderName].FirstOrDefault())) return Results.Unauthorized();
@@ -65,7 +65,7 @@ public static class DeploymentBrokerRoutes
             });
 
         app.MapPost(
-            "/internal/deployment-broker/staging/reset",
+            "/internal/deployment-broker/erp/reset",
             async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, IRuntimeDeploymentBrokerService broker, CancellationToken cancellationToken) =>
             {
                 if (!auth.IsAuthorized(context.Request.Headers[RuntimeDeploymentBrokerAuth.HeaderName].FirstOrDefault()))
@@ -73,32 +73,13 @@ public static class DeploymentBrokerRoutes
                     return Results.Unauthorized();
                 }
 
-                var request = await ReadBoundedRequestAsync<RuntimeStagingResetBrokerRequest>(context.Request, cancellationToken);
+                var request = await ReadBoundedRequestAsync<RuntimeErpResetBrokerRequest>(context.Request, cancellationToken);
                 if (request is null || request.Target is null || !HasMatchingIdempotencyKey(context.Request, request.OperationId))
                 {
                     return InvalidRequest();
                 }
 
-                var response = await broker.ResetStagingAsync(request, cancellationToken);
-                return BrokerResult(response.Success, response);
-            });
-
-        app.MapPost(
-            "/internal/deployment-broker/production/promote",
-            async (HttpContext context, IRuntimeDeploymentBrokerAuth auth, IRuntimeDeploymentBrokerService broker, CancellationToken cancellationToken) =>
-            {
-                if (!auth.IsAuthorized(context.Request.Headers[RuntimeDeploymentBrokerAuth.HeaderName].FirstOrDefault()))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var request = await ReadBoundedRequestAsync<RuntimeProductionPromotionBrokerRequest>(context.Request, cancellationToken);
-                if (request is null || request.StagingTarget is null || request.ProductionTarget is null || !HasMatchingIdempotencyKey(context.Request, request.OperationId))
-                {
-                    return InvalidRequest();
-                }
-
-                var response = await broker.PromoteProductionAsync(request, cancellationToken);
+                var response = await broker.ResetAsync(request, cancellationToken);
                 return BrokerResult(response.Success, response);
             });
 

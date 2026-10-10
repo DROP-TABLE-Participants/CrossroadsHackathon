@@ -2,31 +2,31 @@ using Microsoft.Extensions.Options;
 using Npgsql;
 using ErpGenerator.Runtime.Shared.Tenants;
 
-namespace ErpGenerator.Runtime.Data.Databases.Staging;
+namespace ErpGenerator.Runtime.Data.Databases.Preparation;
 
-public sealed class PostgresTenantStagingDatabaseResetter : ITenantStagingDatabaseResetter
+public sealed class PostgresTenantPreparationDatabaseResetter : ITenantPreparationDatabaseResetter
 {
     private readonly RuntimeDatabaseOptions options;
     private readonly ITenantDatabaseProvisioner provisioner;
     private readonly ITenantDatabaseCredentialStore credentialStore;
-    private readonly ITenantStagingDatabaseResetExecution execution;
-    private readonly ITenantStagingOperationFence fence;
+    private readonly ITenantPreparationDatabaseResetExecution execution;
+    private readonly ITenantPreparationOperationFence fence;
 
-    public PostgresTenantStagingDatabaseResetter(
+    public PostgresTenantPreparationDatabaseResetter(
         IOptions<RuntimeDatabaseOptions> options,
         ITenantDatabaseProvisioner provisioner,
         ITenantDatabaseCredentialStore credentialStore,
-        ITenantStagingOperationFence fence)
-        : this(options, provisioner, credentialStore, fence, new PostgresTenantStagingDatabaseResetExecution())
+        ITenantPreparationOperationFence fence)
+        : this(options, provisioner, credentialStore, fence, new PostgresTenantPreparationDatabaseResetExecution())
     {
     }
 
-    internal PostgresTenantStagingDatabaseResetter(
+    internal PostgresTenantPreparationDatabaseResetter(
         IOptions<RuntimeDatabaseOptions> options,
         ITenantDatabaseProvisioner provisioner,
         ITenantDatabaseCredentialStore credentialStore,
-        ITenantStagingOperationFence fence,
-        ITenantStagingDatabaseResetExecution execution)
+        ITenantPreparationOperationFence fence,
+        ITenantPreparationDatabaseResetExecution execution)
     {
         this.options = options.Value;
         this.provisioner = provisioner;
@@ -35,7 +35,7 @@ public sealed class PostgresTenantStagingDatabaseResetter : ITenantStagingDataba
         this.execution = execution;
     }
 
-    public async Task<TenantStagingDatabaseResetResult> ResetAsync(
+    public async Task<TenantPreparationDatabaseResetResult> ResetAsync(
         ResolvedTenantEnvironment tenant,
         CancellationToken cancellationToken = default)
     {
@@ -48,13 +48,13 @@ public sealed class PostgresTenantStagingDatabaseResetter : ITenantStagingDataba
             credentialStore,
             cancellationToken);
 
-        return new TenantStagingDatabaseResetResult(
+        return new TenantPreparationDatabaseResetResult(
             "reset",
             DateTimeOffset.UtcNow);
     }
 }
 
-internal interface ITenantStagingDatabaseResetExecution
+internal interface ITenantPreparationDatabaseResetExecution
 {
     Task ResetAsync(
         string adminConnectionString,
@@ -64,7 +64,7 @@ internal interface ITenantStagingDatabaseResetExecution
         CancellationToken cancellationToken);
 }
 
-internal sealed class PostgresTenantStagingDatabaseResetExecution : ITenantStagingDatabaseResetExecution
+internal sealed class PostgresTenantPreparationDatabaseResetExecution : ITenantPreparationDatabaseResetExecution
 {
     public async Task ResetAsync(
         string adminConnectionString,
@@ -101,7 +101,7 @@ internal sealed class PostgresTenantStagingDatabaseResetExecution : ITenantStagi
         }
 
         // pg_terminate_backend invalidates pooled target connectors. Clear only pools for this exact
-        // staging database before any caller can reuse a killed connector.
+        // ERP database before any caller can reuse a killed connector.
         ClearExactPool(PostgresConnectionString.Normalize(adminConnectionString, tenant.DatabaseName));
         if (!string.IsNullOrWhiteSpace(tenant.DatabaseConnectionString))
         {

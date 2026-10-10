@@ -20,8 +20,7 @@ export type PrimaryActionKind =
   | 'agent-working'
   | 'waiting-status'
   | 'generate-with-assumptions'
-  | 'open-production'
-  | 'open-staging'
+  | 'open-erp'
   | 'none'
 
 /**
@@ -44,10 +43,7 @@ export function projectPrimaryActionKind(latestRun: GenerationRunSummary | undef
       ? 'generate-with-assumptions'
       : 'waiting-status'
   }
-  if (latestRun.production?.status === 'ready' && (latestRun.production.url || latestRun.production.productionUrl)) {
-    return 'open-production'
-  }
-  if (latestRun.staging?.status === 'ready' && latestRun.staging.url) return 'open-staging'
+  if (latestRun.erp?.status === 'ready' && latestRun.erp.testsStatus === 'passed' && latestRun.erp.url) return 'open-erp'
   return 'none'
 }
 
@@ -99,8 +95,7 @@ export function ProjectPrimaryAction({
   // nothing to offer but a disabled button and a sentence that "Where things
   // stand" already says better. Show it only when there is something to do.
   const hasAction = kind === 'go' ||
-    kind === 'open-production' ||
-    kind === 'open-staging' ||
+    kind === 'open-erp' ||
     kind === 'generate-with-assumptions'
   if (!hasAction && !terminalInternalIncident) return null
 
@@ -161,7 +156,7 @@ export function ProjectPrimaryAction({
         </div>
       ) : null}
 
-      {(kind === 'open-production' || kind === 'open-staging') && latestRun ? <div className="flex flex-col gap-2"><p className="text-sm text-muted-foreground">{locale === 'bg' ? 'Вашето генерирано ERP е готово.' : 'Your generated ERP is ready.'}</p><form method="post" action={`/api/customers/generation-runs/${latestRun.id}/environments/${kind === 'open-production' ? 'production' : 'staging'}/open`}><Button type="submit">{locale === 'bg' ? 'Отвори ERP' : 'Open ERP'}</Button></form></div> : null}
+      {kind === 'open-erp' && latestRun ? <div className="flex flex-col gap-2"><p className="text-sm text-muted-foreground">{locale === 'bg' ? 'Вашето генерирано ERP е готово.' : 'Your generated ERP is ready.'}</p><form method="post" action={`/api/customers/generation-runs/${latestRun.id}/open`}><Button type="submit">{locale === 'bg' ? 'Отвори ERP' : 'Open ERP'}</Button></form></div> : null}
 
     </div>
   )

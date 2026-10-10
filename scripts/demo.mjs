@@ -17,7 +17,7 @@ function run(command, args, env, capture = false) {
 function configure() {
   if (existsSync(envPath)) return
   const secret = () => randomBytes(32).toString('hex')
-  const apiPassword = secret(), runtimePassword = secret(), internal = secret(), broker = secret(), portal = secret(), promotion = secret()
+  const apiPassword = secret(), runtimePassword = secret(), internal = secret(), broker = secret(), portal = secret()
   const values = {
     DEMO_API_DATABASE_PASSWORD: apiPassword, DEMO_RUNTIME_DATABASE_PASSWORD: runtimePassword,
     DOTNET_ENVIRONMENT: 'Development', ASPNETCORE_ENVIRONMENT: 'Development',
@@ -25,11 +25,11 @@ function configure() {
     Jwt__SigningKey: secret(),
     Portal__PublicBaseUrl: 'http://localhost:3001', PortalGateway__Secret: portal,
     InternalApi__Secret: internal, InternalApi__DatabaseSecretEncryptionKey: randomBytes(32).toString('base64'),
-    Runtime__StagingPublicHostSuffix: 'localhost:5039', Runtime__ProductionPublicHostSuffix: 'localhost:5039', Runtime__Scheme: 'http',
-    RuntimeBroker__BaseUrl: 'http://127.0.0.1:5039', RuntimeBroker__Secret: broker, RuntimeBroker__PromotionReceiptVerificationKey: promotion,
+    Runtime__PublicHostSuffix: 'localhost:5039', Runtime__Scheme: 'http',
+    RuntimeBroker__BaseUrl: 'http://127.0.0.1:5039', RuntimeBroker__Secret: broker,
     ControlPlane__BaseUrl: 'http://127.0.0.1:5214', ControlPlane__InternalSecret: internal,
     Runtime__InternalSecret: secret(), Runtime__SessionSecret: secret(), RuntimeDeploymentBroker__Secret: broker,
-    RuntimeDeploymentBroker__LifecycleMachineAttestationSecret: secret(), RuntimeDeploymentBroker__LifecycleSupervisorAttestationSecret: secret(), RuntimeDeploymentBroker__PromotionReceiptSigningKey: promotion,
+    RuntimeDeploymentBroker__LifecycleMachineAttestationSecret: secret(), RuntimeDeploymentBroker__LifecycleSupervisorAttestationSecret: secret(),
     RuntimeDatabase__AutoProvisionDatabases: 'true', RuntimeDatabase__CredentialMode: 'Template', RuntimeDatabase__ProvisionTenantAppUsers: 'false',
     RuntimeDatabase__AdminConnectionString: `Host=127.0.0.1;Port=5442;Database=postgres;Username=postgres;Password=${runtimePassword}`,
     RuntimeDatabase__TenantConnectionStringTemplate: `Host=127.0.0.1;Port=5442;Database={database};Username=postgres;Password=${runtimePassword}`,
@@ -118,7 +118,7 @@ try {
     while(Date.now()<deadline) {
       const result=counts()
       if(result.includes('failed|')) throw new Error(`A prepared copy failed acceptance. Read .demo/api.log and .demo/runtime.log. Pool: ${result}`)
-      if(result.split('\n').includes('ready|'+target)) { console.log(`${target} fresh Dandelion copies passed staging acceptance.`); break }
+      if(result.split('\n').includes('ready|'+target)) { console.log(`${target} fresh Dandelion copies passed ERP acceptance.`); break }
       console.log('Preparing copies:', result.replaceAll('\n',', ') || 'queued')
       await new Promise(r=>setTimeout(r,5000))
     }

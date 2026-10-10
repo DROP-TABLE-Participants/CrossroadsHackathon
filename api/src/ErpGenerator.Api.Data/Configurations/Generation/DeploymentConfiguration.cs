@@ -11,7 +11,6 @@ public sealed class DeploymentConfiguration : ControlPlaneEntityConfiguration<De
         base.Configure(builder);
         builder.ToTable("deployments");
         builder.HasIndex(value => value.OperationId).IsUnique();
-        builder.HasIndex(value => value.PromotionReceiptId).IsUnique();
         builder.HasIndex(value => new { value.Status, value.LeaseExpiresAt });
     }
 }

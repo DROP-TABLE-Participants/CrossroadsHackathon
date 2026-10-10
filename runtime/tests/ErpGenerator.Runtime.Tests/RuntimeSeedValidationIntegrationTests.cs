@@ -23,7 +23,7 @@ public sealed class RuntimeSeedValidationIntegrationTests
                 "seed-validation",
                 "seed-validation.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var compiled = await RuntimeBundleTestHelper.CompileSampleBundleAsync();

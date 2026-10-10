@@ -27,7 +27,7 @@ public sealed class RuntimeLifecyclePolicyIntegrationTests
                 "lifecycle",
                 "lifecycle.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -218,7 +218,7 @@ public sealed class RuntimeLifecyclePolicyIntegrationTests
                 "lifecycle-integrity",
                 "lifecycle-integrity.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -306,7 +306,7 @@ public sealed class RuntimeLifecyclePolicyIntegrationTests
                 "lifecycle-v3",
                 "lifecycle-v3.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
             var records = new RuntimeRecordStore(factory);
@@ -583,7 +583,7 @@ public sealed class RuntimeLifecyclePolicyIntegrationTests
             [
                 new ErpModule
                 {
-                    Id = "production",
+                    Id = "erp",
                     Name = "Production",
                     Entities =
                     [

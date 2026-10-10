@@ -31,7 +31,7 @@ const publicExactRoutes = new Map<string, ReadonlySet<string>>([
 
 const customerDynamicRoutes: ReadonlyArray<{ pattern: RegExp; methods: ReadonlySet<string> }> = [
   { pattern: /^customers\/demos\/[0-9a-f-]{36}\/(reset|open)$/i, methods: new Set(['POST']) },
-  { pattern: /^customers\/generation-runs\/[0-9a-f-]{36}\/environments\/(staging|production)\/open$/i, methods: new Set(['POST']) },
+  { pattern: /^customers\/generation-runs\/[0-9a-f-]{36}\/open$/i, methods: new Set(['POST']) },
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}$/i, methods: new Set(['GET', 'DELETE']) },
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}\/(start-generation|generate-with-assumptions)$/i, methods: new Set(['POST']) },
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}\/(nango\/connect-session|input-sources\/reconcile)$/i, methods: new Set(['POST']) },
@@ -39,8 +39,7 @@ const customerDynamicRoutes: ReadonlyArray<{ pattern: RegExp; methods: ReadonlyS
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}\/input-sources\/[0-9a-f-]{36}\/resources$/i, methods: new Set(['GET']) },
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}\/input-sources\/[0-9a-f-]{36}\/selection$/i, methods: new Set(['PUT']) },
   { pattern: /^customers\/generation-projects\/[0-9a-f-]{36}\/input-sources\/[0-9a-f-]{36}\/refresh$/i, methods: new Set(['POST']) },
-  { pattern: /^customers\/generation-runs\/[0-9a-f-]{36}\/promote-production$/i, methods: new Set(['POST']) },
-  { pattern: /^customers\/generation-runs\/[0-9a-f-]{36}\/environments\/(staging|production)\/activation-link$/i, methods: new Set(['POST']) },
+  { pattern: /^customers\/generation-runs\/[0-9a-f-]{36}\/activation-link$/i, methods: new Set(['POST']) },
   { pattern: /^customers\/erp-usage-observations\/[0-9a-f-]{36}\/dismiss$/i, methods: new Set(['POST']) },
   { pattern: /^customers\/pending-work-items\/[0-9a-f-]{36}\/(add-evidence-document|resolve|create-interview-request)$/i, methods: new Set(['POST']) },
   { pattern: /^customers\/interview-requests\/[0-9a-f-]{36}\/(copy-link|send-invite)$/i, methods: new Set(['POST']) },

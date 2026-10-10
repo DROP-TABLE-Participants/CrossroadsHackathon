@@ -24,7 +24,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
             LocalDirectory = Path.Combine(root, "storage")
         });
         var storage = new LocalFileTenantDatabaseBackupStorage(options);
-        var tenant = RuntimeTestTenant.Create("backup-storage", "backup-storage.erpgenerator.example", "erp_tenant_storage", TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup-storage", "backup-storage.erpgenerator.example", "erp_tenant_storage", TenantEnvironmentKind.Erp);
 
         try
         {
@@ -96,7 +96,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
             "backup-authority",
             "backup-authority.erpgenerator.example",
             databaseName,
-            TenantEnvironmentKind.Production);
+            TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         await TestPostgres.CreateDatabaseAsync(backupAdminConnectionString, databaseName);
 
@@ -142,7 +142,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_backup_{suffix}";
         var restoreDatabaseName = $"erp_restore_backup_{suffix}";
-        var tenant = RuntimeTestTenant.Create("backup", "backup.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup", "backup.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
@@ -217,7 +217,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
                 TenantDatabaseBackupMode.Required);
             var metadata = new TenantDatabaseBackupMetadata(
                 Guid.NewGuid().ToString("N"),
-                "production",
+                "erp",
                 "erp_tenant_same_database",
                 "restore-test",
                 "completed",
@@ -251,7 +251,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
 
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_backup_guard_{suffix}";
-        var tenant = RuntimeTestTenant.Create("backup-guard", "backup-guard.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup-guard", "backup-guard.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
@@ -262,7 +262,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml");
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
 
             var backupService = CreateBackupService(
                 adminConnectionString,
@@ -276,8 +276,8 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
                 tenant,
                 v2,
                 v2Plan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
 
@@ -300,7 +300,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
 
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_backup_best_{suffix}";
-        var tenant = RuntimeTestTenant.Create("backup-best", "backup-best.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup-best", "backup-best.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
@@ -311,7 +311,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
             var v1 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp.yaml");
             var v2 = await RuntimeBundleTestHelper.CompileBundleFileAsync("sample-erp-v2.yaml");
             var runtimeDatabase = new RuntimeDatabase(factory, new RuntimeSqlBuilder());
-            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "production", "production", activate: true, "v1 promoted");
+            await runtimeDatabase.ApplyBundleDeploymentAsync(tenant, v1, planner.PlanMigration(null, v1), "erp", "erp", activate: true, "v1 promoted");
 
             var backupService = CreateBackupService(
                 adminConnectionString,
@@ -326,12 +326,12 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
                 tenant,
                 v2,
                 v2Plan,
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "v2 promoted");
 
-            result.Status.Should().Be("production");
+            result.Status.Should().Be("deployed");
             (await runtimeDatabase.ReadActiveCompiledBundleAsync(tenant))!.Version.Should().Be(v2.Version);
             (await ReadLatestBackupStatusAsync(factory, tenant)).Should().Be("failed");
         }
@@ -349,7 +349,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
 
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_backup_mask_{suffix}";
-        var tenant = RuntimeTestTenant.Create("backup-mask", "backup-mask.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup-mask", "backup-mask.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         await TestPostgres.CreateDatabaseAsync(adminConnectionString, databaseName);
 
@@ -391,7 +391,7 @@ public sealed class TenantDatabaseBackupRestoreTests(ITestOutputHelper output)
 
         var suffix = Guid.NewGuid().ToString("N")[..10];
         var databaseName = $"erp_tenant_backup_s3mask_{suffix}";
-        var tenant = RuntimeTestTenant.Create("backup-s3-mask", "backup-s3-mask.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("backup-s3-mask", "backup-s3-mask.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         var backupDirectory = RuntimeBundleTestHelper.CreateTempDirectory();
         const string accessKey = "backup-access-key-mask-test";
         const string secretKey = "backup-secret-access-key-mask-test";

@@ -15,7 +15,7 @@ public sealed class CanonicalBundleDeploymentTests
             "operation-1",
             Guid.NewGuid().ToString(),
             Guid.NewGuid().ToString(),
-            new RuntimeDeploymentTarget("tenant-1", "stable-1", "acme.example.test", "staging", "erp_tenant_stable1_staging"),
+            new RuntimeDeploymentTarget("tenant-1", "stable-1", "acme.example.test", "erp", "erp_tenant_stable1_staging"),
             CanonicalBundleDeploymentService.ComputeArtifactHash(bundle),
             bundle,
             "owner@example.test");
@@ -78,7 +78,7 @@ public sealed class CanonicalBundleDeploymentTests
             "operation-1",
             Guid.NewGuid().ToString(),
             Guid.NewGuid().ToString(),
-            new RuntimeDeploymentTarget("tenant-1", "stable-1", "acme.example.test", "staging", "erp_tenant_stable1_staging"),
+            new RuntimeDeploymentTarget("tenant-1", "stable-1", "acme.example.test", "erp", "erp_tenant_stable1_staging"),
             new string('a', 64),
             bundle,
             "owner@example.test");

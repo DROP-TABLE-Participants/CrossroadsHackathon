@@ -12,7 +12,7 @@ import type { GenerationProjectSummary, GenerationRunSummary } from '@/component
 
 /**
  * Compact pipeline stages in execution order. Deployment readiness is reported
- * separately by the staging/production status fields.
+ * separately by the ERP readiness status.
  */
 const STAGE_ORDER: readonly string[] = [
   'company_understanding',
@@ -30,7 +30,7 @@ const STAGE_PHASE: Record<string, GenerationPhaseKey> = {
 /** Stages that mean "stopped, waiting for a person" — not forward progress. */
 const RUNNING_STATUSES = new Set(['queued', 'running', 'resuming', 'resume_failed', 'cancellation_requested'])
 const WAITING_STATUSES = new Set(['waiting_for_input'])
-const DONE_STATUSES = new Set(['completed', 'staging_ready', 'production_ready'])
+const DONE_STATUSES = new Set(['completed', 'erp_ready'])
 
 export type GenerationProgress = {
   /** 0-100, monotonic: reflects the furthest stage reached, never a guess. */
@@ -80,22 +80,22 @@ export function generationProgress(
     : 'understanding'
 
   if (
-    ['pending', 'deploying'].includes(run.staging?.status || '') ||
-    (project.status === 'generated' && run.status === 'completed' && !run.staging)
+    ['pending', 'deploying'].includes(run.erp?.status || '') ||
+    (project.status === 'generated' && run.status === 'completed' && !run.erp)
   ) {
     return {
       percent: 99,
       phase: 'building',
-      headline: labels.stagingChange,
+      headline: labels.preparingErp,
       tone: 'running',
     }
   }
 
-  if (run.staging?.status === 'failed') {
+  if (run.erp?.status === 'failed') {
     return {
       percent: 99,
       phase: 'building',
-      headline: labels.stagingFailed,
+      headline: labels.erpPreparationFailed,
       tone: 'failed',
     }
   }
@@ -201,5 +201,5 @@ function phaseHeadline(labels: AccountLabels, phase: GenerationPhaseKey): string
  */
 export function generationInFlight(run: GenerationRunSummary | undefined): boolean {
   if (!run) return false
-  return RUNNING_STATUSES.has(run.status) || run.staging?.status === 'deploying' || run.production?.status === 'promoting'
+  return RUNNING_STATUSES.has(run.status) || run.erp?.status === 'deploying'
 }

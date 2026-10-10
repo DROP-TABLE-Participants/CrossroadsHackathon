@@ -10,4 +10,5 @@ public sealed record ResolvedTenantEnvironment(
     string? DatabaseConnectionString,
     string RuntimeBaseUrl,
     string? DatabaseCredentialMode = null,
-    string? DatabaseCredentialSecretRef = null);
+    string? DatabaseCredentialSecretRef = null,
+    string Status = "pending");

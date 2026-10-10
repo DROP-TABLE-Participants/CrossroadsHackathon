@@ -23,7 +23,7 @@ public sealed class RuntimeRelationCreateGuardIntegrationTests
                 "relation-guard-acl",
                 "relation-guard-acl.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var records = new RuntimeRecordStore(factory);
             var actions = new RuntimeActionStore(factory, new RuntimePermissionService(factory));
@@ -128,7 +128,7 @@ public sealed class RuntimeRelationCreateGuardIntegrationTests
                 "relation-guard",
                 "relation-guard.erpgenerator.example",
                 database,
-                TenantEnvironmentKind.Staging);
+                TenantEnvironmentKind.Erp);
             var factory = TestPostgres.CreateConnectionFactory(adminConnectionString);
             var records = new RuntimeRecordStore(factory);
             var actions = new RuntimeActionStore(factory, new RuntimePermissionService(factory));

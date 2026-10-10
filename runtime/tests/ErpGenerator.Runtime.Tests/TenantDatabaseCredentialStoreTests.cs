@@ -19,12 +19,12 @@ public sealed class TenantDatabaseCredentialStoreTests
         var secondStore = CreateStore(state);
         var secretRef = ControlPlaneTenantDatabaseCredentialStore.BuildSecretReference(
             "tenant-stable-1",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_stable_1_staging");
 
         firstStore.Store(new TenantDatabaseCredential(
             "tenant-stable-1",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_stable_1_staging",
             "erp_app_tenant_staging",
             "Host=db.internal;Port=5432;Database=erp_tenant_stable_1_staging;Username=erp_app_tenant_staging;Password=fake-password",
@@ -35,7 +35,7 @@ public sealed class TenantDatabaseCredentialStoreTests
             "tenant-stable-1",
             "acme",
             "acme.erpgenerator.example",
-            TenantEnvironmentKind.Staging,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_stable_1_staging",
             null,
             "https://acme.erpgenerator.example",
@@ -57,7 +57,7 @@ public sealed class TenantDatabaseCredentialStoreTests
 
         var act = () => store.Store(new TenantDatabaseCredential(
             "tenant-stable-1",
-            TenantEnvironmentKind.Production,
+            TenantEnvironmentKind.Erp,
             "erp_tenant_stable_1_prod",
             "erp_app_tenant_prod",
             "Host=db.internal;Database=erp_tenant_stable_1_prod;Username=erp_app_tenant_prod;Password=fake-password"));

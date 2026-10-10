@@ -6,9 +6,9 @@ using ErpGenerator.Api.Shared.Tenants;
 
 namespace ErpGenerator.Api.Services.Implementations.Tenants;
 
-public sealed class GeneratedStagingDeploymentQueue(
+public sealed class GeneratedErpDeploymentQueue(
     ErpGeneratorDbContext dbContext,
-    IOptions<RuntimeAddressOptions> runtimeOptions) : IGeneratedStagingDeploymentQueue
+    IOptions<RuntimeAddressOptions> runtimeOptions) : IGeneratedErpDeploymentQueue
 {
     public async Task<bool> TryQueueNextAsync(CancellationToken cancellationToken)
     {
@@ -30,14 +30,14 @@ public sealed class GeneratedStagingDeploymentQueue(
                     .ThenInclude(value => value!.Environments)
                 .Where(value =>
                     value.GenerationRun.Status == "completed" &&
-                    value.GenerationRun.GenerationProject.DeployToCustomerStaging &&
+                    value.GenerationRun.GenerationProject.DeployToRuntime &&
                     !dbContext.ErpBundleVersions.Any(candidate =>
                         candidate.GenerationRun.GenerationProjectId ==
                         value.GenerationRun.GenerationProjectId &&
                         (candidate.GenerationRun.CreatedAt > value.GenerationRun.CreatedAt ||
                          candidate.GenerationRunId == value.GenerationRunId &&
                          candidate.Version > value.Version)) &&
-                    !value.Deployments.Any(deployment => deployment.Environment == "staging"))
+                    !value.Deployments.Any(deployment => deployment.Environment == "erp"))
                 .OrderBy(value => value.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
             if (bundle is null)
@@ -63,25 +63,25 @@ public sealed class GeneratedStagingDeploymentQueue(
                 dbContext.Tenants.Add(tenant);
             }
 
-            var staging = tenant.Environments.SingleOrDefault(value => value.Environment == "staging");
-            if (staging is null)
+            var environment = tenant.Environments.SingleOrDefault(value => value.Environment == "erp");
+            if (environment is null)
             {
-                staging = StagingEnvironment(tenant);
-                tenant.Environments.Add(staging);
-                dbContext.TenantEnvironments.Add(staging);
+                environment = ErpEnvironment(tenant);
+                tenant.Environments.Add(environment);
+                dbContext.TenantEnvironments.Add(environment);
             }
 
             var deployment = new Deployment
             {
                 Tenant = tenant,
                 ErpBundleVersion = bundle,
-                Environment = "staging",
+                Environment = "erp",
                 Status = "pending",
-                OperationId = $"staging:{tenant.StableId}:{bundle.ContentHash}"
+                OperationId = $"erp:{tenant.StableId}:{bundle.ContentHash}"
             };
             bundle.Deployments.Add(deployment);
             dbContext.Deployments.Add(deployment);
-            staging.Status = "pending_deployment";
+            environment.Status = "pending_deployment";
 
             await dbContext.SaveChangesAsync(cancellationToken);
             if (transaction is not null) await transaction.CommitAsync(cancellationToken);
@@ -93,20 +93,20 @@ public sealed class GeneratedStagingDeploymentQueue(
         }
     }
 
-    private TenantEnvironment StagingEnvironment(Tenant tenant)
+    private TenantEnvironment ErpEnvironment(Tenant tenant)
     {
         var settings = runtimeOptions.Value;
-        var publicSuffix = settings.StagingPublicHostSuffix.TrimStart('.');
+        var publicSuffix = settings.PublicHostSuffix.TrimStart('.');
         var publicAuthority = $"{tenant.Slug}.{publicSuffix}";
-        var databaseName = TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "staging");
+        var databaseName = TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "erp");
         return new TenantEnvironment
         {
             Tenant = tenant,
-            Environment = "staging",
+            Environment = "erp",
             Host = publicAuthority.Split(':')[0].ToLowerInvariant(),
             DatabaseName = databaseName,
             CredentialSecretReference =
-                $"tenant-db:{tenant.StableId}:staging:{databaseName}",
+                $"tenant-db:{tenant.StableId}:erp:{databaseName}",
             RuntimeUrl = $"{settings.Scheme}://{publicAuthority}",
             Status = "pending_deployment"
         };

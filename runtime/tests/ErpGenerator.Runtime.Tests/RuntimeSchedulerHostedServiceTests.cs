@@ -15,9 +15,9 @@ public sealed class RuntimeSchedulerHostedServiceTests
     [Fact]
     public async Task Pass_enumerates_every_page_with_bounded_parallel_failure_isolation()
     {
-        var first = Tenant("first", TenantEnvironmentKind.Staging);
-        var second = Tenant("second", TenantEnvironmentKind.Production);
-        var third = Tenant("third", TenantEnvironmentKind.Staging);
+        var first = Tenant("first", TenantEnvironmentKind.Erp);
+        var second = Tenant("second", TenantEnvironmentKind.Erp);
+        var third = Tenant("third", TenantEnvironmentKind.Erp);
         var controlPlane = new PagedControlPlaneClient(
             new ControlPlaneScheduleTargetsPage(1, true, [first, second]),
             new ControlPlaneScheduleTargetsPage(2, false, [third]));
@@ -36,7 +36,7 @@ public sealed class RuntimeSchedulerHostedServiceTests
     [Fact]
     public async Task Pass_rejects_duplicate_environment_identity_across_pages()
     {
-        var target = Tenant("duplicate", TenantEnvironmentKind.Staging);
+        var target = Tenant("duplicate", TenantEnvironmentKind.Erp);
         var controlPlane = new PagedControlPlaneClient(
             new ControlPlaneScheduleTargetsPage(1, true, [target]),
             new ControlPlaneScheduleTargetsPage(2, false, [target]));
@@ -62,7 +62,7 @@ public sealed class RuntimeSchedulerHostedServiceTests
                   "tenantStableId": "stable_17",
                   "tenantSlug": "seventeen",
                   "host": "seventeen.erpgenerator.example",
-                  "environment": "production",
+                  "environment": "erp",
                   "databaseName": "erp_tenant_stable_17_prod",
                   "databaseConnectionString": null,
                   "databaseCredentialMode": "secret_ref",
@@ -87,7 +87,7 @@ public sealed class RuntimeSchedulerHostedServiceTests
         page.HasNextPage.Should().BeFalse();
         page.Targets.Should().ContainSingle().Which.Should().Match<ResolvedTenantEnvironment>(target =>
             target.TenantStableId == "stable_17" &&
-            target.Environment == TenantEnvironmentKind.Production &&
+            target.Environment == TenantEnvironmentKind.Erp &&
             target.DatabaseCredentialMode == "secret_ref" &&
             target.DatabaseConnectionString == null);
         handler.Request!.RequestUri!.PathAndQuery.Should().Be(

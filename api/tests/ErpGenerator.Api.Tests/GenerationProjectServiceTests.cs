@@ -465,7 +465,7 @@ public sealed class GenerationProjectServiceTests
         var environment = new TenantEnvironment
         {
             Tenant = tenant,
-            Environment = "staging",
+            Environment = "erp",
             Host = "deployment-verification.erpgenerator.test",
             DatabaseName = "erp_tenant_deployment_verification_staging",
             Status = "ready",
@@ -485,7 +485,7 @@ public sealed class GenerationProjectServiceTests
         {
             Tenant = tenant,
             ErpBundleVersion = bundle,
-            Environment = "staging",
+            Environment = "erp",
             Status = "ready",
             OperationId = "deployment-verification",
             RuntimeDeploymentId = "runtime-deployment",
@@ -500,7 +500,7 @@ public sealed class GenerationProjectServiceTests
 
         var result = await service.GetAsync(customer.Id, project.Id, CancellationToken.None);
 
-        var activation = Assert.Single(result!.GenerationRuns).Staging!.Activation;
+        var activation = Assert.Single(result!.GenerationRuns).Erp!.Activation;
         Assert.NotNull(activation);
         Assert.Equal("activated", activation.Status);
         Assert.Equal(now, activation.ActivatedAt);

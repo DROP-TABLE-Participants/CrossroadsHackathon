@@ -318,33 +318,7 @@ function mockAccountFetch(input: {
   vi.stubGlobal('fetch', vi.fn(async (request: RequestInfo | URL, init?: RequestInit) => {
     const url = String(request)
 
-    if (url.includes('/api/customers/generation-runs/run-1/promote-production')) {
-      if (input.promoteResponse) return input.promoteResponse()
 
-      return jsonResponse({
-        ok: true,
-        run: input.promotedRun || baseRun({
-          status: 'production_ready',
-          staging: {
-            status: 'ready',
-            url: 'http://acme-staging.erpgenerator.test',
-            bundleVersion: '0.1.0',
-          },
-          production: {
-            status: 'ready',
-            url: 'http://acme.erpgenerator.test',
-            bundleVersion: '0.1.0',
-            canPromote: false,
-            activation: {
-              status: 'pending',
-              activationUrlAvailable: false,
-              activationEnvironment: 'production',
-              activationEmail: 'owner@example.test',
-            },
-          },
-        }),
-      })
-    }
 
     if (url.includes('/api/customers/pending-work-items/pending-interview/create-interview-request')) {
       pendingInterviewCreated = true
@@ -502,9 +476,9 @@ function mockAccountFetch(input: {
       generatedTenantProject = baseProject({
         tenantId: 'tenant-1',
         generationRuns: [baseRun({
-          status: 'staging_ready',
-          staging: {
-            status: 'ready',
+          status: 'erp_ready',
+          erp: {
+            status: 'ready', testsStatus: 'passed',
             url: 'http://acme-staging.erpgenerator.test',
             bundleVersion: '0.1.0',
             activation: {
@@ -630,10 +604,10 @@ afterEach(() => {
 })
 
 describe('customer account UX rules', () => {
-  it('opens tested staging through the ownership-checked handoff form', async () => {
-    await renderAccount({ projects: [baseProject({ generationRuns: [baseRun({ status: 'staging_ready', staging: { status: 'ready', url: 'http://acme.localhost', testsStatus: 'passed' }, production: { status: 'not_started', canPromote: true } })] })] })
+  it('opens the tested ERP through the ownership-checked handoff form', async () => {
+    await renderAccount({ projects: [baseProject({ generationRuns: [baseRun({ status: 'erp_ready', erp: { status: 'ready', url: 'http://acme.localhost', testsStatus: 'passed' },  })] })] })
     const button = await screen.findByRole('button', { name: 'Open ERP' })
-    expect(button.closest('form')?.getAttribute('action')).toBe('/api/customers/generation-runs/run-1/environments/staging/open')
+    expect(button.closest('form')?.getAttribute('action')).toBe('/api/customers/generation-runs/run-1/open')
     expect(button.closest('form')?.getAttribute('method')).toBe('post')
     expect(screen.queryByText(/Owner activation:/)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Promote to production' })).toBeNull()
@@ -964,7 +938,7 @@ describe('customer account UX rules', () => {
     })
 
     const feedbackSection = sectionByHeading('Feedback & improvements')
-    expect(await within(feedbackSection).findByText('Staging...')).toBeTruthy()
+    expect(within(feedbackSection).queryByText('Preparing and testing your ERP...')).toBeNull()
     expect(within(feedbackSection).queryByRole('button', { name: /Stage change for review/ })).toBeNull()
   })
 
@@ -1000,153 +974,24 @@ describe('customer account UX rules', () => {
 
     const feedbackSection = sectionByHeading('Feedback & improvements')
 
-    expect(await within(feedbackSection).findByText('Staged for review')).toBeTruthy()
-    expect(within(feedbackSection).getByRole('link', { name: /Open for review/ })).toBeTruthy()
+    expect(await within(feedbackSection).findByText('Optional field request')).toBeTruthy()
+    expect(within(feedbackSection).queryByRole('link', { name: /Open for review/ })).toBeNull()
     expect(within(feedbackSection).queryByText('patchPlanJson')).toBeNull()
     expect(within(feedbackSection).queryByText('company_map')).toBeNull()
     expect(within(feedbackSection).queryByText('node-1')).toBeNull()
   })
 
-  it('applies a staged change job to production from the feedback panel', async () => {
-    await renderAccount({
-      tenants: [baseTenant()],
-      proposals: [{
-        id: 'proposal-1',
-        tenantId: 'tenant-1',
-        feedbackId: 'feedback-1',
-        status: 'implemented_in_staging',
-        proposalType: 'add_optional_field',
-        title: 'Optional field request',
-        summary: 'Add an optional billing entity field.',
-        risk: 'low',
-        supportedByCurrentRuntime: true,
-      }],
-      jobs: [{
-        id: 'job-1',
-        proposalId: 'proposal-1',
-        tenantId: 'tenant-1',
-        status: 'staged_for_review',
-        stageStatus: 'staged_for_review',
-        patchedBundleVersion: '0.1.0-cp-proposal_1',
-        stagingUrl: 'http://acme-staging.erpgenerator.test',
-        productionApplyStatus: 'not_requested',
-        patchSummary: 'Added optional Billing entity field to invoices.',
-      }],
-    })
-
+  it('does not expose stage or production application controls for change proposals', async () => {
+    await renderAccount({ tenants: [baseTenant()], proposals: [{
+      id: 'proposal-1', tenantId: 'tenant-1', feedbackId: 'feedback-1',
+      status: 'accepted', proposalType: 'add_optional_field', title: 'Optional field request',
+      summary: 'Add an optional billing entity field.', risk: 'low', supportedByCurrentRuntime: true,
+    }] })
     const feedbackSection = sectionByHeading('Feedback & improvements')
-
-    expect(await within(feedbackSection).findByText('This will update the production ERP. A backup will be created first.')).toBeTruthy()
-    fireEvent.click(within(feedbackSection).getByRole('button', { name: /Apply to production/ }))
-
-    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(
-      '/api/customers/erp-change-jobs/job-1/apply-production',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ confirm: true }),
-      }),
-    ))
-    expect(await within(feedbackSection).findByText('Applied to production')).toBeTruthy()
-    expect(within(feedbackSection).getByRole('link', { name: /Open production ERP/ })).toBeTruthy()
-    expect(within(feedbackSection).queryByText('patchPlanJson')).toBeNull()
-    expect(within(feedbackSection).queryByText('company_map')).toBeNull()
-  })
-
-  it('reports a 202 production apply as autonomous restaging and refreshes feedback plus projects', async () => {
-    const restagingMessage = 'Production changed. Autonomous restaging is queued. Review the new staged result and explicitly confirm production again.'
-    await renderAccount({
-      projects: [baseProject()],
-      tenants: [baseTenant()],
-      proposals: [{
-        id: 'proposal-1',
-        tenantId: 'tenant-1',
-        feedbackId: 'feedback-1',
-        status: 'implemented_in_staging',
-        proposalType: 'add_optional_field',
-        title: 'Optional field request',
-        summary: 'Add an optional billing entity field.',
-        risk: 'low',
-        supportedByCurrentRuntime: true,
-      }],
-      jobs: [{
-        id: 'job-1',
-        proposalId: 'proposal-1',
-        tenantId: 'tenant-1',
-        status: 'staged_for_review',
-        stageStatus: 'staged_for_review',
-        patchedBundleVersion: '0.1.0-cp-proposal_1',
-        stagingUrl: 'http://acme-staging.erpgenerator.test',
-        productionApplyStatus: 'not_requested',
-      }],
-      applyChangeJobResponse: async () => jsonResponse({
-        automaticRestagingQueued: true,
-        message: restagingMessage,
-        job: {
-          id: 'job-1',
-          proposalId: 'proposal-1',
-          tenantId: 'tenant-1',
-          status: 'superseded',
-          stageStatus: 'superseded',
-          productionApplyStatus: 'blocked_stale_base',
-        },
-      }, 202),
-    })
-
-    const callsBefore = (globalThis.fetch as any).mock.calls.slice()
-    const feedbackCallsBefore = callsBefore.filter(([request]: [RequestInfo | URL]) =>
-      String(request) === '/api/customers/erp-feedback').length
-    const projectCallsBefore = callsBefore.filter(([request]: [RequestInfo | URL]) =>
-      String(request) === '/api/customers/generation-projects').length
-    const tenantCallsBefore = callsBefore.filter(([request]: [RequestInfo | URL]) =>
-      String(request) === '/api/customers/tenants').length
-    const feedbackSection = sectionByHeading('Feedback & improvements')
-
-    fireEvent.click(within(feedbackSection).getByRole('button', { name: /Apply to production/ }))
-
-    expect(await screen.findByText(restagingMessage)).toBeTruthy()
-    expect(screen.queryByText('Applied to production')).toBeNull()
-    await waitFor(() => {
-      const calls = (globalThis.fetch as any).mock.calls
-      expect(calls.filter(([request]: [RequestInfo | URL]) =>
-        String(request) === '/api/customers/erp-feedback').length).toBeGreaterThan(feedbackCallsBefore)
-      expect(calls.filter(([request]: [RequestInfo | URL]) =>
-        String(request) === '/api/customers/generation-projects').length).toBeGreaterThan(projectCallsBefore)
-      expect(calls.filter(([request]: [RequestInfo | URL]) =>
-        String(request) === '/api/customers/tenants').length).toBe(tenantCallsBefore)
-    })
-  })
-
-  it('shows autonomous restaging for a superseded stale-base job without another apply action', async () => {
-    await renderAccount({
-      tenants: [baseTenant()],
-      proposals: [{
-        id: 'proposal-1',
-        tenantId: 'tenant-1',
-        feedbackId: 'feedback-1',
-        status: 'implemented_in_staging',
-        proposalType: 'add_optional_field',
-        title: 'Optional field request',
-        summary: 'Add an optional billing entity field.',
-        risk: 'low',
-        supportedByCurrentRuntime: true,
-      }],
-      jobs: [{
-        id: 'job-1',
-        proposalId: 'proposal-1',
-        tenantId: 'tenant-1',
-        status: 'staged_for_review',
-        stageStatus: 'staged_for_review',
-        patchedBundleVersion: '0.1.0-cp-proposal_1',
-        stagingUrl: 'http://acme-staging.erpgenerator.test',
-        productionApplyStatus: 'blocked_stale_base',
-        productionSafeError: 'Production has changed since this staging proposal was created. Restage the proposal before applying.',
-      }],
-    })
-
-    const feedbackSection = sectionByHeading('Feedback & improvements')
-
-    expect(await within(feedbackSection).findByText('Production changed. Autonomous restaging is queued. Review the new staged result and explicitly confirm production again.')).toBeTruthy()
+    expect(await within(feedbackSection).findByText('Optional field request')).toBeTruthy()
     expect(within(feedbackSection).queryByRole('button', { name: /Apply to production/ })).toBeNull()
+    expect(within(feedbackSection).queryByRole('link', { name: /Open for review|Open production ERP/ })).toBeNull()
+    expect(vi.mocked(globalThis.fetch).mock.calls.some(([request]) => String(request).includes('/apply-production'))).toBe(false)
   })
 
   it('does not show ERP environment creation before a generated bundle exists', async () => {
@@ -1178,7 +1023,7 @@ describe('customer account UX rules', () => {
     expect(screen.queryByText(/manufacturing/i)).toBeNull()
   })
 
-  it('keeps a generated bundle in staging progress until its review environment exists', async () => {
+  it('keeps a generated bundle in preparation until its ERP is ready', async () => {
     await renderAccount({ projects: [baseProject({ status: 'generated' })] })
 
     expect(await screen.findByText('Acme Foods')).toBeTruthy()
@@ -1187,8 +1032,8 @@ describe('customer account UX rules', () => {
     expect(within(progress).getByText('Step 3 of 4')).toBeTruthy()
     expect(within(progress).getByText('Building your ERP')).toBeTruthy()
     expect(within(progress).getByText('99%')).toBeTruthy()
-    expect(within(progress).getByText('Staging...')).toBeTruthy()
-    expect(within(progress).queryByText('Your ERP is ready for review.')).toBeNull()
+    expect(within(progress).getByText('Preparing and testing your ERP...')).toBeTruthy()
+    expect(within(progress).queryByText('Your ERP is ready.')).toBeNull()
 
     expect(screen.queryByText(/compile_check/)).toBeNull()
     expect(screen.queryByText(/run-1/)).toBeNull()
@@ -1196,7 +1041,7 @@ describe('customer account UX rules', () => {
     expect(screen.queryByText('Developer source details')).toBeNull()
   })
 
-  it('GO requests the hidden staging target, seed, and acceptance-test flow', async () => {
+  it('GO requests ERP deployment and acceptance tests', async () => {
     await renderAccount({ projects: [baseProject({ generationRuns: [] })] })
 
     fireEvent.click(await screen.findByRole('button', { name: /^GO$/ }))
@@ -1206,7 +1051,7 @@ describe('customer account UX rules', () => {
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          deployToCustomerStaging: true,
+          deployToRuntime: true,
         }),
       }),
     ))
@@ -2279,7 +2124,7 @@ describe('customer account UX rules', () => {
   // Staging and production used to be offered side by side. A live production ERP
   // makes staging a detour, so the card now commits to one primary action and the
   // owner-activation block rides along with it.
-  it('offers only production as the primary action once the production ERP is live', async () => {
+  it('offers one ERP open action after acceptance passes', async () => {
     await renderAccount({
       tenants: [baseTenant({
         productionDeploymentStatus: 'production',
@@ -2290,9 +2135,9 @@ describe('customer account UX rules', () => {
           tenantId: 'tenant-1',
           generationRuns: [
             baseRun({
-              status: 'production_ready',
-              staging: {
-                status: 'ready',
+              status: 'erp_ready',
+              erp: {
+                status: 'ready', testsStatus: 'passed',
                 url: 'http://acme-staging.erpgenerator.test',
                 bundleVersion: '0.1.0',
                 activation: {
@@ -2302,17 +2147,7 @@ describe('customer account UX rules', () => {
                   activationEmail: 'owner@example.test',
                 },
               },
-              production: {
-                status: 'ready',
-                url: 'http://acme.erpgenerator.test',
-                bundleVersion: '0.1.0',
-                activation: {
-                  status: 'activated',
-                  activationUrlAvailable: false,
-                  activationEnvironment: 'production',
-                  activationEmail: 'owner@example.test',
-                },
-              },
+
             }),
           ],
         }),
@@ -2328,7 +2163,7 @@ describe('customer account UX rules', () => {
     expect(screen.queryByRole('heading', { name: 'ERP lifecycle / environments' })).toBeNull()
   })
 
-  it('keeps staging recovery autonomous while the live production ERP remains visible', async () => {
+  it('keeps one ERP action without manual environment controls', async () => {
     await renderAccount({
       tenants: [baseTenant({ productionDeploymentStatus: 'production' })],
       projects: [
@@ -2336,19 +2171,14 @@ describe('customer account UX rules', () => {
           tenantId: 'tenant-1',
           generationRuns: [
             baseRun({
-              status: 'production_ready',
-              staging: {
+              status: 'erp_ready',
+              erp: {
                 status: 'ready',
                 url: 'http://acme-staging.erpgenerator.test',
                 bundleVersion: '0.1.0',
                 testsStatus: 'passed',
               },
-              production: {
-                status: 'ready',
-                url: 'http://acme.erpgenerator.test',
-                bundleVersion: '0.1.0',
-                canPromote: false,
-              },
+
             }),
           ],
         }),
@@ -2367,15 +2197,15 @@ describe('customer account UX rules', () => {
   // there is no longer a reset state to read. What still matters is what stays
   // absent: a reset that resumes on its own after a web-process restart must not
   // grow a button inviting the owner to kick it.
-  it('keeps a staging reset autonomous after a web-process restart', async () => {
+  it('does not expose an ERP while preparation is restarting', async () => {
     await renderAccount({
       projects: [
         baseProject({
           tenantId: 'tenant-1',
           generationRuns: [baseRun({
             status: 'completed',
-            staging: { status: 'resetting' },
-            production: { status: 'not_requested', canPromote: false },
+            erp: { status: 'resetting' },
+
           })],
         }),
       ],
@@ -2393,7 +2223,7 @@ describe('customer account UX rules', () => {
 
 
 
-  it('does not offer production promotion while staging is not ready', async () => {
+  it('does not offer ERP access before readiness', async () => {
     await renderAccount({
       tenants: [baseTenant({
         stagingDeploymentStatus: 'deploying',
@@ -2404,16 +2234,12 @@ describe('customer account UX rules', () => {
           generationRuns: [
             baseRun({
               status: 'completed',
-              staging: {
+              erp: {
                 status: 'deploying',
                 bundleVersion: '0.1.0',
                 bundleHash: 'hash-safe',
               },
-              production: {
-                status: 'not_requested',
-                canPromote: false,
-                promoteDisabledReason: 'Staging ERP is not ready yet.',
-              },
+
             }),
           ],
         }),

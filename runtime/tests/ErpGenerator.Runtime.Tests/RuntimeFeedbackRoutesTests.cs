@@ -86,7 +86,7 @@ public sealed class RuntimeFeedbackRoutesTests
             context.ControlPlane.SubmittedFeedback.Should().Match<RuntimeFeedbackCreate>(feedback =>
                 feedback.Host == context.Tenant.Host &&
                 feedback.TenantStableId == context.Tenant.TenantStableId &&
-                feedback.Environment == "staging" &&
+                feedback.Environment == "erp" &&
                 feedback.RuntimeUserEmail == context.Owner.Email &&
                 feedback.EntityKey == "invoices" &&
                 feedback.RecordId == "42" &&

@@ -15,7 +15,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
     {
         var admin = TestPostgres.GetRequiredAdminConnectionString();
         var databaseName = $"erp_bundle_immutable_reject_{Guid.NewGuid():N}"[..48];
-        var tenant = RuntimeTestTenant.Create("immutable-reject", "immutable-reject.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("immutable-reject", "immutable-reject.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(admin, databaseName);
 
         try
@@ -44,8 +44,8 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 active,
                 planner.PlanMigration(null, active),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "activate restrictive authoritative bundle");
 
@@ -53,15 +53,15 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 candidate,
                 planner.PlanMigration(active, candidate),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "reject unattested colliding lifecycle candidate");
 
             result.Status.Should().Be("failed");
             result.FailureCode.Should().Be("lifecycle_attestation_missing");
             result.BundleVersionId.Should().BeNull();
-            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "production");
+            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "deployed");
         }
         finally
         {
@@ -74,7 +74,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
     {
         var admin = TestPostgres.GetRequiredAdminConnectionString();
         var databaseName = $"erp_bundle_immutable_fail_{Guid.NewGuid():N}"[..46];
-        var tenant = RuntimeTestTenant.Create("immutable-fail", "immutable-fail.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("immutable-fail", "immutable-fail.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(admin, databaseName);
 
         try
@@ -86,7 +86,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 active,
                 new ErpBundleMigrationPlanner().PlanMigration(null, active),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "activate authoritative bundle");
@@ -102,7 +102,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 candidate,
                 safePlan,
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "reject colliding candidate during physical apply");
@@ -110,7 +110,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
             result.Status.Should().Be("failed");
             result.FailureCode.Should().Be("migration_blocked");
             result.BundleVersionId.Should().BeNull();
-            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "staged");
+            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "deployed");
         }
         finally
         {
@@ -123,7 +123,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
     {
         var admin = TestPostgres.GetRequiredAdminConnectionString();
         var databaseName = $"erp_bundle_immutable_block_{Guid.NewGuid():N}"[..47];
-        var tenant = RuntimeTestTenant.Create("immutable-block", "immutable-block.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("immutable-block", "immutable-block.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(admin, databaseName);
 
         try
@@ -135,7 +135,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 active,
                 new ErpBundleMigrationPlanner().PlanMigration(null, active),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "activate authoritative bundle");
@@ -151,7 +151,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 candidate,
                 blockedPlan,
-                "staging",
+                "erp",
                 "failed",
                 activate: false,
                 "reject colliding blocked candidate");
@@ -159,7 +159,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
             result.Status.Should().Be("failed");
             result.FailureCode.Should().Be("migration_blocked");
             result.BundleVersionId.Should().BeNull();
-            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "staged");
+            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "deployed");
         }
         finally
         {
@@ -172,7 +172,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
     {
         var admin = TestPostgres.GetRequiredAdminConnectionString();
         var databaseName = $"erp_bundle_immutable_backup_{Guid.NewGuid():N}"[..48];
-        var tenant = RuntimeTestTenant.Create("immutable-backup", "immutable-backup.erpgenerator.example", databaseName, TenantEnvironmentKind.Production);
+        var tenant = RuntimeTestTenant.Create("immutable-backup", "immutable-backup.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(admin, databaseName);
 
         try
@@ -184,8 +184,8 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 active,
                 new ErpBundleMigrationPlanner().PlanMigration(null, active),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "activate authoritative bundle");
             var candidate = SameIdentityCandidate(active, 'c');
@@ -198,15 +198,15 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 candidate,
                 new ErpBundleMigrationPlanner().PlanMigration(active, candidate),
-                "production",
-                "production",
+                "erp",
+                "erp",
                 activate: true,
                 "reject colliding candidate after backup failure");
 
             result.Status.Should().Be("failed");
             result.FailureCode.Should().Be("backup_failed");
             result.BundleVersionId.Should().BeNull();
-            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "production");
+            await AssertCollisionWasRecordedWithoutMutationAsync(factory, runtime, tenant, active, candidate, "deployed");
         }
         finally
         {
@@ -216,18 +216,18 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
 
     [PostgresFact]
     public async Task Safe_staging_deployment_with_same_version_and_different_hash_fails_before_schema_mutation() =>
-        await AssertSafeSuccessfulPathCollisionRejectedAsync(TenantEnvironmentKind.Staging);
+        await AssertSafeSuccessfulPathCollisionRejectedAsync(TenantEnvironmentKind.Erp);
 
     [PostgresFact]
     public async Task Safe_production_deployment_with_same_version_and_different_hash_fails_before_schema_mutation() =>
-        await AssertSafeSuccessfulPathCollisionRejectedAsync(TenantEnvironmentKind.Production);
+        await AssertSafeSuccessfulPathCollisionRejectedAsync(TenantEnvironmentKind.Erp);
 
     [PostgresFact]
     public async Task Exact_hash_reapply_is_idempotent_and_preserves_the_rollback_pointer()
     {
         var admin = TestPostgres.GetRequiredAdminConnectionString();
         var databaseName = $"erp_bundle_immutable_reapply_{Guid.NewGuid():N}"[..49];
-        var tenant = RuntimeTestTenant.Create("immutable-reapply", "immutable-reapply.erpgenerator.example", databaseName, TenantEnvironmentKind.Staging);
+        var tenant = RuntimeTestTenant.Create("immutable-reapply", "immutable-reapply.erpgenerator.example", databaseName, TenantEnvironmentKind.Erp);
         await TestPostgres.CreateDatabaseAsync(admin, databaseName);
 
         try
@@ -240,7 +240,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 bundle,
                 planner.PlanMigration(null, bundle),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "initial exact artifact");
@@ -249,12 +249,12 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 bundle,
                 planner.PlanMigration(bundle, bundle),
-                "staging",
+                "erp",
                 "staged",
                 activate: true,
                 "idempotent exact artifact reapply");
 
-            reapplied.Status.Should().Be("staged");
+            reapplied.Status.Should().Be("deployed");
             reapplied.FailureCode.Should().BeNull();
             reapplied.BundleVersionId.Should().Be(first.BundleVersionId);
             (await ScalarAsync<long>(factory, tenant,
@@ -306,7 +306,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 active,
                 planner.PlanMigration(null, active),
                 environmentName,
-                environment == TenantEnvironmentKind.Production ? "production" : "staged",
+                "deployed",
                 activate: true,
                 "activate authoritative bundle");
 
@@ -315,7 +315,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 candidate,
                 candidatePlan,
                 environmentName,
-                environment == TenantEnvironmentKind.Production ? "production" : "staged",
+                "deployed",
                 activate: true,
                 "reject safe additive colliding candidate");
 
@@ -328,7 +328,7 @@ public sealed class RuntimeBundleVersionImmutabilityIntegrationTests
                 tenant,
                 active,
                 candidate,
-                environment == TenantEnvironmentKind.Production ? "production" : "staged");
+                "deployed");
             (await ScalarAsync<bool>(factory, tenant,
                 """
                 select exists (

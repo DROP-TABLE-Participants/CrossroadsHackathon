@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Buildings, SquaresFour, Plus, Question } from '@phosphor-icons/react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Separator } from '@/components/ui/separator'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import type { AccountLabels } from '@/components/account/labels'
 import type { Locale } from '@/i18n/config'
@@ -20,11 +20,10 @@ export function AccountSidebarShell({ locale, children }: { locale: Locale; labe
     { href: `${base}/create`, label: locale === 'bg' ? 'Създай ERP' : 'Create ERP', icon: Plus },
     { href: `${base}/help`, label: locale === 'bg' ? 'Помощ' : 'Help', icon: Question },
   ]
-  return <div data-surface="account" className="font-sans antialiased text-foreground"><SidebarProvider>
-    <Sidebar variant="inset" collapsible="icon"><SidebarHeader><SidebarMenu><SidebarMenuItem><SidebarMenuButton size="lg" asChild><Link href={base}><Buildings className="size-6" /><span className="font-semibold">ERP Generator</span></Link></SidebarMenuButton></SidebarMenuItem></SidebarMenu></SidebarHeader>
-      <SidebarContent><SidebarMenu>{items.map(item => <SidebarMenuItem key={item.href}><SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}><Link href={item.href}><item.icon /><span>{item.label}</span></Link></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarContent>
-      <SidebarFooter><p className="p-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">{locale === 'bg' ? 'Лично пространство за гости' : 'Your guest workspace'}</p></SidebarFooter>
+  return <div data-surface="account" className="font-sans antialiased text-foreground"><SidebarProvider style={{ '--sidebar-width': '14rem' } as CSSProperties}>
+    <Sidebar collapsible="icon"><SidebarHeader className="border-b"><SidebarMenu><SidebarMenuItem><SidebarMenuButton size="lg" asChild><Link href={base}><Buildings className="size-5 text-primary" /><span className="font-semibold">ERP Generator</span></Link></SidebarMenuButton></SidebarMenuItem></SidebarMenu></SidebarHeader>
+      <SidebarContent className="p-2"><SidebarMenu>{items.map(item => <SidebarMenuItem key={item.href}><SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}><Link href={item.href}><item.icon /><span>{item.label}</span></Link></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarContent>
     </Sidebar>
-    <SidebarInset className="bg-card md:peer-data-[variant=inset]:border"><header className="flex h-14 items-center gap-2 border-b px-4"><SidebarTrigger /><Separator orientation="vertical" className="h-4" /><span className="text-sm font-medium">{items.find(v => pathname === v.href)?.label ?? 'ERP Generator'}</span><div className="ml-auto flex gap-3 text-xs"><Link href={pathname.replace(/^\/(en|bg)/, '/en') + query}>EN</Link><Link href={pathname.replace(/^\/(en|bg)/, '/bg') + query}>BG</Link></div></header><div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div></SidebarInset>
+    <SidebarInset className="min-w-0 bg-background"><header className="flex h-12 shrink-0 items-center gap-2 border-b px-4"><SidebarTrigger /><Separator orientation="vertical" className="h-4" /><span className="text-sm text-muted-foreground">{items.find(v => pathname === v.href)?.label ?? (pathname.endsWith('/feedback') ? (locale === 'bg' ? 'Обратна връзка' : 'Feedback') : 'ERP Generator')}</span><div className="ml-auto flex gap-1 text-xs">{(['en', 'bg'] as const).map(language => <Link key={language} href={pathname.replace(/^\/(en|bg)/, `/${language}`) + query} lang={language} aria-current={locale === language ? 'true' : undefined} className={`rounded-md px-2 py-1.5 ${locale === language ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{language.toUpperCase()}</Link>)}</div></header><div className="flex min-w-0 flex-1 flex-col gap-5 p-4 lg:p-6">{children}</div></SidebarInset>
   </SidebarProvider><Toaster /></div>
 }

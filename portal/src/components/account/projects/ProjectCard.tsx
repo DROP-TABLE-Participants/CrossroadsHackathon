@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash as Trash2 } from '@phosphor-icons/react'
+import { CaretDown, Trash as Trash2 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 import {
@@ -26,17 +26,15 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import type { ProjectsApi } from '@/components/account/api-types'
-import { DiscoveryJourney } from '@/components/account/DiscoveryJourney'
-import { discoveryJourneyStep } from '@/components/account/helpers'
 import type { AccountLabels } from '@/components/account/labels'
 import type { GenerationProjectSummary } from '@/components/account/types'
 import type { Locale } from '@/i18n/config'
 import { ConnectorsPanel } from './ConnectorsPanel'
-import { generationInFlight } from './generation-progress'
+import { generationInFlight, generationProgress, phaseLabel } from './generation-progress'
 import { GenerationProgressPanel } from './GenerationProgressPanel'
 import { InterviewsPanel } from './InterviewsPanel'
 import { PendingWorkList } from './PendingWorkList'
-import { ProjectPrimaryAction } from './ProjectPrimaryAction'
+import { ProjectPrimaryAction, projectPrimaryActionKind } from './ProjectPrimaryAction'
 import { useDemoBooking } from '@/components/booking/DemoBookingProvider'
 
 type ProjectCardProps = {
@@ -45,9 +43,11 @@ type ProjectCardProps = {
   project: GenerationProjectSummary
   projectsApi: ProjectsApi
   highlighted?: boolean
+  expanded?: boolean
+  onExpandedChange?: () => void
 }
 
-export function ProjectCard({ labels, locale, project, projectsApi, highlighted }: ProjectCardProps) {
+export function ProjectCard({ labels, locale, project, projectsApi, highlighted, expanded, onExpandedChange }: ProjectCardProps) {
   const guest = useDemoBooking().customer?.isGuest === true
   const { pendingAction, deleteProject } = projectsApi
   const deleting = pendingAction === `delete-project:${project.id}`
@@ -62,25 +62,36 @@ export function ProjectCard({ labels, locale, project, projectsApi, highlighted 
   }
 
   const latestRun = project.generationRuns?.[0]
-  const description = [project.industry, project.companyType].filter(Boolean).join(' / ')
+  const description = [project.industry, project.companyType].filter(Boolean).map(value => value!.replace(/_/g, ' ')).join(' · ')
   const pendingWork = latestRun?.pendingWorkItems || []
   const nonInterviewWork = pendingWork.filter((item) => item.kind !== 'interview_request')
   // Evidence must not shift under a run that has already collected it.
   const connectorsLocked = generationInFlight(latestRun)
+  const compact = expanded !== undefined
+  const open = expanded ?? true
+  const actionKind = projectPrimaryActionKind(latestRun)
+  const progress = generationProgress(labels, project, latestRun)
+  const ready = actionKind === 'open-erp'
+  const waiting = progress?.tone === 'waiting'
+  const status = ready ? (locale === 'bg' ? 'Готово' : 'Ready')
+    : latestRun?.erp?.status === 'failed' ? labels.erpPreparationFailed
+    : progress?.tone === 'running' ? phaseLabel(labels, progress.phase)
+    : latestRun ? labels.runStatusPlain(latestRun.status) : labels.projectStatus(project.status || 'draft')
 
   return (
     <Card
       id={`project-${project.id}`}
-      className={cn('transition-shadow', highlighted && 'ring-2 ring-primary')}
+      className={cn(compact && 'gap-0 rounded-none border-0 border-b py-0 last:border-b-0', highlighted && 'bg-accent/50')}
     >
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-2">
+      <CardHeader className={cn(compact && 'block p-4')}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
-            <CardTitle className="text-lg">{project.companyName}</CardTitle>
+            {compact ? <button type="button" onClick={onExpandedChange} aria-expanded={open} aria-controls={`project-details-${project.id}`} className="flex min-w-0 items-center gap-2 rounded-sm text-left text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring"><CaretDown className={cn('size-4 shrink-0 text-muted-foreground', !open && '-rotate-90')} /><span className="break-words">{project.companyName}</span></button> : <CardTitle className="text-lg">{project.companyName}</CardTitle>}
             {description ? <CardDescription>{description}</CardDescription> : null}
           </div>
-          <div className="flex items-center gap-1">
-            <Badge variant="secondary">{labels.projectStatus(project.status || 'draft')}</Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className={cn(ready && 'border-success/20 bg-success/5 text-green-700', progress?.tone === 'failed' && 'border-destructive/20 text-destructive', waiting && 'border-amber-200 bg-amber-50 text-amber-800')}>{status}</Badge>
+            {compact && ((actionKind === 'go' && !project.generationBlockedReason) || ready) ? <ProjectPrimaryAction compact labels={labels} locale={locale} project={project} latestRun={latestRun} projectsApi={projectsApi} /> : compact ? <Button variant="outline" size="sm" onClick={onExpandedChange}>{waiting ? (locale === 'bg' ? 'Отговори на въпросите' : 'Answer questions') : progress?.tone === 'running' ? (locale === 'bg' ? 'Виж напредъка' : 'View progress') : (locale === 'bg' ? 'Подробности' : 'Details')}</Button> : null}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -115,26 +126,24 @@ export function ProjectCard({ labels, locale, project, projectsApi, highlighted 
         </div>
         {/* `discoveryMode` ("connector first") is an engine routing detail and
             means nothing to a company owner — deliberately not shown. */}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        {!compact && <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{labels.participants}: {project.participants?.length || 0}</span>
           <span>{labels.interviews}: {project.requests?.length || 0}</span>
           <span>{labels.connectedSources}: {project.inputSourceCount || 0}</span>
-        </div>
+        </div>}
       </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      {open && <CardContent id={`project-details-${project.id}`} className={cn('flex flex-col gap-4', compact && 'border-t bg-background p-4')}>
         {/* "Where things stand" leads the card: the first thing an owner sees is
             what ERP Generator is doing and how far along it is. */}
-        <GenerationProgressPanel labels={labels} project={project} run={latestRun} />
+        {!ready && <GenerationProgressPanel labels={labels} project={project} run={latestRun} />}
 
-        <DiscoveryJourney activeStep={discoveryJourneyStep(project)} locale={locale} />
-
-        <ProjectPrimaryAction
+        {(!compact || (!ready && actionKind !== 'go') || project.generationBlockedReason) && <ProjectPrimaryAction
           labels={labels}
           locale={locale}
           project={project}
           latestRun={latestRun}
           projectsApi={projectsApi}
-        />
+        />}
 
         {/* Interview work lives in the Interviews section below, which shows the
             question, who was asked and whether they answered. Leaving it here
@@ -173,7 +182,7 @@ export function ProjectCard({ labels, locale, project, projectsApi, highlighted 
         {latestRun?.lastError && latestRun.status === 'failed' ? (
           <p className="text-sm text-destructive">{latestRun.lastError}</p>
         ) : null}
-      </CardContent>
+      </CardContent>}
     </Card>
   )
 }

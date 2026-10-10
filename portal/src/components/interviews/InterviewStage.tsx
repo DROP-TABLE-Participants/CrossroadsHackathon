@@ -132,7 +132,7 @@ export function InterviewStage({
       )}
     >
       {/* Voice — the main event, and the bigger half. */}
-      <div className="flex min-h-0 flex-col items-center justify-center gap-3 overflow-hidden bg-gradient-to-b from-primary/[0.05] to-transparent p-4 sm:gap-5 sm:p-8">
+      <div className="flex min-h-0 flex-col items-center justify-center gap-3 overflow-hidden p-4 sm:gap-5 sm:p-8">
         <button
           type="button"
           onClick={toggleVoice}
@@ -140,8 +140,8 @@ export function InterviewStage({
           aria-pressed={voiceEnabled}
           aria-label={voiceEnabled ? 'Turn the microphone off' : 'Click to answer out loud'}
           className={cn(
-            'rounded-full outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background',
-            !completed && !voiceUnavailable && 'cursor-pointer hover:scale-[1.02] active:scale-100',
+            'rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background',
+            !completed && !voiceUnavailable && 'cursor-pointer',
             // Resting state reads as an invitation rather than a live mic.
             !voiceEnabled && 'opacity-70 hover:opacity-100',
           )}
@@ -188,8 +188,8 @@ export function InterviewStage({
       <div className="flex min-h-0 flex-col border-t lg:border-t-0 lg:border-l">
         {/* A label, never the question itself. The question lives in the thread
             below — echoing it up here is what made the page look broken. */}
-        <div className="flex items-center justify-between gap-2 border-b px-5 py-3">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+          <p className="text-sm font-medium">
             Conversation
           </p>
           {!completed ? (
@@ -201,7 +201,7 @@ export function InterviewStage({
           ) : null}
         </div>
 
-        <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4" aria-live="polite">
+        <div className="flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
           {/* Before the first message loads, show the question we already know
               so the participant is never staring at an empty panel. */}
           {!messages.length ? (
@@ -232,7 +232,7 @@ export function InterviewStage({
         </div>
 
         {completed ? (
-          <div className="flex items-center gap-2 border-t bg-success/5 px-5 py-4 text-sm">
+          <div className="flex items-center gap-2 border-t bg-success/5 p-4 text-sm">
             <CheckCircle aria-hidden="true" className="size-4 shrink-0 text-success" weight="fill" />
             <span>Thank you — we have what we need.</span>
           </div>

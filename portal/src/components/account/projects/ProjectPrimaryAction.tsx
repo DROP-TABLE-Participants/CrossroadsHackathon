@@ -3,10 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import type { ProjectsApi } from '@/components/account/api-types'
-import {
-  DiscoveryPrimaryActionCopy,
-  DiscoveryTerminalIncidentCopy,
-} from '@/components/account/DiscoveryJourney'
+import { DiscoveryTerminalIncidentCopy } from '@/components/account/DiscoveryJourney'
 import {
   activeRunStatuses,
   resumableRunStatuses,
@@ -53,6 +50,7 @@ type ProjectPrimaryActionProps = {
   project: GenerationProjectSummary
   latestRun?: GenerationRunSummary
   projectsApi: ProjectsApi
+  compact?: boolean
 }
 
 function connectorBlockingCopy(labels: AccountLabels, reason?: string) {
@@ -76,6 +74,7 @@ export function ProjectPrimaryAction({
   project,
   latestRun,
   projectsApi,
+  compact = false,
 }: ProjectPrimaryActionProps) {
   const {
     generationStarting,
@@ -97,33 +96,31 @@ export function ProjectPrimaryAction({
   const hasAction = kind === 'go' ||
     kind === 'open-erp' ||
     kind === 'generate-with-assumptions'
-  if (!hasAction && !terminalInternalIncident) return null
+  if ((!hasAction && !terminalInternalIncident) || (compact && !hasAction)) return null
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4"
+      className="flex flex-col gap-2"
       aria-label={labels.primaryAction}
     >
-      {canStartGeneration ? (
-        <DiscoveryPrimaryActionCopy locale={locale} />
-      ) : terminalInternalIncident ? (
+      {!compact && terminalInternalIncident ? (
         <DiscoveryTerminalIncidentCopy locale={locale} />
       ) : null}
 
       {kind === 'go' ? (
         <div className="flex flex-col gap-2">
-          {generationQueuedForEvidence ? (
+          {!compact && generationQueuedForEvidence ? (
             <p className="m-0 text-sm text-muted-foreground">
               {locale === 'bg' ? 'Заявката е запазена. Генерирането ще започне автоматично след синхронизацията.' : 'Your request is saved. Generation will start automatically as soon as synchronization finishes.'}
             </p>
-          ) : connectorSetupPending ? (
+          ) : !compact && connectorSetupPending ? (
             <p className="m-0 text-sm text-muted-foreground">
               {connectorBlockingCopy(labels, project.generationBlockedReason)}
             </p>
           ) : null}
           <Button
             type="button"
-            size="lg"
+            size={compact ? 'sm' : 'default'}
             onClick={() => startGeneration(project.id)}
             disabled={starting || connectorSetupPending || generationQueuedForEvidence}
           >
@@ -139,7 +136,7 @@ export function ProjectPrimaryAction({
 
       {kind === 'generate-with-assumptions' ? (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">{labels.generateWithAssumptionsHelper}</p>
+          {!compact && <p className="text-sm text-muted-foreground">{labels.generateWithAssumptionsHelper}</p>}
           <div>
             <Button
               type="button"
@@ -156,7 +153,7 @@ export function ProjectPrimaryAction({
         </div>
       ) : null}
 
-      {kind === 'open-erp' && latestRun ? <div className="flex flex-col gap-2"><p className="text-sm text-muted-foreground">{locale === 'bg' ? 'Вашето генерирано ERP е готово.' : 'Your generated ERP is ready.'}</p><form method="post" action={`/api/customers/generation-runs/${latestRun.id}/open`}><Button type="submit">{locale === 'bg' ? 'Отвори ERP' : 'Open ERP'}</Button></form></div> : null}
+      {kind === 'open-erp' && latestRun ? <form method="post" action={`/api/customers/generation-runs/${latestRun.id}/open`}><Button size={compact ? 'sm' : 'default'} type="submit">{locale === 'bg' ? 'Отвори ERP' : 'Open ERP'}</Button></form> : null}
 
     </div>
   )

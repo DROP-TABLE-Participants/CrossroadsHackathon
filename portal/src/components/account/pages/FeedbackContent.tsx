@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, ChatsCircle } from '@phosphor-icons/react'
+import { ArrowRight } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,6 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -116,45 +115,17 @@ export function FeedbackContent({ locale }: { locale: Locale }) {
     )
   }
 
-  // Nothing to analyse until there's an ERP: show the real panel blurred behind
-  // an overlay so the feature is visible-but-unavailable, with the way forward.
   if (projects.length === 0) {
-    return (
-      <div className="relative">
-        <div
-          aria-hidden="true"
-          inert
-          className="pointer-events-none select-none blur-[5px] saturate-50"
-        >
-          <FeedbackPanel
-            labels={labels}
-            feedbackApi={feedbackApi}
-            tenantsApi={tenantsApi}
-            layout="page"
-          />
-        </div>
-
-        <div className="absolute inset-0 flex items-center justify-center p-4">
-          <Empty className="w-full max-w-md rounded-xl border bg-card/95 py-10 shadow-lg backdrop-blur-sm">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ChatsCircle aria-hidden="true" />
-              </EmptyMedia>
-              <EmptyTitle>{labels.feedbackLockedHint}</EmptyTitle>
-              <EmptyDescription>{labels.feedbackEmptyDescription}</EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button asChild>
-                <Link href={`/${locale}/account/create`}>
-                  {labels.createYourErp}
-                  <ArrowRight data-icon="inline-end" />
-                </Link>
-              </Button>
-            </EmptyContent>
-          </Empty>
-        </div>
-      </div>
-    )
+    return <section className="max-w-2xl space-y-4">
+      <h1 className="text-2xl font-semibold">{labels.feedbackImprovements}</h1>
+      <Empty className="rounded-lg border p-4">
+        <EmptyHeader>
+          <EmptyTitle>{labels.feedbackLockedHint}</EmptyTitle>
+          <EmptyDescription>{labels.feedbackEmptyDescription}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent><Button asChild><Link href={`/${locale}/account/create`}>{labels.createYourErp}<ArrowRight /></Link></Button></EmptyContent>
+      </Empty>
+    </section>
   }
 
   return <FeedbackPanel labels={labels} feedbackApi={feedbackApi} tenantsApi={tenantsApi} layout="page" />

@@ -51,7 +51,6 @@ internal static class RuntimeEntityDetailRenderer
           <section class="table-panel">
             <div class="panel-head">
               <div>
-                <p class="eyebrow">Workflow</p>
                 <h2>Approvals &amp; workflow</h2>
               </div>
               {{actionButtons}}
@@ -63,7 +62,7 @@ internal static class RuntimeEntityDetailRenderer
               </table>
             </div>
             <div class="panel-head" style="border-top:1px solid var(--border)">
-              <div><p class="eyebrow">Timeline</p><h2>Activity history</h2></div>
+              <div><h2>Activity history</h2></div>
             </div>
             <div class="table-scroll">
               <table>

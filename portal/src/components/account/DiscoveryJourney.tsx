@@ -160,7 +160,6 @@ export function DiscoveryPrimaryActionCopy({ locale }: { locale: Locale }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold tracking-wide text-primary uppercase">{copy.eyebrow}</span>
       <strong className="text-sm font-semibold">{copy.title}</strong>
       <p className="text-sm text-muted-foreground">{copy.description}</p>
     </div>

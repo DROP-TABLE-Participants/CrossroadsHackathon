@@ -43,10 +43,10 @@ export function GenerationProgressPanel({
     <section
       data-slot="generation-progress"
       aria-label={labels.progressTitle}
-      className="flex flex-col gap-3 rounded-lg border bg-card p-4"
+      className="flex flex-col gap-2"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">{labels.progressTitle}</h3>
+        <h3 className="text-base font-semibold">{phaseLabel(labels, progress.phase)}</h3>
         <span className="text-xs text-muted-foreground tabular-nums">
           {labels.progressStepOf(Math.max(1, phaseIndex + 1), PHASE_ORDER.length)}
         </span>
@@ -54,10 +54,9 @@ export function GenerationProgressPanel({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-3">
-          <strong className="text-base font-semibold">{phaseLabel(labels, progress.phase)}</strong>
           <span
             className={cn(
-              'text-lg font-semibold tabular-nums',
+              'ml-auto text-sm font-semibold tabular-nums',
               progress.tone === 'failed' ? 'text-destructive' : 'text-primary',
             )}
           >

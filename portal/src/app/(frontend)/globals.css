@@ -1,15 +1,17 @@
 :root {
-  --background: #fbfbfc;
-  --foreground: #17171c;
+  --background: #ffffff;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #17171c;
-  --border: #e8e8ee;
-  --input: #e1e3ea;
-  --primary: #0f766e;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-foreground: #ffffff;
-  --muted: #f5f6f8;
-  --muted-foreground: #696c78;
-  --accent: #0f766e;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --decorative: #94a3b8;
+  --accent: #2563eb;
   --accent-foreground: #ffffff;
   --ink: #11131d;
   --ink-muted: #c8cedb;
@@ -18,13 +20,13 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --popover: #ffffff;
-  --popover-foreground: #17171c;
-  --secondary: #f5f6f8;
-  --secondary-foreground: #17171c;
-  --ring: #0f766e;
-  /* shadcn hover tint; --accent stays the brand teal for eg- rules */
-  --ui-accent: #f0fdfa;
-  --ui-accent-foreground: #0f766e;
+  --popover-foreground: #0f172a;
+  --secondary: #f8fafc;
+  --secondary-foreground: #0f172a;
+  --ring: #2563eb;
+  /* shadcn hover tint; --accent remains the brand color for eg- rules. */
+  --ui-accent: #eff6ff;
+  --ui-accent-foreground: #1d4ed8;
   --radius: 0.5rem;
 }
 
@@ -46,8 +48,10 @@ body {
   text-rendering: geometricPrecision;
 }
 
-a {
-  color: inherit;
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 img,

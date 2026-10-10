@@ -22,14 +22,13 @@ internal static class RuntimeDashboardRenderer
             ? ""
             : $"""
               <div class="panel-head" style="margin:0 24px 12px 24px;border:0;padding:0">
-                <div><p class="eyebrow">Key metrics</p><h2>From your reports</h2></div>
+                <h2>Key metrics</h2>
               </div>
               <section class="stat-grid">
                 {string.Join("", dashboardWidgets.Select(widget => $"""
                   <a class="metric-card" href="/reports/{WebUtility.UrlEncode(widget.ReportKey)}">
                     <span class="metric-label">{RuntimeUi.Icon("reports", "")} {Html(widget.Label)}</span>
                     <div class="metric-value-row"><strong>{Html(FormatMetricValue(widget.Value))}</strong>{RuntimeUi.Icon("chevron-right", "chev")}</div>
-                    <small>Report metric · click to open</small>
                   </a>
                   """))}
               </section>
@@ -61,11 +60,11 @@ internal static class RuntimeDashboardRenderer
             : $"""
               <section class="analytics-grid" aria-label="ERP data charts">
                 <article class="chart-panel">
-                  <div class="panel-head"><div><p class="eyebrow">Data footprint</p><h2>Share by record type</h2></div></div>
+                  <div class="panel-head"><div><h2>Share by record type</h2></div></div>
                   {donut}
                 </article>
                 <article class="chart-panel chart-panel-wide">
-                  <div class="panel-head"><div><p class="eyebrow">Distribution</p><h2>Records by type</h2></div><span class="cell-muted chart-total">{totalRecords.ToString("N0", CultureInfo.InvariantCulture)} total</span></div>
+                  <div class="panel-head"><div><h2>Records by type</h2></div><span class="cell-muted chart-total">{totalRecords.ToString("N0", CultureInfo.InvariantCulture)} total</span></div>
                   <div class="bar-chart">{barRows}</div>
                 </article>
               </section>
@@ -78,25 +77,23 @@ internal static class RuntimeDashboardRenderer
             <div class="erp-assistant-head">
               <span class="assistant-mark">{BrandAssets.MarkSvg}</span>
               <div>
-                <p class="eyebrow">ErpGenerator AI</p>
                 <h2 id="erp-assistant-title">Ask your ERP</h2>
               </div>
-              <span class="assistant-live"><span aria-hidden="true"></span> Live data</span>
             </div>
             <form class="assistant-composer" data-erp-assistant-form>
               <label class="visually-hidden" for="erp-assistant-question">Question about your ERP</label>
-              <textarea id="erp-assistant-question" rows="3" maxlength="2000" required data-erp-assistant-question placeholder="What needs my attention today?"></textarea>
+              <textarea id="erp-assistant-question" rows="2" maxlength="2000" required data-erp-assistant-question placeholder="What needs my attention today?"></textarea>
               <div class="assistant-composer-foot">
                 <div class="assistant-prompts" aria-label="Suggested questions">
                   <button class="assistant-prompt" type="button" data-assistant-prompt="Summarize what needs my attention today.">Needs attention</button>
                   <button class="assistant-prompt" type="button" data-assistant-prompt="What are the most important patterns in the current ERP data?">Key patterns</button>
                   <button class="assistant-prompt" type="button" data-assistant-prompt="Which records should I review first, and why?">Review priorities</button>
                 </div>
-                <button class="button assistant-submit" type="submit">{BrandAssets.MarkSvg}Ask ErpGenerator AI</button>
+                <button class="button assistant-submit" type="submit">Ask</button>
               </div>
             </form>
             <div class="assistant-answer" data-erp-assistant-answer hidden aria-live="polite">
-              <div class="assistant-answer-head"><span class="assistant-mark assistant-mark-sm">{BrandAssets.MarkSvg}</span><strong>ErpGenerator AI</strong></div>
+
               <p data-assistant-answer-text></p>
               <ul class="assistant-highlights" data-assistant-highlights hidden></ul>
               <div class="assistant-sources" data-assistant-sources hidden></div>
@@ -116,9 +113,9 @@ internal static class RuntimeDashboardRenderer
               <a class="button button-outline" href="/settings/deployment">{{RuntimeUi.Icon("settings", "")}}Deployment info</a>
             </div>
           </section>
-          {{assistantPanel}}
           {{emptyBanner}}
           {{reportMetrics}}
+          {{assistantPanel}}
           {{barChart}}
           {{activityChart}}
           """;
@@ -162,7 +159,7 @@ internal static class RuntimeDashboardRenderer
         return $"""
           <section class="trend-panel" aria-labelledby="record-activity-title">
             <div class="panel-head trend-head">
-              <div><p class="eyebrow">Last 14 days</p><h2 id="record-activity-title">Record creation</h2></div>
+              <div><h2 id="record-activity-title">Record creation</h2><span class="muted chart-total">Last 14 days</span></div>
               <div class="trend-summary"><strong>{total.ToString("N0", CultureInfo.InvariantCulture)}</strong><span>new records</span></div>
             </div>
             <div class="trend-chart-wrap">
@@ -183,7 +180,7 @@ internal static class RuntimeDashboardRenderer
         IReadOnlyList<(RuntimeEntityDefinition entity, long count)> ranked,
         long totalRecords)
     {
-        var colors = new[] { "#6338fe", "#168b75", "#d97706", "#2878c7" };
+        var colors = new[] { "var(--primary)", "#0d9488", "#b45309", "#0284c7" };
         var top = ranked.Where(item => item.count > 0).Take(colors.Length).ToList();
         var stops = new List<string>();
         var legend = new List<string>();
@@ -248,7 +245,7 @@ internal static class RuntimeDashboardRenderer
                 body: JSON.stringify({ question: value })
               });
               const body = await response.json().catch(() => ({}));
-              if (!response.ok) throw new Error(body.message || 'ErpGenerator AI could not answer right now.');
+              if (!response.ok) throw new Error(body.message || 'The assistant could not answer right now.');
               answerText.textContent = body.answer || '';
               highlights.replaceChildren();
               for (const item of body.highlights || []) {
@@ -273,7 +270,7 @@ internal static class RuntimeDashboardRenderer
               answer.hidden = false;
               answer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (exception) {
-              error.textContent = exception instanceof Error ? exception.message : 'ErpGenerator AI could not answer right now.';
+              error.textContent = exception instanceof Error ? exception.message : 'The assistant could not answer right now.';
               error.hidden = false;
             } finally {
               submit.disabled = false;

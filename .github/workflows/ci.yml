@@ -50,3 +50,78 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [dotnet, portal, connectors]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        component: [api, runtime, portal]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.component }}
+          file: ./${{ matrix.component }}/Dockerfile
+          push: true
+          tags: ghcr.io/drop-table-participants/crossroads-${{ matrix.component }}:dev-${{ github.sha }}
+          build-args: |
+            NEXT_DEPLOYMENT_ID=dev-${{ github.sha }}
+            NEXT_PUBLIC_SITE_URL=https://crossroads.dressr.fashion
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    concurrency:
+      group: crossroads-gitops-main
+      cancel-in-progress: false
+    steps:
+      - name: Check current main revision
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          current_sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)
+          if [ "$current_sha" = "$RELEASE_SHA" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.current.outputs.release == 'true'
+        with:
+          repository: DROP-TABLE-Participants/Crossroads.Deployment
+          ref: main
+          ssh-key: ${{ secrets.DEPLOYMENT_REPO_SSH_KEY }}
+      - name: Update all application images
+        if: steps.current.outputs.release == 'true'
+        env:
+          RELEASE_TAG: dev-${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          for component in ['api', 'runtime', 'portal']:
+              path = Path('k8s', 'crossroads-' + component, 'kustomization.yaml')
+              data, count = re.subn(r'(?m)^(\s*newTag:\s*)dev-\S+$', lambda m: m[1] + os.environ['RELEASE_TAG'], path.read_text())
+              if count != 1:
+                  raise SystemExit('Expected one image tag in ' + str(path))
+              path.write_text(data)
+          PY
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add k8s/crossroads-api/kustomization.yaml k8s/crossroads-runtime/kustomization.yaml k8s/crossroads-portal/kustomization.yaml
+          git commit -m "Deploy Crossroads ${RELEASE_TAG}"
+          git push origin HEAD:main

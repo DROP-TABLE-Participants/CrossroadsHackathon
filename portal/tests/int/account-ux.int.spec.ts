@@ -1075,20 +1075,13 @@ describe('customer account UX rules', () => {
     expect(screen.queryByText('Resume')).toBeNull()
   })
 
-  it('keeps discovery primary with a four-step journey and collapsed secondary surfaces', async () => {
+  it('keeps the generation action primary and secondary surfaces collapsed', async () => {
     const project = baseProject({ generationRuns: [] })
     await renderAccount({ projects: [project] })
 
-    const journey = await screen.findByRole('list', { name: 'How your ERP is created' })
-    expect(within(journey).getByText('Describe your business')).toBeTruthy()
-    expect(within(journey).getByText('Answer what is needed')).toBeTruthy()
-    expect(within(journey).getByText('Generate and test ERP')).toBeTruthy()
-    expect(within(journey).getByText('Open your ERP')).toBeTruthy()
-    expect(discoveryJourneyStep(project as any)).toBe(1)
-
-    const go = screen.getByRole('button', { name: /^GO$/ })
-    const connectorSearch = screen.getByPlaceholderText('Search connectors')
-    expect(Boolean(go.compareDocumentPosition(connectorSearch) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
+    const go = await screen.findByRole('button', { name: /^GO$/ })
+    const connect = screen.getByRole('button', { name: /Connect source/ })
+    expect(Boolean(go.compareDocumentPosition(connect) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
 
     expect(screen.getByRole('heading', { name: 'Profile' }).closest('details')?.open).toBe(false)
     expect(screen.getByRole('heading', { name: 'Demo' }).closest('details')?.open).toBe(false)
@@ -1114,11 +1107,9 @@ describe('customer account UX rules', () => {
       })],
     })
 
-    const health = await screen.findByLabelText('Connector health')
-    expect(within(health).getByText(/Connected/).textContent).toContain('0')
-    expect(within(health).getByText(/Available now/).textContent).toContain('0')
-    expect(within(health).queryByText(/Needs attention/)).toBeNull()
-    expect(within(health).queryByText(/Coming soon/)).toBeNull()
+    await screen.findByText('Company data')
+    expect(screen.getByRole('button', { name: /Connect source/ })).toHaveProperty('disabled', true)
+    expect(screen.queryByText(/Coming soon/)).toBeNull()
   })
 
   it('shows Notion as enabled only when the control plane advertises it', async () => {
@@ -1136,10 +1127,7 @@ describe('customer account UX rules', () => {
     expect(within(sharePointCard as HTMLElement).getByText('Available')).toBeTruthy()
     expect(within(sharePointCard as HTMLElement).getByRole('button', { name: /Connect source/ })).toHaveProperty('disabled', false)
 
-    const health = screen.getByLabelText('Connector health')
-    expect(within(health).getByText(/Available now/).textContent).toContain('1')
-    expect(within(health).queryByText(/Needs attention/)).toBeNull()
-    expect(within(health).queryByText(/Coming soon/)).toBeNull()
+    expect(screen.queryByText(/Coming soon/)).toBeNull()
   })
 
   it('shows the real connected state for a Notion source', async () => {
@@ -1165,9 +1153,7 @@ describe('customer account UX rules', () => {
     expect(within(sharePointCard as HTMLElement).getAllByText('Connected').length).toBeGreaterThan(0)
     expect(within(sharePointCard as HTMLElement).getByRole('button', { name: 'Connected' })).toHaveProperty('disabled', true)
 
-    const health = screen.getByLabelText('Connector health')
-    expect(within(health).getByText(/Connected/).textContent).toContain('1')
-    expect(within(health).getByText(/Available now/).textContent).toContain('0')
+
   })
 
   it('renders a connected source once with its connector logo and one status', async () => {
@@ -1482,7 +1468,6 @@ describe('customer account UX rules', () => {
 
     expect(await screen.findByRole('heading', { name: 'Choose what ERP Generator can use' })).toBeTruthy()
     expect(screen.getByText('Everything shared with ERP Generator — Recommended')).toBeTruthy()
-    expect(screen.getByText('There is no page-count limit.')).toBeTruthy()
     expect(screen.getByText('Everything shared with this connection will be synchronized.')).toBeTruthy()
     expect(screen.getByText('You do not need to select or review individual items.')).toBeTruthy()
     expect(screen.queryByText('Operations handbook')).toBeNull()
@@ -1720,7 +1705,7 @@ describe('customer account UX rules', () => {
     fireEvent.click(await screen.findByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: 'Continue to connector' }))
 
-    const connectorPanel = screen.getByText('Connect company data').closest('[data-slot="connectors-panel"]')
+    const connectorPanel = screen.getByText('Company data').closest('[data-slot="connectors-panel"]')
     expect(connectorPanel).toBeTruthy()
     expect((await within(connectorPanel as HTMLElement).findByRole('alert')).textContent).toBe(failureMessage)
   })

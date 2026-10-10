@@ -6,8 +6,10 @@ namespace ErpGenerator.Api.Tests;
 
 public sealed class GeneratedErpDeploymentQueueTests
 {
-    [Fact]
-    public async Task Completed_generated_bundle_is_queued_for_customer_staging_once()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Completed_generated_bundle_is_queued_once_with_an_available_host(bool reserveCompanySlug)
     {
         await using var dbContext = CreateContext();
         var customer = new CustomerAccount
@@ -57,7 +59,8 @@ public sealed class GeneratedErpDeploymentQueueTests
             Options.Create(new RuntimeAddressOptions
             {
                 Scheme = "http",
-                PublicHostSuffix = "staging.localhost:5057"
+                PublicHostSuffix = "staging.localhost:5057",
+                ReservedTenantSlugs = reserveCompanySlug ? " Dandelion-CHOCOLATE " : ""
             }));
 
         Assert.True(await queue.TryQueueNextAsync(CancellationToken.None));
@@ -69,11 +72,14 @@ public sealed class GeneratedErpDeploymentQueueTests
                 .ThenInclude(value => value!.Environments)
             .SingleAsync();
         var tenant = Assert.IsType<Tenant>(savedProject.Tenant);
-        Assert.Equal("dandelion-chocolate", tenant.Slug);
+        var expectedSlug = reserveCompanySlug
+            ? $"dandelion-chocolate-{project.Id.ToString("N")[..8]}"
+            : "dandelion-chocolate";
+        Assert.Equal(expectedSlug, tenant.Slug);
         var staging = Assert.Single(tenant.Environments);
         Assert.Equal("erp", staging.Environment);
-        Assert.Equal("dandelion-chocolate.staging.localhost", staging.Host);
-        Assert.Equal("http://dandelion-chocolate.staging.localhost:5057", staging.RuntimeUrl);
+        Assert.Equal($"{expectedSlug}.staging.localhost", staging.Host);
+        Assert.Equal($"http://{expectedSlug}.staging.localhost:5057", staging.RuntimeUrl);
         Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(tenant.StableId, "erp"), staging.DatabaseName);
         Assert.Equal("pending_deployment", staging.Status);
 

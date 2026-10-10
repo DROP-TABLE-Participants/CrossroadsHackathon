@@ -107,7 +107,6 @@ internal static class RuntimeEntityListRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), (entity.DisplayName, null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Records</p>
               <div class="page-title-row"><h1>{{Html(entity.DisplayName)}}</h1></div>
             </div>
             <div class="page-actions">{{createButton}}</div>
@@ -319,7 +318,7 @@ internal static class RuntimeEntityListRenderer
             return $"""<td class="nowrap cell-muted">{Html(FormatFieldValue(field, record))}</td>""";
         }
 
-        return $"<td>{Html(FormatFieldValue(field, record))}</td>";
+        return $"<td class=\"{(type == "text" ? "cell-text" : "cell-label")}\">{Html(FormatFieldValue(field, record))}</td>";
     }
 
     static string RenderRowActions(string entityKey, string recordId, bool isArchived, RuntimeEntityUiPermissions permissions)

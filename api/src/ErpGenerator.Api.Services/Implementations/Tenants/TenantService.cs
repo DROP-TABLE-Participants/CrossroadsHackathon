@@ -27,7 +27,8 @@ public sealed class TenantService(
         var companyName = (input.EnvironmentName ?? input.CompanyName)?.Trim() ?? string.Empty;
         var slug = NormalizeSlug(input.Slug);
         if (companyName.Length is < 1 or > 160) throw new ArgumentException("Company name is required.");
-        if (await dbContext.Tenants.AnyAsync(value => value.Slug == slug, cancellationToken))
+        if (runtimeOptions.Value.IsReserved(slug) ||
+            await dbContext.Tenants.AnyAsync(value => value.Slug == slug, cancellationToken))
             throw new InvalidOperationException("This tenant slug is unavailable.");
 
         ErpBundleVersion? bundle = null;

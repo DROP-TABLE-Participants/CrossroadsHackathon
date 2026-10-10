@@ -73,7 +73,7 @@ public sealed class RuntimeWorkflowTaskCapabilityTests
         var html = RuntimeTaskRenderer.RenderTaskDetailPage(tenant, session, [], detail);
         var json = JsonSerializer.Serialize(detail);
 
-        html.Should().Contain("Review before deciding");
+        html.Should().Contain("Decision evidence");
         html.Should().Contain("Work order").And.Contain("passed");
         html.Should().Contain("/api/runtime/tasks/11/${decision}");
         json.Should().Contain("work_order").And.Contain("inspection_result");

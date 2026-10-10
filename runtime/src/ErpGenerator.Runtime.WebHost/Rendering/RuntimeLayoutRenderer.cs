@@ -110,12 +110,12 @@ internal static class RuntimeLayoutRenderer
                   <button class="icon-button" type="button" data-tour-start aria-label="Start product tour" title="Product tour">{{RuntimeUi.Icon("help", "")}}</button>
                   <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle light or dark theme" title="Toggle theme">{{RuntimeUi.Icon("sun", "")}}</button>
                   <a class="icon-button" href="/notifications" aria-label="Notifications" data-tour-notifications>{{RuntimeUi.Icon("bell", "")}}</a>
+                  <button class="icon-button feedback-trigger" type="button" data-feedback-open aria-label="Send feedback" title="Send feedback">{{RuntimeUi.Icon("message", "")}}</button>
                 </div>
               </header>
               {{body}}
             </main>
           </div>
-          <button class="feedback-trigger" type="button" data-feedback-open aria-label="Send feedback" title="Send feedback">{{RuntimeUi.Icon("message", "")}}</button>
           <div class="tour-root" data-tour-root hidden>
             <div class="tour-spotlight" data-tour-spotlight aria-hidden="true"></div>
             <section class="tour-popover" data-tour-popover role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-description">
@@ -535,7 +535,7 @@ internal static class RuntimeLayoutRenderer
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>{{WebUtility.HtmlEncode(title)}}</title>
-            <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjQyIDYyIDcyIDcyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iOTYiIHkxPSI2NSIgeDI9IjUwIiB5Mj0iMTMyIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMyMEEwRkYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4QTRERkMiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBmaWxsPSJ1cmwoI2cpIiBkPSJNNTIgODNWNzVDNTIgNzAuNiA1NS42IDY3IDYwIDY3SDgwQzkzLjMgNjcgMTAzIDc3LjYgMTAzIDkxQzEwMyAxMDQuMyA5My4zIDExNSA4MiAxMTVINzFWMTIxQzcxIDEyNiA2NyAxMzAgNjIgMTMwSDUyVjk5SDgwQzg0LjQgOTkgODggOTUuNCA4OCA5MUM4OCA4Ni42IDg0LjQgODMgODAgODNINTJaIi8+PC9zdmc+" />
+            <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMyNTYzZWIiLz4KICA8cGF0aCBkPSJNMTcgMjBoMzBNMTcgMzJoMjJNMTcgNDRoMzAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==" />
             <style>
         {{RuntimeStyles.Css}}
             </style>
@@ -580,7 +580,6 @@ internal static class RuntimeLayoutRenderer
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
               <h2 id="feedback-dialog-title">Send feedback</h2>
             </div>
-            <p>Tell us what's working or what's missing on this screen. It reaches the team that builds your ERP.</p>
             <label class="field">
               <span class="field-label">Category</span>
               <select name="category">

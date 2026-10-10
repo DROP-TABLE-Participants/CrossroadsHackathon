@@ -27,9 +27,8 @@ internal static class RuntimeReportRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Reports", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Analytics</p>
+
               <div class="page-title-row"><h1>Reports</h1></div>
-              <p class="page-subtitle">Operational reports generated from your ERP data.</p>
             </div>
           </section>
           <div class="result-bar"><span><strong>{{reports.Count}}</strong> {{(reports.Count == 1 ? "report" : "reports")}}</span></div>
@@ -72,9 +71,9 @@ internal static class RuntimeReportRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Reports", "/reports"), (report.Label, null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Report</p>
               <div class="page-title-row"><h1>{{Html(report.Label)}}</h1></div>
-              <p class="page-subtitle">{{Html(report.Description ?? "Generated report")}} · generated {{Html(FormatRecordValue(report.GeneratedAt))}}</p>
+              {{(string.IsNullOrWhiteSpace(report.Description) ? "" : $"<p class=\"page-subtitle\">{Html(report.Description)}</p>")}}
+              <p class="page-subtitle">Generated {{Html(FormatRecordValue(report.GeneratedAt))}}</p>
             </div>
             <div class="page-actions">
               <a class="button button-outline" href="/reports">{{RuntimeUi.Icon("arrow-left", "")}}All reports</a>
@@ -166,7 +165,6 @@ internal static class RuntimeReportRenderer
               <article class="metric-card">
                 <span class="metric-label">{RuntimeUi.Icon("reports", "")} {Html(column.Label)}</span>
                 <strong>{Html(FormatMetricValue(row.GetValueOrDefault(column.Key)))}</strong>
-                <small>{Html(report.Label)}</small>
               </article>
               """))}
           </section>

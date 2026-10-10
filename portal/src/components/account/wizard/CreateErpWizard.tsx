@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { useDemoBooking } from '@/components/booking/DemoBookingProvider'
 import { getLabels } from '@/components/account/labels'
@@ -83,32 +84,32 @@ export function CreateErpWizard({ locale }: { locale: Locale }) {
   }
   const hasEvidence = template || !!draft.description.trim() || draft.answers.some(v => v.trim())
   const liveProject = api.projects.find(v => v.id === project?.id) ?? project
-  return <section className="mx-auto w-full max-w-3xl space-y-5">
-    <ol className="grid grid-cols-3 gap-2 text-sm">{(bg ? ['Опишете бизнеса', 'Добавете контекст', 'Преглед и създаване'] : ['Describe your business', 'Add context', 'Review and build']).map((label, i) => <li key={label} className={`rounded-lg border p-3 ${i === step ? 'border-primary bg-primary/5 font-medium' : 'text-muted-foreground'}`}>{i + 1}. {label}</li>)}</ol>
-    <Card className="space-y-5 p-6">
-      <h1 className="text-2xl font-semibold">{template ? (bg ? 'Персонализирайте Dandelion Chocolate' : 'Customize Dandelion Chocolate') : (bg ? 'Създайте вашето ERP' : 'Create your ERP')}</h1>
+  return <section className="mx-auto w-full max-w-3xl space-y-4">
+    <h1 className="text-2xl font-semibold">{template ? (bg ? 'Персонализирайте Dandelion Chocolate' : 'Customize Dandelion Chocolate') : (bg ? 'Създайте ERP' : 'Create ERP')}</h1>
+    <ol className="grid grid-cols-3 gap-2 text-xs sm:text-sm">{(bg ? ['Опишете бизнеса', 'Добавете контекст', 'Преглед и създаване'] : ['Describe your business', 'Add context', 'Review and build']).map((label, i) => <li key={label} aria-current={i === step ? 'step' : undefined} className={`flex items-start gap-2 border-b-2 px-1 py-2 ${i === step ? 'border-primary font-medium text-primary' : 'border-border text-muted-foreground'}`}><span className="tabular-nums">{i + 1}</span><span>{label}</span></li>)}</ol>
+    <Card className="gap-4 p-4">
       {step === 0 && <>
-        <label className="grid gap-2 text-sm">{bg ? 'Име на компанията' : 'Company name'}<Input value={draft.company} maxLength={160} disabled={!!project || template} onChange={e => edit({ company: e.target.value })} /></label>
+        <label className="grid gap-1.5 text-sm font-medium">{bg ? 'Име на компанията' : 'Company name'}<Input value={draft.company} maxLength={160} disabled={!!project || template} onChange={e => edit({ company: e.target.value })} /></label>
         {template ? <>
           <p className="text-sm text-muted-foreground">{bg ? 'Новото ERP се генерира отделно. Подготвеното демо остава достъпно.' : 'A new ERP is generated separately. Your prepared demo stays available.'}</p>
-          {choices.map(([value, label]) => <label key={value} className="flex items-center gap-3 text-sm"><input type="checkbox" disabled={!!project} checked={draft.choices.includes(value)} onChange={e => edit({ choices: e.target.checked ? [...draft.choices, value] : draft.choices.filter(v => v !== value) })} />{label}</label>)}
-          <label className="grid gap-2 text-sm">{bg ? 'Други промени (по избор)' : 'Other changes (optional)'}<Textarea value={draft.prompt} maxLength={4000} disabled={!!project} onChange={e => edit({ prompt: e.target.value })} /></label>
+          {choices.map(([value, label]) => <label key={value} className="flex min-h-9 items-center gap-3 text-sm"><Checkbox disabled={!!project} checked={draft.choices.includes(value)} onCheckedChange={checked => edit({ choices: checked === true ? [...draft.choices, value] : draft.choices.filter(v => v !== value) })} />{label}</label>)}
+          <label className="grid gap-1.5 text-sm font-medium">{bg ? 'Други промени (по избор)' : 'Other changes (optional)'}<Textarea value={draft.prompt} maxLength={4000} disabled={!!project} onChange={e => edit({ prompt: e.target.value })} /></label>
         </> : <>
-          <label className="grid gap-2 text-sm">{bg ? 'Опишете дейността и процесите си' : 'Describe your company and its processes'}<Textarea rows={6} value={draft.description} maxLength={50000} disabled={!!project} onChange={e => edit({ description: e.target.value })} /></label>
+          <label className="grid gap-1.5 text-sm font-medium">{bg ? 'Опишете дейността и процесите си' : 'Describe your company and its processes'}<Textarea rows={4} value={draft.description} maxLength={50000} disabled={!!project} onChange={e => edit({ description: e.target.value })} /></label>
         </>}
       </>}
       {step === 1 && <>
-        {!template && questions.map((question, i) => <label key={question} className="grid gap-2 text-sm">{question}<Textarea rows={3} maxLength={4000} disabled={!!project} value={draft.answers[i]} onChange={e => edit({ answers: draft.answers.map((v, n) => n === i ? e.target.value : v) })} /></label>)}
-        <div className="border-t pt-4"><h2 className="mb-2 font-medium">Notion ({bg ? 'по избор' : 'optional'})</h2><p className="mb-3 text-sm text-muted-foreground">{bg ? 'Свържете Notion и изберете страници, които описват бизнеса ви.' : 'Connect Notion and select the pages that describe your business.'}</p>{liveProject ? <ConnectorsPanel labels={labels} locale={locale} project={liveProject} projectsApi={api} /> : <Button variant="outline" disabled={busy || !hasEvidence} onClick={() => void next(true)}>{bg ? 'Запази контекста и свържи Notion' : 'Save context and connect Notion'}</Button>}</div>
+        {!template && questions.map((question, i) => <label key={question} className="grid gap-1.5 text-sm font-medium">{question}<Textarea rows={3} maxLength={4000} disabled={!!project} value={draft.answers[i]} onChange={e => edit({ answers: draft.answers.map((v, n) => n === i ? e.target.value : v) })} /></label>)}
+        <div className={template ? "space-y-3" : "space-y-3 border-t pt-4"}>{!liveProject && <><h2 className="text-base font-semibold">Notion ({bg ? 'по избор' : 'optional'})</h2><p className="text-sm text-muted-foreground">{bg ? 'Свържете Notion и изберете страници, които описват бизнеса ви.' : 'Connect Notion and select the pages that describe your business.'}</p></>}{liveProject ? <ConnectorsPanel labels={labels} locale={locale} project={liveProject} projectsApi={api} /> : <Button variant="outline" disabled={busy || !hasEvidence} onClick={() => void next(true)}>{bg ? 'Запази контекста и свържи Notion' : 'Save context and connect Notion'}</Button>}</div>
       </>}
       {step === 2 && <>
-        <h2 className="font-medium">{bg ? 'Спецификация' : 'Specification preview'}</h2>
-        <p>{draft.company}</p>
-        {template ? <><p className="text-sm">{bg ? 'Производство на шоколад: продукти, съставки и опаковки, рецепти, производствени партиди, качество, клиенти и поръчки на едро.' : 'Chocolate manufacturing: products, ingredients and packaging, recipes, production batches, quality, customers and wholesale orders.'}</p><ul className="list-disc space-y-1 pl-5 text-sm">{choices.filter(([v]) => draft.choices.includes(v)).map(([v, label]) => <li key={v}>{label}</li>)}</ul><p className="whitespace-pre-wrap text-sm">{draft.prompt}</p></> : <><p className="whitespace-pre-wrap text-sm">{draft.description}</p>{questions.map((q, i) => draft.answers[i]?.trim() && <div key={q} className="text-sm"><p className="font-medium">{q}</p><p className="whitespace-pre-wrap">{draft.answers[i]}</p></div>)}</>}
-        <p className="text-sm text-muted-foreground">{bg ? 'Ще получите въпроси, ако липсва важна информация. ERP се отваря след компилиране и успешно изпълнение на проверките.' : 'You will receive questions if essential information is missing. Your ERP opens after compilation and successful business checks.'}</p>
+        <h2 className="text-base font-semibold">{bg ? 'Спецификация' : 'Specification preview'}</h2>
+        <p className="text-sm font-semibold">{draft.company}</p>
+        {template ? <><p className="text-sm">{bg ? 'Производство на шоколад: продукти, съставки и опаковки, рецепти, производствени партиди, качество, клиенти и поръчки на едро.' : 'Chocolate manufacturing: products, ingredients and packaging, recipes, production batches, quality, customers and wholesale orders.'}</p><ul className="list-disc space-y-1 pl-5 text-sm">{choices.filter(([v]) => draft.choices.includes(v)).map(([v, label]) => <li key={v}>{label}</li>)}</ul>{draft.prompt.trim() && <p className="whitespace-pre-wrap text-sm">{draft.prompt}</p>}</> : <><p className="whitespace-pre-wrap text-sm">{draft.description}</p>{questions.map((q, i) => draft.answers[i]?.trim() && <div key={q} className="text-sm"><p className="font-medium">{q}</p><p className="whitespace-pre-wrap">{draft.answers[i]}</p></div>)}</>}
+        <p className="text-sm text-muted-foreground">{bg ? 'Ще получите въпроси, ако липсва важна информация. ERP ще е достъпно след успешни проверки.' : 'We’ll ask if essential information is missing. Your ERP will be available after its business checks pass.'}</p>
       </>}
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      <div className="flex flex-wrap justify-between gap-3"><Button variant="ghost" disabled={busy || step === 0} onClick={() => setStep(v => v - 1)}>{bg ? 'Назад' : 'Back'}</Button>{step < 2 ? <Button disabled={busy || !draft.company.trim() || (step === 0 && !template && !draft.description.trim()) || (step === 1 && !hasEvidence)} onClick={() => void next()}>{busy ? (bg ? 'Запазване…' : 'Saving…') : (bg ? 'Продължи' : 'Continue')}</Button> : <Button disabled={busy} onClick={() => void build()}>{busy ? (bg ? 'Започване…' : 'Starting…') : (bg ? 'Създай ERP' : 'Build ERP')}</Button>}</div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4"><Button variant="ghost" disabled={busy || step === 0} onClick={() => setStep(v => v - 1)}>{bg ? 'Назад' : 'Back'}</Button>{step < 2 ? <Button disabled={busy || !draft.company.trim() || (step === 0 && !template && !draft.description.trim()) || (step === 1 && !hasEvidence)} onClick={() => void next()}>{busy ? (bg ? 'Запазване…' : 'Saving…') : (bg ? 'Продължи' : 'Continue')}</Button> : <Button disabled={busy} onClick={() => void build()}>{busy ? (bg ? 'Започване…' : 'Starting…') : (bg ? 'Създай ERP' : 'Build ERP')}</Button>}</div>
     </Card>
   </section>
 }

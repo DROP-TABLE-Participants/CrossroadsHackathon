@@ -80,7 +80,6 @@ internal static class RuntimeSettingsRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Users", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Administration</p>
               <div class="page-title-row"><h1>Users</h1></div>
               <p class="page-subtitle">Manage who can access this ERP and what they can do.</p>
             </div>
@@ -169,7 +168,6 @@ internal static class RuntimeSettingsRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Users", "/settings/users"), ("Invite", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Administration</p>
               <div class="page-title-row"><h1>Invite user</h1></div>
               <p class="page-subtitle">Create an activation link for a new ERP user.</p>
             </div>
@@ -292,7 +290,6 @@ internal static class RuntimeSettingsRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Settings", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Administration</p>
               <div class="page-title-row"><h1>Deployment</h1></div>
               <p class="page-subtitle">Environment, active bundle, and deployment history.</p>
             </div>
@@ -307,7 +304,7 @@ internal static class RuntimeSettingsRenderer
             </dl>
           </section>
           <section class="table-panel">
-            <div class="panel-head"><div><p class="eyebrow">Bundle lifecycle</p><h2>Deployment history</h2></div></div>
+            <div class="panel-head"><div><h2>Deployment history</h2></div></div>
             <div class="table-scroll">
               <table>
                 <thead><tr><th scope="col">ID</th><th scope="col">Status</th><th scope="col">Environment</th><th scope="col">Version</th><th scope="col">Risk</th><th scope="col">Plan</th><th scope="col">Started</th></tr></thead>
@@ -316,7 +313,7 @@ internal static class RuntimeSettingsRenderer
             </div>
           </section>
           <section class="table-panel">
-            <div class="panel-head"><div><p class="eyebrow">Audit</p><h2>Recent runtime events</h2></div></div>
+            <div class="panel-head"><div><h2>Recent runtime events</h2></div></div>
             <div class="table-scroll">
               <table>
                 <thead><tr><th scope="col">ID</th><th scope="col">Event</th><th scope="col">Message</th><th scope="col">When</th></tr></thead>

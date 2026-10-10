@@ -70,7 +70,7 @@ internal static class RuntimeWorkflowRenderer
             </dl>
           </section>
           <section class="table-panel">
-            <div class="panel-head"><div><p class="eyebrow">Workflow</p><h2>Tasks</h2></div></div>
+            <div class="panel-head"><div><h2>Tasks</h2></div></div>
             <div class="table-scroll">
               <table>
                 <thead><tr><th scope="col">Task</th><th scope="col">Name</th><th scope="col">Step</th><th scope="col">Assigned</th><th scope="col">Status</th><th scope="col">Decided by</th><th scope="col">Decided at</th><th scope="col">Reason</th></tr></thead>
@@ -79,7 +79,7 @@ internal static class RuntimeWorkflowRenderer
             </div>
           </section>
           <section class="table-panel">
-            <div class="panel-head"><div><p class="eyebrow">Timeline</p><h2>Activity history</h2></div></div>
+            <div class="panel-head"><div><h2>Activity history</h2></div></div>
             <div class="table-scroll">
               <table>
                 <thead><tr><th scope="col">ID</th><th scope="col">Event</th><th scope="col">Message</th><th scope="col">Task</th><th scope="col">Detail</th><th scope="col">When</th></tr></thead>

@@ -14,7 +14,7 @@ internal static class RuntimeNotificationRenderer
     {
         var unread = notifications.Count(notification => !notification.Status.Equals("read", StringComparison.OrdinalIgnoreCase));
         var rows = notifications.Count == 0
-            ? $"""<tr><td colspan="6">{RuntimeUi.EmptyState("No notifications", includeAll ? "There are no notifications in this workspace yet." : "You have no notifications. Workflow updates and mentions will appear here.", "bell")}</td></tr>"""
+            ? $"""<tr><td colspan="6">{RuntimeUi.EmptyState("No notifications", "Workflow updates and mentions appear here.", "bell")}</td></tr>"""
             : string.Join("", notifications.Select(notification =>
             {
                 var recipient = notification.RecipientUserId == session.UserId
@@ -52,7 +52,6 @@ internal static class RuntimeNotificationRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Notifications", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Inbox</p>
               <div class="page-title-row"><h1>Notifications</h1></div>
               <p class="page-subtitle">Workflow updates, approvals, and mentions.</p>
             </div>

@@ -11,7 +11,7 @@ internal static class RuntimeTaskRenderer
         IReadOnlyList<RuntimeWorkflowTask> tasks)
     {
         var rows = tasks.Count == 0
-            ? $"""<tr><td colspan="7">{RuntimeUi.EmptyState("No tasks waiting", "You have no approval or workflow tasks to act on right now. New tasks appear here when a workflow needs a decision.", "check")}</td></tr>"""
+            ? $"""<tr><td colspan="7">{RuntimeUi.EmptyState("No tasks waiting", "New tasks appear when a workflow needs a decision.", "check")}</td></tr>"""
             : string.Join("", tasks.Select(task =>
             {
                 var assigned = task.AssignedUserId == session.UserId
@@ -38,7 +38,6 @@ internal static class RuntimeTaskRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), ("Tasks", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">Workflow</p>
               <div class="page-title-row"><h1>Tasks</h1></div>
               <p class="page-subtitle">Approvals and workflow tasks that need a decision.</p>
             </div>
@@ -97,7 +96,7 @@ internal static class RuntimeTaskRenderer
             <div class="page-actions">{{decisions}}</div>
           </section>
           <section class="table-panel">
-            <div class="panel-head"><div><p class="eyebrow">Decision evidence</p><h2>Review before deciding</h2></div></div>
+            <div class="panel-head"><div><h2>Decision evidence</h2></div></div>
             <div class="table-scroll">
               <table>
                 <tbody>{{evidenceRows}}</tbody>

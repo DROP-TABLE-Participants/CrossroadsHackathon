@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import type { Locale } from '@/i18n/config'
 
 type Demo = { id: string; status: string; failureMessage?: string }
@@ -48,18 +49,17 @@ export function DandelionDemoCard({ locale }: { locale: Locale }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'Please try again') }
     finally { setBusy(false) }
   }
-  return <Card className="overflow-hidden border-primary/20 p-6 sm:p-8">
-    <div className="mb-4 text-xs font-medium uppercase tracking-wider text-primary">{bg ? 'Подготвено демо · Симулирани операции' : 'Curated demo · Simulated operations'}</div>
-    <h1 className="text-3xl font-semibold tracking-tight">Dandelion Chocolate</h1>
-    <p className="mt-3 max-w-2xl text-muted-foreground">{bg ? 'Производство на шоколад в Сан Франциско. Изпълнете поръчка за 600 шоколада: 200 налични → произведете 400 → одобрете качеството → изпратете 600.' : 'San Francisco chocolate manufacturing. Fulfil an order for 600 bars: 200 available → produce 400 → release quality → ship 600.'}</p>
-    <div className="my-5 grid grid-cols-2 gap-3 sm:grid-cols-4">{[bg ? '3 шоколада' : '3 chocolate bars', bg ? 'Партиди и рецепти' : 'Lots & recipes', bg ? 'Контрол на качеството' : 'Quality checks', bg ? 'Поръчки на едро' : 'Wholesale orders'].map(v => <div key={v} className="rounded-lg bg-muted p-3 text-sm">{v}</div>)}</div>
-    <div className="flex flex-wrap gap-3">
+  return <Card className="gap-3 p-4">
+    <div className="flex flex-wrap items-center gap-2"><h2 className="text-base font-semibold">Dandelion Chocolate</h2><Badge variant="outline" className="border-primary/20 bg-accent text-accent-foreground">{bg ? 'Демо' : 'Demo'}</Badge></div>
+    <p className="text-sm text-muted-foreground">{bg ? 'Производство на шоколад в Сан Франциско. Поръчка за 600 шоколада: 200 налични → произведете 400 → одобрете качеството → изпратете 600.' : 'San Francisco chocolate manufacturing. An order for 600 bars: 200 available → produce 400 → release quality → ship 600.'}</p>
+    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">{[bg ? '3 шоколада' : '3 chocolate bars', bg ? 'Партиди и рецепти' : 'Lots & recipes', bg ? 'Контрол на качеството' : 'Quality checks', bg ? 'Поръчки на едро' : 'Wholesale orders'].map(v => <span key={v}>{v}</span>)}</div>
+    <div className="flex flex-wrap items-center gap-2">
       {current ? <form action={`/api/customers/demos/${current.id}/open`} method="post"><Button type="submit">{bg ? 'Отвори демо ERP' : 'Open demo ERP'}</Button></form> : <Button onClick={() => void prepare()} disabled={busy || preparing}>{preparing ? (bg ? 'Подготвяме вашето демо…' : 'Preparing your demo…') : (bg ? 'Отвори демо ERP' : 'Open demo ERP')}</Button>}
       <Button asChild variant="outline"><Link href={`/${locale}/account/create?template=dandelion-chocolate`}>{bg ? 'Персонализирай и генерирай' : 'Customize and generate'}</Link></Button>
-      {current && <Button variant="ghost" disabled={busy || preparing} onClick={() => void prepare(true)}>{bg ? 'Ново демо' : 'Reset demo'}</Button>}
+      {current && <Button variant="ghost" className="text-muted-foreground" disabled={busy || preparing} onClick={() => void prepare(true)}>{bg ? 'Ново демо' : 'Reset demo'}</Button>}
     </div>
     {preparing && current && <p className="mt-3 text-sm">{bg ? 'Подготвяме ново копие. Текущото демо остава достъпно.' : 'Preparing a fresh copy. Your current demo remains available.'}</p>}
     {(error || demos.find(v => v.status === 'failed')?.failureMessage) && <p role="alert" className="mt-3 text-sm text-destructive">{error || (bg ? 'Подготовката не успя. Опитайте отново.' : 'Preparation failed. Please try again.')} <Button variant="link" onClick={() => void prepare()}>{bg ? 'Опитай отново' : 'Try again'}</Button></p>}
-    <p className="mt-5 text-xs text-muted-foreground">{bg ? 'Данните за компанията са базирани на публична информация. Всички оперативни записи са симулирани.' : 'Company information is based on public sources. All operational records are simulated.'}</p>
+    <p className="text-xs text-muted-foreground">{bg ? 'Данните за компанията са от публични източници; оперативните записи са симулирани.' : 'Company information is from public sources; operational records are simulated.'}</p>
   </Card>
 }

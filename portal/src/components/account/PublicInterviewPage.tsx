@@ -262,7 +262,7 @@ export function PublicInterviewPage({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="flex h-svh flex-col items-center justify-center gap-3 bg-background text-muted-foreground">
+      <div className="font-sans flex h-svh flex-col items-center justify-center gap-3 bg-background text-muted-foreground">
         <Spinner className="size-6" />
         <span className="text-sm">Loading interview...</span>
       </div>
@@ -271,16 +271,12 @@ export function PublicInterviewPage({ token }: { token: string }) {
 
   if (error && !interview) {
     return (
-      <section className="eg-account-page">
-        <div className="eg-container eg-account-shell">
-          <article className="eg-card eg-account-empty">
-            <h1>This interview link is not available</h1>
-            <p>{error}</p>
-            <Link href="/" className="eg-button eg-button--outline">
-              ERP Generator home
-            </Link>
-          </article>
-        </div>
+      <section className="font-sans flex min-h-svh items-center justify-center p-4">
+        <article className="flex max-w-md flex-col gap-4 rounded-lg border p-4">
+          <h1 className="text-2xl font-semibold">This interview link is not available</h1>
+          <p role="alert" className="text-sm text-muted-foreground">{error}</p>
+          <Button asChild variant="outline"><Link href="/">ERP Generator home</Link></Button>
+        </article>
       </section>
     )
   }
@@ -305,7 +301,7 @@ export function PublicInterviewPage({ token }: { token: string }) {
 
       <main className="flex min-h-0 flex-1 flex-col gap-2 p-3 sm:p-4">
         <div className="shrink-0 px-1">
-          <h1 className="text-base font-semibold sm:text-lg">
+          <h1 className="text-2xl font-semibold">
             {greetingName ? `Hello, ${greetingName}` : 'Hello'}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -352,30 +348,25 @@ export function PublicInterviewPage({ token }: { token: string }) {
         ) : null}
       </main>
 
-      {/* When the interview finishes, a calm full-screen moment over a blurred
-          view of the conversation — the thank-you is the only thing to look at. */}
+      {/* Completion replaces the active interview with its saved status. */}
       {completed ? (
         <div
           role="status"
           aria-live="polite"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 p-6 backdrop-blur-md animate-in fade-in-0 duration-500"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background p-4"
         >
-          <div className="flex max-w-sm flex-col items-center gap-5 text-center animate-in fade-in-0 zoom-in-95 duration-500">
-            <div className="relative flex size-24 items-center justify-center">
-              <span
-                aria-hidden="true"
-                className="interview-done-ring absolute size-20 rounded-full bg-success/30"
-              />
+          <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+            <div className="relative flex size-12 items-center justify-center">
               <svg
                 viewBox="0 0 52 52"
-                className="relative size-24"
+                className="relative size-12"
                 fill="none"
                 aria-hidden="true"
               >
                 <circle cx="26" cy="26" r="24" className="stroke-success/25" strokeWidth="3" />
                 <path
                   d="M15.5 27 l7 7 l14 -15"
-                  className="interview-done-check stroke-success"
+                  className="stroke-success"
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeLinejoin="round"

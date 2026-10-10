@@ -83,7 +83,6 @@ internal static class RuntimeEntityFormRenderer
           {{RuntimeUi.Breadcrumbs(("Dashboard", "/"), (entity.DisplayName, $"/entities/{WebUtility.UrlEncode(entity.Key)}"), (isNew ? "New" : $"#{recordId}", null))}}
           <section class="page-head">
             <div class="page-head-main">
-              <p class="eyebrow">{{Html(entity.DisplayName)}}</p>
               <div class="page-title-row">
                 <h1>{{Html(pageTitle)}}</h1>
                 {{(isNew ? "" : $"""<span class="record-id">#{Html(recordId)}</span>""")}}
@@ -406,11 +405,6 @@ internal static class RuntimeEntityFormRenderer
         var items = new List<string>();
 
         var lifecycleField = entity.Fields.FirstOrDefault(f => f.Lifecycle is not null);
-        if (lifecycleField is not null)
-        {
-            var value = FormatRecordValue(record.GetValueOrDefault(lifecycleField.ColumnName));
-            items.Add(SummaryItem(lifecycleField.DisplayName, string.IsNullOrWhiteSpace(value) ? "<span class=\"cell-muted\">—</span>" : RuntimeUi.StatusPill(value)));
-        }
 
         var primary = FormatRecordValue(record.GetValueOrDefault($"{entity.DisplayPrimaryField}__label") ?? record.GetValueOrDefault(entity.DisplayPrimaryField));
         if (!string.IsNullOrWhiteSpace(primary))
@@ -419,7 +413,7 @@ internal static class RuntimeEntityFormRenderer
             items.Add(SummaryItem(primaryField?.DisplayName ?? "Name", Html(primary)));
         }
 
-        if (!string.IsNullOrWhiteSpace(entity.DisplaySecondaryField))
+        if (!string.IsNullOrWhiteSpace(entity.DisplaySecondaryField) && entity.DisplaySecondaryField != lifecycleField?.Name)
         {
             var secondary = FormatRecordValue(record.GetValueOrDefault($"{entity.DisplaySecondaryField}__label") ?? record.GetValueOrDefault(entity.DisplaySecondaryField));
             if (!string.IsNullOrWhiteSpace(secondary))

@@ -27,7 +27,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import { ConnectorLogo } from '@/components/account/ConnectorLogo'
 import type { ProjectsApi } from '@/components/account/api-types'
-import { ConnectorHealthSummary } from '@/components/account/DiscoveryJourney'
 import { ConnectorConsentDialog } from '@/components/account/projects/ConnectorConsentDialog'
 import { ConnectorScopeDialog } from '@/components/account/projects/ConnectorScopeDialog'
 import {
@@ -139,9 +138,9 @@ export function ConnectorsPanel({ labels, locale, project, projectsApi, locked }
   }
 
   return (
-    <div data-slot="connectors-panel" className="flex flex-col gap-3 rounded-lg border p-4">
+    <div data-slot="connectors-panel" className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <h3 className="m-0 text-sm font-semibold">{labels.connectCompanyData}</h3>
+        <h3 className="m-0 text-base font-semibold">{labels.connectCompanyData}</h3>
         <p className="m-0 text-xs text-muted-foreground">{labels.connectorHelper}</p>
       </div>
       {connectorErrors[project.id] ? (
@@ -293,11 +292,6 @@ export function ConnectorsPanel({ labels, locale, project, projectsApi, locked }
       ) : (
         <p className="m-0 text-sm text-muted-foreground">{labels.noConnectedSources}</p>
       )}
-      <ConnectorHealthSummary
-        locale={locale}
-        connected={allConnectors.filter((connector) => connector.status === 'connected').length}
-        available={allConnectors.filter((connector) => connector.status === 'available').length}
-      />
       {/* While a run holds this project, the catalog is withheld rather than
           shown-but-dead: changing the evidence mid-analysis would either be
           silently ignored or invalidate the run in progress. */}
@@ -331,7 +325,7 @@ export function ConnectorsPanel({ labels, locale, project, projectsApi, locked }
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="flex flex-col gap-3">
-          <Input
+          {allConnectors.length > 1 && <Input
             type="search"
             placeholder={labels.searchConnectors}
             aria-label={labels.searchConnectors}
@@ -340,8 +334,8 @@ export function ConnectorsPanel({ labels, locale, project, projectsApi, locked }
               ...current,
               [project.id]: event.target.value,
             }))}
-          />
-          <div className="grid gap-2 sm:grid-cols-2">
+          />}
+          <div className="grid gap-2">
             {connectors.map((connector) => {
               const connecting = pendingAction === `connect-source:${project.id}:${connector.key}`
               const disabled = !['available', 'failed'].includes(connector.status) || connecting

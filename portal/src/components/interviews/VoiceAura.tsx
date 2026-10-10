@@ -6,9 +6,6 @@ import type { LocalAudioTrack } from 'livekit-client'
 import { AgentAudioVisualizerAura } from '@/components/agents-ui/agent-audio-visualizer-aura'
 import type { VoiceStatus } from './useVoiceDictation'
 
-/** ERP Generator primary. The visualizer takes a literal hex, not a CSS variable. */
-const ERP_GENERATOR_PURPLE = '#0f766e'
-
 type AuraState = 'connecting' | 'listening' | 'thinking' | 'idle'
 
 /**
@@ -31,6 +28,12 @@ export function VoiceAura({
   /** Merged over the size variant — lets the caller scale it responsively. */
   className?: string
 }) {
+  const [color, setColor] = useState<`#${string}`>()
+  useEffect(() => {
+    // The visualizer needs a resolved color rather than a CSS variable.
+    const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
+    if (primary.startsWith('#')) setColor(primary as `#${string}`)
+  }, [])
   const [track, setTrack] = useState<LocalAudioTrack | undefined>()
 
   useEffect(() => {
@@ -60,11 +63,13 @@ export function VoiceAura({
       ? 'listening'
       : 'idle'
 
+  if (!color) return null
+
   return (
     <AgentAudioVisualizerAura
       size={size}
       state={state}
-      color={ERP_GENERATOR_PURPLE}
+      color={color}
       audioTrack={track}
       className={className}
     />

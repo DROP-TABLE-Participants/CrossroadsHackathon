@@ -27,7 +27,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <html lang="en">
       <body className={`${gilroyMedium.className} ${inter.variable}`}>
-        <main className="eg-page">{children}</main>
+        <div className="eg-page">{children}</div>
       </body>
     </html>
   )

@@ -1,6 +1,6 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
 
 namespace ErpGenerator.Runtime.Services.Assistant;
@@ -34,17 +34,16 @@ public sealed class RuntimeClaudeClient(
         var payload = new
         {
             model = settings.Model,
-            input = new object[]
+            system = $"{SystemPrompt}\nReturn JSON conforming to the {SchemaName} contract.",
+            messages = new[]
             {
-                new { role = "system", content = SystemPrompt },
                 new { role = "user", content = UserPrompt }
             },
-            text = new
+            output_config = new
             {
-                format = new { type = "json_schema", name = SchemaName, strict = true, schema = JsonSchema }
+                format = new { type = "json_schema", schema = ProviderSchema(JsonSchema) }
             },
-            max_output_tokens = Math.Clamp(MaxOutputTokens, 800, 5000),
-            store = false
+            max_tokens = Math.Clamp(MaxOutputTokens, 800, 5000)
         };
 
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -53,7 +52,8 @@ public sealed class RuntimeClaudeClient(
         {
             Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
         };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
+        request.Headers.Add("x-api-key", apiKey.Trim());
+        request.Headers.Add("anthropic-version", "2023-06-01");
         using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
         var body = await response.Content.ReadAsStringAsync(deadline.Token);
         if (!response.IsSuccessStatusCode)
@@ -64,19 +64,58 @@ public sealed class RuntimeClaudeClient(
 
         using var document = JsonDocument.Parse(body);
         var root = document.RootElement;
-        if (!root.TryGetProperty("status", out var status) || status.GetString() != "completed")
-            throw new InvalidOperationException("Runtime assistant response did not complete.");
-        foreach (var output in root.GetProperty("output").EnumerateArray())
+        var stopReason = root.TryGetProperty("stop_reason", out var reason) ? reason.GetString() : null;
+        if (stopReason != "end_turn")
+            throw new InvalidOperationException($"Runtime assistant response did not complete (stop_reason: {stopReason ?? "missing"}).");
+        if (!root.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
+            throw new InvalidOperationException("Runtime assistant returned no structured output.");
+        var outputText = new StringBuilder();
+        foreach (var part in content.EnumerateArray())
         {
-            if (!output.TryGetProperty("content", out var content)) continue;
-            foreach (var part in content.EnumerateArray())
-            {
-                if (part.TryGetProperty("type", out var type) && type.GetString() == "refusal")
-                    throw new InvalidOperationException("Runtime assistant declined the request.");
-                if (type.GetString() == "output_text" && part.TryGetProperty("text", out var text))
-                    return text.GetString() ?? throw new InvalidOperationException("Runtime assistant returned empty output.");
-            }
+            if (part.TryGetProperty("type", out var type) && type.GetString() == "text" &&
+                part.TryGetProperty("text", out var text))
+                outputText.Append(text.GetString());
         }
-        throw new InvalidOperationException("Runtime assistant returned no structured output.");
+        if (outputText.Length == 0)
+            throw new InvalidOperationException("Runtime assistant returned no structured output.");
+        var result = outputText.ToString();
+        using var structured = JsonDocument.Parse(result);
+        ValidateArrayLimits(JsonSchema, structured.RootElement);
+        return result;
+    }
+
+    private static JsonNode ProviderSchema(JsonElement schema)
+    {
+        var result = JsonNode.Parse(schema.GetRawText())!;
+        Adapt(result);
+        return result;
+
+        static void Adapt(JsonNode? node)
+        {
+            if (node is JsonObject obj)
+            {
+                if (obj["type"]?.ToString() == "array" && obj.Remove("maxItems", out var maximum))
+                    obj["description"] = $"{obj["description"]} Return at most {maximum} items.".Trim();
+                foreach (var property in obj.ToArray()) Adapt(property.Value);
+            }
+            else if (node is JsonArray array)
+                foreach (var child in array) Adapt(child);
+        }
+    }
+
+    private static void ValidateArrayLimits(JsonElement schema, JsonElement output)
+    {
+        if (output.ValueKind == JsonValueKind.Array)
+        {
+            if (schema.TryGetProperty("maxItems", out var maximum) && output.GetArrayLength() > maximum.GetInt32())
+                throw new JsonException("Runtime assistant exceeded the original array limit.");
+            if (schema.TryGetProperty("minItems", out var minimum) && output.GetArrayLength() < minimum.GetInt32())
+                throw new JsonException("Runtime assistant did not meet the original array minimum.");
+            if (schema.TryGetProperty("items", out var items))
+                foreach (var item in output.EnumerateArray()) ValidateArrayLimits(items, item);
+        }
+        else if (output.ValueKind == JsonValueKind.Object && schema.TryGetProperty("properties", out var properties))
+            foreach (var property in properties.EnumerateObject())
+                if (output.TryGetProperty(property.Name, out var value)) ValidateArrayLimits(property.Value, value);
     }
 }

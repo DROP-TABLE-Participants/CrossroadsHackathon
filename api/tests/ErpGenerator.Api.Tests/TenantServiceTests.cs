@@ -43,6 +43,25 @@ public sealed class TenantServiceTests
         Assert.Equal(TenantDatabaseNamePolicy.BuildExpected(result.Tenant.StableId, "erp"), environment.DatabaseName);
     }
 
+    [Theory]
+    [InlineData("crossroads")]
+    [InlineData("API")]
+    public async Task Create_rejects_reserved_hosts_without_creating_a_tenant(string slug)
+    {
+        await using var dbContext = CreateContext();
+        var service = new TenantService(dbContext, Options.Create(new RuntimeAddressOptions
+        {
+            ReservedTenantSlugs = " Crossroads, api "
+        }));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAsync(
+            Guid.NewGuid(), new CreateTenantInputModel("Company", slug), CancellationToken.None));
+
+        Assert.Equal("This tenant slug is unavailable.", error.Message);
+        Assert.Empty(dbContext.Tenants);
+        Assert.Empty(dbContext.TenantEnvironments);
+    }
+
     private static ErpGeneratorDbContext CreateContext() => new(
         new DbContextOptionsBuilder<ErpGeneratorDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))

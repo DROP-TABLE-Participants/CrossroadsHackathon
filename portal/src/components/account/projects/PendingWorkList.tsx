@@ -126,7 +126,7 @@ export function PendingWorkList({ labels, project, items, projectsApi, inlineOnl
             {openItems.length}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">{labels.actionNeededHelper}</p>
+        {!inlineOnly && <p className="text-xs text-muted-foreground">{labels.actionNeededHelper}</p>}
       </div>
 
       <div className="flex flex-col gap-3">

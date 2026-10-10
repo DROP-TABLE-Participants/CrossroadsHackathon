@@ -118,7 +118,8 @@ public sealed class GeneratedErpDeploymentQueue(
         CancellationToken cancellationToken)
     {
         var baseSlug = NormalizeSlug(companyName);
-        if (!await dbContext.Tenants.AnyAsync(value => value.Slug == baseSlug, cancellationToken))
+        if (!runtimeOptions.Value.IsReserved(baseSlug) &&
+            !await dbContext.Tenants.AnyAsync(value => value.Slug == baseSlug, cancellationToken))
             return baseSlug;
 
         var suffix = projectId.ToString("N")[..8];

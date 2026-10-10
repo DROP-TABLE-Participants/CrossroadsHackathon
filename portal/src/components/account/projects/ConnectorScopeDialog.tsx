@@ -189,13 +189,13 @@ export function ConnectorScopeDialog({
 
   return (
     <Dialog open={Boolean(source)} onOpenChange={onOpenChange}>
-      <DialogContent className="grid max-h-[88dvh] grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="px-6 pt-6 pb-4">
+      <DialogContent className="grid max-h-[calc(100dvh-2rem)] grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="px-4 pt-4 pb-4 pr-10 text-left">
           <DialogTitle>{labels.connectorContentTitle}</DialogTitle>
           <DialogDescription>{labels.connectorContentDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="border-y bg-muted/20 px-6 py-4">
+        <div className="border-y bg-muted/20 px-4 py-4">
           <RadioGroup
             value={mode}
             onValueChange={chooseMode}
@@ -229,25 +229,23 @@ export function ConnectorScopeDialog({
         </div>
 
         {mode === 'all_accessible' ? (
-          <div className="flex min-h-0 items-start justify-center overflow-y-auto px-6 py-8">
+          <div className="flex min-h-0 items-start justify-center overflow-y-auto px-4 py-4">
             <div className="flex max-w-lg gap-3 rounded-lg border bg-muted/20 p-4">
               <CheckCircle className="mt-0.5 size-5 shrink-0 text-primary" weight="fill" aria-hidden="true" />
               <div className="flex flex-col gap-1">
                 <strong className="text-sm">{labels.everythingAccessible}</strong>
                 <span className="text-sm text-muted-foreground">{labels.uncheckedContentExcluded}</span>
-                <span className="text-xs text-muted-foreground">{labels.pageSelectionLimit}</span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex min-h-0 flex-col">
-            <div className="flex flex-col gap-3 border-b px-6 py-3">
+          <div className="flex min-h-0 min-w-0 flex-col overflow-y-auto">
+            <div className="flex flex-col gap-3 border-b px-4 py-3">
               <div className="flex flex-col gap-1">
                 <strong className="text-sm">{labels.selectedPages}: {selected.length}</strong>
                 <span className="text-xs text-muted-foreground">
                   {labels.includeDescendantsDescription}
                 </span>
-                <span className="text-xs text-muted-foreground">{labels.pageSelectionLimit}</span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
@@ -301,8 +299,8 @@ export function ConnectorScopeDialog({
                     const isExpanded = expanded.has(resource.id)
                     return (
                       <div
-                        className="flex min-h-14 items-center gap-2 py-2 pr-6"
-                        style={{ paddingLeft: `${24 + depth * 24}px` }}
+                        className="flex min-h-14 min-w-0 items-center gap-2 py-2 pr-4"
+                        style={{ paddingLeft: `${16 + Math.min(depth, 4) * 16}px` }}
                         key={resource.id}
                       >
                         <Button
@@ -360,7 +358,7 @@ export function ConnectorScopeDialog({
           </div>
         )}
 
-        <DialogFooter className="border-t px-6 py-4">
+        <DialogFooter className="border-t px-4 py-4">
           <DialogClose asChild>
             <Button type="button" variant="outline">{labels.cancel}</Button>
           </DialogClose>

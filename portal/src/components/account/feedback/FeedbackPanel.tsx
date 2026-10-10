@@ -28,7 +28,7 @@ type FeedbackPanelProps = {
 function ColumnHeading({ title, count }: { title: string; count: number }) {
   return (
     <div className="flex items-center gap-2">
-      <h4 className="text-sm font-semibold">{title}</h4>
+      <h4 className="text-base font-semibold">{title}</h4>
       {count > 0 ? (
         <Badge variant="secondary" className="tabular-nums">
           {count}
@@ -93,7 +93,7 @@ export function FeedbackPanel({ labels, feedbackApi, tenantsApi, layout = 'colla
           columns, and the page was three headings each reporting zero. One
           explanation of what will land here beats three ways of saying nothing. */}
       {nothingYet ? (
-        <Empty className="py-10">
+        <Empty className="rounded-lg border p-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <ChatsCircle aria-hidden="true" />
@@ -191,13 +191,10 @@ export function FeedbackPanel({ labels, feedbackApi, tenantsApi, layout = 'colla
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-semibold">{labels.feedbackImprovements}</h1>
-            {/* Replaces "After ERP preparation" — a fragment that named a
-                precondition instead of telling the owner what this page is for. */}
-            <p className="max-w-2xl text-sm text-muted-foreground">{labels.feedbackPageIntro}</p>
           </div>
           {refreshButton}
         </div>
-        <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">{body}</div>
+        <div className="flex flex-col gap-4">{body}</div>
       </section>
     )
   }

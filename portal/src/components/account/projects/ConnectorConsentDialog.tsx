@@ -52,12 +52,12 @@ export function ConnectorConsentDialog({
           </DialogTitle>
           <DialogDescription>{labels.connectorDataNoticeDescription}</DialogDescription>
         </DialogHeader>
-        <ul className="m-0 grid gap-2 rounded-md border bg-muted/20 p-3 text-sm text-muted-foreground">
+        <ul className="m-0 grid gap-2 p-0 text-sm text-muted-foreground">
           <li>{labels.connectorDataNoticeScope}</li>
           <li>{labels.connectorDataNoticeStorage}</li>
           <li>{labels.connectorDataNoticeAi}</li>
         </ul>
-        <div className="flex items-start gap-2 rounded-md border p-3">
+        <div className="flex items-start gap-2 pt-1">
           <Checkbox
             id="connector-authorization-confirmation"
             checked={confirmed}

@@ -125,6 +125,14 @@ public sealed class DemoWorkspaceService(ErpGeneratorDbContext db, UserManager<C
             var requestedTarget = Target(target);
             var receipt = await runtime.DeployCuratedAsync(new(operationId, instance.Id.ToString(), instance.Id.ToString(), requestedTarget, files), ct);
             instance.DeploymentReceiptJson = JsonSerializer.Serialize(receipt);
+            if (!receipt.Success && receipt.FailureCode == "erp_preflight_temporarily_unavailable" &&
+                receipt.OperationId == operationId && receipt.Target == requestedTarget &&
+                string.IsNullOrEmpty(receipt.DeploymentId))
+            {
+                instance.Status = "queued";
+                await db.SaveChangesAsync(ct);
+                return false;
+            }
             if (!receipt.Success || receipt.OperationId != operationId || receipt.Target != requestedTarget ||
                 receipt.Status != "ready" || receipt.TestsStatus != "passed" || receipt.TestsBundleHash != receipt.BundleHash || receipt.TestsBundleVersion != receipt.BundleVersion || string.IsNullOrEmpty(receipt.TestSuiteHash))
                 throw new InvalidOperationException(receipt.SafeError ?? "The demo did not pass its manufacturing acceptance tests.");

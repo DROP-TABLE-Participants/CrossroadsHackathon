@@ -279,6 +279,19 @@ public sealed class RuntimeDeploymentBrokerService(
         {
             return DeploymentFailure(request, null, compiled, "ERP_conflict", "Another customer ERP lifecycle operation is already in progress.", deployment?.DeploymentId.ToString(), testSuiteHash);
         }
+        catch (HttpRequestException exception) when (
+            deployment is null && compiled is null &&
+            (exception.StatusCode is null || (int)exception.StatusCode >= 500))
+        {
+            // Target resolution has not started a deployment or changed tenant data.
+            // Kubernetes may not have published the control-plane endpoint yet.
+            logger.LogWarning(exception,
+                "Runtime deployment broker ERP preflight {OperationId} could not reach the control plane.",
+                request.OperationId);
+            return DeploymentFailure(request, null, null,
+                RuntimeDeploymentBrokerFailureCodes.ErpPreflightTemporarilyUnavailable,
+                "Customer ERP deployment is temporarily unavailable.");
+        }
         catch (PostgresException exception) when (
             deployment is null &&
             exception.SqlState == PostgresErrorCodes.TooManyConnections)

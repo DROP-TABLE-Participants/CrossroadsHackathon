@@ -7,7 +7,7 @@
 
 **An AI-native engine that discovers how a company operates, generates a custom ERP, and continuously improves it.**
 
-<!-- Website: add your URL when available. -->
+[Live Website](https://crossroads.dressr.fashion/)
 
 </div>
 
@@ -70,7 +70,7 @@ The architecture consists of:
 
 ## Demo
 
-**Demo URL:** Coming soon.
+**Live Website:** https://crossroads.dressr.fashion/
 
 ## Why we're building this
 
